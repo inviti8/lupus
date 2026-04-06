@@ -1,0 +1,27 @@
+[package]
+name = "lupus"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+description = "Lupus pathfinder daemon — local AI search, security scanning, and IPFS indexing for Lepus"
+
+[[bin]]
+name = "lupus"
+path = "src/main.rs"
+
+[dependencies]
+# WebSocket server for IPC with Lepus browser
+# tokio = { version = "1", features = ["full"] }
+# tokio-tungstenite = "0.24"
+# serde = { version = "1", features = ["derive"] }
+# serde_json = "1"
+
+# ML inference via llama.cpp bindings
+# llama-cpp-rs = "0.3"
+
+# IPFS client
+# iroh = "0.28"
+
+# Dependencies commented until project scaffolding is complete
+
+[workspace]
