@@ -1,0 +1,42 @@
+# Lupus base model configuration
+
+search_model:
+  name: "EleutherAI/pythia-1.4b"
+  type: "causal-lm"
+  reason: "Most transparent training data (The Pile), minimal alignment bias"
+  fallback: "Qwen/Qwen2.5-1.5B"
+
+security_model:
+  name: "Qwen/Qwen2.5-Coder-0.5B"
+  type: "causal-lm"
+  reason: "Smallest viable code model, natively understands HTML/JS"
+  fallback: "Qwen/Qwen2.5-Coder-1.5B"
+
+training:
+  search_adapter:
+    lora_rank: 16
+    lora_alpha: 32
+    target_modules: ["q_proj", "v_proj", "k_proj", "o_proj"]
+    learning_rate: 2e-4
+    epochs: 3
+    batch_size: 4
+    quantization: "4bit"
+
+  content_adapter:
+    lora_rank: 32
+    lora_alpha: 64
+    target_modules: ["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj"]
+    learning_rate: 1e-4
+    epochs: 3
+    batch_size: 4
+    quantization: "4bit"
+
+  security:
+    full_finetune: true  # 0.5B is small enough
+    learning_rate: 5e-5
+    epochs: 5
+    batch_size: 8
+
+export:
+  quantization: "Q4_K_M"
+  format: "gguf"

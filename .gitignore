@@ -1,0 +1,26 @@
+# Model weights (too large for git)
+*.gguf
+*.bin
+*.safetensors
+*.pt
+*.pth
+checkpoints/
+dist/
+
+# Training artifacts
+wandb/
+runs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Data (downloaded, not committed)
+datasets/raw/
+datasets/downloaded/
+
+# Environment
+.env
