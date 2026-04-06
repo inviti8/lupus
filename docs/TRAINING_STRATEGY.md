@@ -25,10 +25,12 @@ The search model needs strong function-calling ability. Start from a **raw pretr
 | Candidate | Params | Why Consider | Bias Risk |
 |-----------|--------|-------------|-----------|
 | **TinyLlama-1.1B base** | 1.1B | Fast, well-understood architecture, large community | Low — minimal alignment in base |
-| **Pythia-1.4B** (EleutherAI) | 1.4B | Designed for research, documented training data (The Pile) | Lowest — explicitly transparent |
-| **Qwen2.5-1.5B base** | 1.5B | Strong multilingual, modern architecture | Medium — Alibaba alignment exists but base is cleaner |
+| **TinyAgent-1.1B** | 1.1B | Purpose-built for function calling at the edge (Berkeley AI Research). ToolRAG for dynamic tool selection. Exceeds GPT-4-Turbo on tool-calling tasks (80% vs 79%). | Low — trained on tool-calling data, not conversational alignment |
+| **Pythia-1.4B** (EleutherAI) | 1.4B | Fallback. Most transparent training data (The Pile). No corporate alignment. | Lowest — but needs function-calling training from scratch |
 
-**Recommendation:** Start with **Pythia-1.4B** for minimum bias. It's the most transparent about its training data and has no corporate alignment applied. If performance is insufficient, move to Qwen2.5-1.5B base.
+**Recommendation:** Start with **TinyAgent-1.1B**. It already understands tool calling — our LoRA adapters specialize it for Lepus-specific tools (search_subnet, fetch_page, extract_content) rather than teaching function calling from scratch. This is exactly the architecture TinyAgent was designed for. Fall back to Pythia only if TinyAgent carries unacceptable bias.
+
+**Reference:** [TinyAgent: Function Calling at the Edge](https://arxiv.org/abs/2409.00608) (EMNLP 2024, [GitHub](https://github.com/SqueezeAILab/TinyAgent))
 
 ### Security Model Base
 

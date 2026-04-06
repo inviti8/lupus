@@ -1,10 +1,11 @@
 # Lupus base model configuration
 
 search_model:
-  name: "EleutherAI/pythia-1.4b"
+  name: "squeeze-ai-lab/TinyAgent-1.1B"
   type: "causal-lm"
-  reason: "Most transparent training data (The Pile), minimal alignment bias"
-  fallback: "Qwen/Qwen2.5-1.5B"
+  reason: "Purpose-built for function calling at the edge. ToolRAG for dynamic tool selection. Exceeds GPT-4-Turbo on tool-calling (80% vs 79%)."
+  fallback: "EleutherAI/pythia-1.4b"
+  reference: "https://arxiv.org/abs/2409.00608"
 
 security_model:
   name: "Qwen/Qwen2.5-Coder-0.5B"
