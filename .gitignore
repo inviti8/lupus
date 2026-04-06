@@ -18,9 +18,17 @@ __pycache__/
 .venv/
 *.egg-info/
 
+# Rust build artifacts
+target/
+
 # Data (downloaded, not committed)
 datasets/raw/
 datasets/downloaded/
 
 # Environment
 .env
+
+# IDE / editor settings
+.claude/
+.vscode/
+.idea/

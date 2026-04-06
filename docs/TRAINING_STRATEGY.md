@@ -145,6 +145,71 @@ From the Bylaws and cooperative documentation:
 
 This is a small dataset (~100 documents) but important for cooperative-specific vocabulary.
 
+### 2.5 Hare & Wolf Folklore Compendium
+
+Lupus and Lepus are named from the wolf and hare constellations. The project draws on Anishinaabe tradition (the wolf as Nanabozho's companion and pathfinder). To give the model genuine cultural depth — not just a mascot — we train on a comprehensive compendium of hare and wolf folklore from world mythology.
+
+**Why this matters for a search engine:** When users search for topics the cooperative cares about — mythology, folklore, indigenous knowledge, storytelling — the model should have real understanding, not surface-level pattern matching. It also gives Lupus a distinct voice grounded in the traditions that inspired it.
+
+**Compendium structure:**
+
+| Tradition | Hare Stories | Wolf Stories | Sources |
+|-----------|-------------|-------------|---------|
+| **Anishinaabe / Ojibwe** | Nanabozho (Great Hare) as trickster-creator, culture hero | Ma'iingan (Wolf) as Nanabozho's companion, first to walk with humans, pathfinder | Basil Johnston, *Ojibway Heritage*; oral tradition collections |
+| **Pan-Algonquian** | Michabo / Great Hare as creator figure across Algonquian peoples | Wolf clan traditions, wolf as teacher and scout | William Jones, *Ojibwa Texts*; Radin collections |
+| **Japanese** | Moon rabbit (Tsuki no Usagi) — hare pounding mochi on the moon | Ōkami (great god/wolf) — Shinto wolf deity, protector of travelers | *Konjaku Monogatarishū*; Shinto shrine records |
+| **Chinese** | Jade Rabbit (Yùtù) — companion of Chang'e on the moon, medicine maker | Wolf in Mongolian/Turkic origin myths (Ashina, Ergenekon) | *Chu Ci*; Mongolian *Secret History* |
+| **Korean** | Moon rabbit (Dal-tokki) — rice cake maker on the moon | Founding myth of Dangun (bear and tiger, wolf variants) | Korean folk tale collections |
+| **Mesoamerican** | Rabbit in the Moon (Aztec — Tecciztecatl's mark) | — | *Codex Chimalpopoca* |
+| **West African / Yoruba** | Hare as trickster (Zomo, Kalulu, Sungura) across sub-Saharan traditions | Wolf-adjacent: hyena and jackal trickster tales | Harold Courlander, *A Treasury of African Folklore* |
+| **European / Greco-Roman** | Lepus constellation myth; the hare in Aesop; Easter hare traditions | Romulus & Remus (wolf as mother/guardian); Fenrir (Norse); werewolf traditions | Ovid, *Metamorphoses*; Snorri Sturluson, *Prose Edda* |
+| **Celtic / Irish** | Shape-shifting hare (Oisín, Cerridwen); hare as otherworld messenger | Wolves of Ossory (werewolves of Meath); Cormac mac Airt raised by wolves | Lady Gregory, *Gods and Fighting Men*; *Topographia Hibernica* |
+| **Russian / Slavic** | Zaichik (little hare) in folk tales; Hare as Ivan's guide | Grey Wolf (Серый Волк) — magical helper, carries the hero, loyal companion | Afanasyev, *Russian Fairy Tales*; Baba Yaga cycles |
+| **Indian / South Asian** | Jataka tales — the self-sacrificing hare (Śaśajātaka); Moon rabbit origin | Wolf in Panchatantra; Vrika in Vedic texts | *Jataka Tales*; *Panchatantra* |
+| **Native American (Plains)** | Rabbit/Jackrabbit trickster stories (Lakota, Blackfoot) | Wolf as spirit guide, pack loyalty, pathfinder; Wolf clan across nations | Erdoes & Ortiz, *American Indian Myths and Legends* |
+| **Arctic / Inuit** | Arctic hare in Inuit survival stories | Amarok (giant wolf) — solitary hunter, tests the worthy | Knud Rasmussen collections |
+| **Egyptian** | Wenet (hare goddess, Hermopolis); hare hieroglyph (wn — "to be") | Wepwawet (opener of ways) — wolf/jackal war deity, pathfinder of the dead | *Pyramid Texts*; Hermopolis temple records |
+| **Australian Aboriginal** | Hare-wallaby Dreaming stories | Dingo ancestor spirits (closest wolf analog) | Aboriginal oral tradition collections |
+| **Aesop & fable traditions** | The Tortoise and the Hare; The Hare and the Hound | The Boy Who Cried Wolf; Wolf in Sheep's Clothing; The Wolf and the Crane | Aesop, Perry Index; La Fontaine |
+
+**Key thematic threads across traditions:**
+
+- **The Hare as trickster-creator** — Nanabozho, Zomo, Lepus: clever, fast, reshapes the world through wit
+- **The Wolf as pathfinder-guardian** — Ma'iingan, Wepwawet, Grey Wolf: loyal, guides through danger, opens the way
+- **The Wolf-Hare bond** — Nanabozho and Ma'iingan walk together; the wolf scouts ahead for the hare
+- **Moon associations** — Jade Rabbit, Tsuki no Usagi, Śaśajātaka: the hare lives in the moon across cultures
+- **Constellation myths** — Lupus and Lepus in the southern sky, adjacent constellations
+
+**Dataset format:**
+
+```json
+{
+  "tradition": "Anishinaabe",
+  "title": "Nanabozho and Ma'iingan",
+  "type": "creation_myth",
+  "characters": ["Nanabozho (Great Hare)", "Ma'iingan (Wolf)"],
+  "summary": "The Creator sends Wolf to walk with Nanabozho and name all the beings...",
+  "full_text": "...",
+  "themes": ["companionship", "pathfinding", "naming", "creation"],
+  "source": "Basil Johnston, Ojibway Heritage",
+  "license": "public_domain_or_cc"
+}
+```
+
+**How to build this dataset:**
+
+| Source | Method | Volume | Cost |
+|--------|--------|--------|------|
+| Public domain texts | Gutenberg, Sacred Texts Archive, Internet Archive | 200-500 tales | $0 |
+| Academic collections | Folklore journals, anthropological records (pre-1928 = public domain) | 100-300 tales | $0 |
+| Synthetic summaries | Use Claude to summarize and structure known tales from referenced works | 500-1,000 structured entries | $20-50 |
+| Constellation mythology | Star lore databases, IAU records, ethnoastronomy papers | 50-100 entries | $0 |
+| Cross-reference synthesis | Generate thematic connections across traditions | 100-200 synthesis entries | $10-20 |
+
+**Target:** 500-1,000 structured folklore entries covering all traditions above, plus 100-200 cross-tradition thematic syntheses.
+
+**Important:** Prioritize Indigenous sources that are already public and shared by their communities. Do not scrape sacred or restricted knowledge. Use published collections by Indigenous authors where possible. When in doubt about a story's status, omit it.
+
 ### Estimated Cost: Phase 2
 
 | Task | Method | Cost |
@@ -152,8 +217,9 @@ This is a small dataset (~100 documents) but important for cooperative-specific 
 | Synthetic data generation | API calls to Claude/GPT-4 for 10K examples | $50-200 |
 | Phishing data collection | Free databases, scripted download | $0 |
 | Safe page crawling | Scripted from Tranco list | $0 |
+| Folklore compendium | Public domain texts + synthetic structuring | $30-70 |
 | Manual curation | Cooperative member time | Volunteer hours |
-| **Total** | | **$50-200** |
+| **Total** | | **$80-270** |
 
 ---
 
@@ -355,20 +421,21 @@ python export/publish.py \
 | Phase | Cost | Time |
 |-------|------|------|
 | 1. Base model selection | $0 | 1 day (evaluation) |
-| 2. Dataset creation | $50-200 | 2-4 weeks |
+| 2. Dataset creation | $80-270 | 2-4 weeks |
 | 3. Training infrastructure | $60-90 | Included in phase 4 |
 | 4. Training execution | Included above | 1-2 weeks (iterating) |
 | 5. Evaluation | $0 (uses training GPU time) | 1 week |
 | 6. Export and distribution | $0 | 1 day |
-| **Total** | **$110-290** | **4-8 weeks** |
+| **Total** | **$140-360** | **4-8 weeks** |
 
 ### Cost Breakdown
 
 ```
 Dataset generation (synthetic via API):  $50-200
+Folklore compendium (structuring):       $30-70
 GPU compute (30-45 hours A100):          $60-90
                                          --------
-Total:                                   $110-290
+Total:                                   $140-360
 ```
 
 This is remarkably cheap for a custom AI model. The key insight: at 0.5-1.5B parameters with LoRA, training is measured in minutes per run, not days. The cost is dominated by iteration (trying different hyperparameters, adjusting datasets) rather than raw compute.
@@ -377,7 +444,7 @@ This is remarkably cheap for a custom AI model. The key insight: at 0.5-1.5B par
 
 | Approach | Cost |
 |----------|------|
-| Fine-tune Lupus (0.5B + 1.4B) | $110-290 |
+| Fine-tune Lupus (0.5B + 1.4B) | $140-360 |
 | Fine-tune a 7B model | $1,500-5,000 |
 | Fine-tune a 70B model | $50,000-100,000 |
 | Train a model from scratch | $1M+ |
@@ -389,7 +456,7 @@ This is remarkably cheap for a custom AI model. The key insight: at 0.5-1.5B par
 | Week | Activity |
 |------|----------|
 | 1 | Download and evaluate base models. Set up training scripts. |
-| 2-3 | Create datasets: synthetic generation, phishing data collection, page corpus. |
+| 2-3 | Create datasets: synthetic generation, phishing data collection, page corpus, folklore compendium. |
 | 4 | First training runs. Evaluate. Identify data quality issues. |
 | 5 | Iterate: fix dataset problems, retrain, evaluate. |
 | 6 | Hyperparameter search for best LoRA configuration. |

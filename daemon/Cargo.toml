@@ -10,18 +10,34 @@ name = "lupus"
 path = "src/main.rs"
 
 [dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
 # WebSocket server for IPC with Lepus browser
-# tokio = { version = "1", features = ["full"] }
-# tokio-tungstenite = "0.24"
-# serde = { version = "1", features = ["derive"] }
-# serde_json = "1"
+tokio-tungstenite = "0.24"
+futures-util = "0.3"
 
-# ML inference via llama.cpp bindings
-# llama-cpp-rs = "0.3"
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
 
-# IPFS client
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+thiserror = "2"
+
+# Platform directories (~/.config, ~/.local/share, %APPDATA%, etc.)
+dirs = "5"
+
+# ML inference via llama.cpp bindings (requires cmake + C compiler)
+# Uncomment when ready to integrate model inference:
+# llama-cpp-2 = "0.1"
+
+# IPFS client via Iroh (pure Rust, lightweight)
+# Uncomment when ready to integrate IPFS:
 # iroh = "0.28"
-
-# Dependencies commented until project scaffolding is complete
 
 [workspace]
