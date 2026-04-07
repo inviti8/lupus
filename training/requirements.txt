@@ -1,0 +1,35 @@
+# Lupus training dependencies
+#
+# Install on the RunPod GPU instance with:
+#     pip install -r training/requirements.txt
+#
+# These pin only major versions; pip will resolve compatible patches.
+# Tested as of early 2026 on Python 3.10+ and CUDA 12.
+
+# Core ML
+torch>=2.1
+transformers>=4.40
+accelerate>=0.27
+datasets>=2.18
+
+# Fine-tuning helpers
+peft>=0.10
+trl>=0.8
+bitsandbytes>=0.43  # optional: 4/8-bit quantization for larger models
+
+# Evaluation
+scikit-learn>=1.4
+numpy>=1.24
+
+# Storage / infrastructure
+boto3>=1.34
+python-dotenv>=1.0
+
+# Experiment tracking
+wandb>=0.16
+
+# Hugging Face Hub
+huggingface_hub>=0.22
+
+# Schema validation (matches the dataset)
+pydantic>=2.0
