@@ -398,15 +398,26 @@ def main() -> int:
         callbacks.append(make_s3_callback(S3_CHECKPOINT_PREFIX)())
 
     trainer_cls = make_trainer_class(class_weights)
+
+    # In transformers >= 4.46, the Trainer's tokenizer kwarg was renamed
+    # to processing_class. Pick whichever the installed version accepts so
+    # this code works across versions.
+    import inspect
+    trainer_init_params = inspect.signature(trainer_cls.__init__).parameters
+    if "processing_class" in trainer_init_params:
+        tokenizer_kwarg = {"processing_class": tokenizer}
+    else:
+        tokenizer_kwarg = {"tokenizer": tokenizer}
+
     trainer = trainer_cls(
         model=model,
         args=training_args,
         train_dataset=train_ds,
         eval_dataset=eval_ds,
-        tokenizer=tokenizer,
         data_collator=data_collator,
         compute_metrics=compute_metrics,
         callbacks=callbacks,
+        **tokenizer_kwarg,
     )
 
     # ------------------------------------------------------------------
