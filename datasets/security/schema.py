@@ -33,6 +33,7 @@ class Source(str, Enum):
     """The data source the example came from."""
     PHISHTANK = "phishtank"
     OPENPHISH = "openphish"
+    PHISHING_DATABASE = "phishing_database"
     URLHAUS = "urlhaus"
     TRANCO = "tranco"
     MANUAL = "manual"

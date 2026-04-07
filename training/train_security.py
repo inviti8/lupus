@@ -64,10 +64,19 @@ LOG = logging.getLogger("train_security")
 
 BASE_MODEL = "Qwen/Qwen2.5-Coder-0.5B"
 
-# Label mapping: classification head order
-LABEL_LIST = ["safe", "phishing", "malware", "suspicious"]
+# Label mapping: classification head order.
+# v0.2: dropped the unused 'suspicious' class — we have no training data
+# for it and it was hurting macro F1. We can re-add it later when we
+# have actual examples.
+LABEL_LIST = ["safe", "phishing", "malware"]
 LABEL_TO_ID = {name: idx for idx, name in enumerate(LABEL_LIST)}
 ID_TO_LABEL = {idx: name for idx, name in enumerate(LABEL_LIST)}
+
+# Maximum class weight in the loss function. v0.1 used uncapped inverse-
+# frequency weights which gave phishing a 60x weight (because we only had
+# 240 phishing examples). That caused gradient explosions. With balanced
+# data this is much less critical, but we keep a sane cap as a safety net.
+MAX_CLASS_WEIGHT = 10.0
 
 # S3 paths
 S3_DATASET_PREFIX = "datasets/security"
@@ -94,6 +103,7 @@ class SecurityJsonlDataset(Dataset):
 
     def __init__(self, jsonl_path: Path, tokenizer, max_length: int = 128):
         self.examples: list[dict] = []
+        skipped = 0
         with jsonl_path.open("r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
@@ -103,6 +113,11 @@ class SecurityJsonlDataset(Dataset):
                     rec = json.loads(line)
                 except json.JSONDecodeError:
                     continue
+                # Skip examples with labels not in our current label set
+                # (e.g. 'suspicious' which we dropped in v0.2)
+                if rec["label"] not in LABEL_TO_ID:
+                    skipped += 1
+                    continue
                 self.examples.append({
                     "url": rec["url"],
                     "domain": rec.get("domain", ""),
@@ -110,6 +125,8 @@ class SecurityJsonlDataset(Dataset):
                 })
         self.tokenizer = tokenizer
         self.max_length = max_length
+        if skipped > 0:
+            LOG.info("Skipped %d examples with out-of-vocab labels", skipped)
         LOG.info("Loaded %d examples from %s", len(self.examples), jsonl_path)
 
     def __len__(self) -> int:
@@ -257,8 +274,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--batch-size", type=int, default=32)
-    parser.add_argument("--learning-rate", type=float, default=5e-5)
-    parser.add_argument("--warmup-ratio", type=float, default=0.05)
+    parser.add_argument("--learning-rate", type=float, default=2e-5)
+    parser.add_argument("--warmup-ratio", type=float, default=0.1)
+    parser.add_argument("--max-grad-norm", type=float, default=1.0,
+                        help="Gradient clipping threshold (prevents explosions)")
     parser.add_argument("--max-length", type=int, default=128,
                         help="Tokenizer max length (URLs are short)")
     parser.add_argument("--save-steps", type=int, default=200)
@@ -346,6 +365,10 @@ def main() -> int:
     # ------------------------------------------------------------------
     # Class weights for the loss
     # ------------------------------------------------------------------
+    # Inverse-frequency weights, normalized so mean = 1, then capped at
+    # MAX_CLASS_WEIGHT to prevent gradient explosions when a small class
+    # has very few examples. With balanced training data, all weights
+    # should be close to 1.0 anyway.
     n = len(train_ds)
     weights = []
     for i in range(len(LABEL_LIST)):
@@ -353,8 +376,8 @@ def main() -> int:
         if c == 0:
             weights.append(0.0)
         else:
-            # Inverse frequency, normalized so that mean weight = 1
-            weights.append(n / (len(LABEL_LIST) * c))
+            w = n / (len(LABEL_LIST) * c)
+            weights.append(min(w, MAX_CLASS_WEIGHT))
     class_weights = torch.tensor(weights, dtype=torch.float32)
     LOG.info("Loss class weights: %s",
              {LABEL_LIST[i]: round(w, 2) for i, w in enumerate(weights)})
@@ -375,6 +398,7 @@ def main() -> int:
         per_device_eval_batch_size=args.batch_size * 2,
         learning_rate=args.learning_rate,
         warmup_ratio=args.warmup_ratio,
+        max_grad_norm=args.max_grad_norm,  # Gradient clipping prevents explosions
         logging_steps=args.logging_steps,
         eval_strategy="steps",
         eval_steps=args.eval_steps,
@@ -385,7 +409,7 @@ def main() -> int:
         metric_for_best_model="f1_macro",
         greater_is_better=True,
         report_to=report_to,
-        run_name="lupus-security-stage1",
+        run_name="lupus-security-stage2",
         seed=args.seed,
         bf16=torch.cuda.is_available(),
         dataloader_num_workers=2,

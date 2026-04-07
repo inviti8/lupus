@@ -165,12 +165,54 @@ def load_openphish(csv_path: Path) -> Iterable[SecurityExample]:
                 html_content=None,
                 html_truncated=False,
                 label=Label.PHISHING,
-                confidence=90,  # OpenPhish doesn't expose verification metadata
+                confidence=90,
                 indicators=[],
                 target_brand=None,
                 threat_type=None,
                 fetched_at=fetched_at,
-                verified=True,  # OpenPhish only publishes confirmed phishing
+                verified=True,
+            )
+
+
+def load_phishing_database(csv_path: Path) -> Iterable[SecurityExample]:
+    """Yield SecurityExamples from a Phishing.Database CSV.
+
+    The Phishing-Database/Phishing.Database GitHub repo aggregates verified
+    phishing URLs from many sources (OpenPhish, URLhaus, AbuseIPDB, Cisco
+    Umbrella, etc.) and validates them with the PyFunceble testing tool.
+    The 'active' list contains hundreds of thousands of currently-online
+    phishing URLs. CSV has a single 'url' column.
+    """
+    if not csv_path.exists():
+        LOG.info("Phishing.Database source not found at %s (skipping)", csv_path)
+        return
+
+    fetched_at = now_iso()
+    with csv_path.open("r", encoding="utf-8", errors="replace") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            url = (row.get("url") or "").strip()
+            if not url:
+                continue
+            domain = extract_domain(url)
+            if not domain:
+                continue
+
+            yield SecurityExample(
+                id=stable_id("phishingdb", url),
+                source=Source.PHISHING_DATABASE,
+                source_id=None,
+                url=url,
+                domain=domain,
+                html_content=None,
+                html_truncated=False,
+                label=Label.PHISHING,
+                confidence=92,  # Aggregated from multiple verified sources
+                indicators=[],
+                target_brand=None,
+                threat_type=None,
+                fetched_at=fetched_at,
+                verified=True,  # PyFunceble-validated active URLs
             )
 
 
@@ -431,6 +473,7 @@ def main() -> int:
     examples: list[SecurityExample] = []
     examples.extend(load_phishtank(RAW_DIR / "phishtank.csv"))
     examples.extend(load_openphish(RAW_DIR / "openphish.csv"))
+    examples.extend(load_phishing_database(RAW_DIR / "phishing_database.csv"))
     examples.extend(load_urlhaus(RAW_DIR / "urlhaus.csv.zip"))
     examples.extend(load_urlhaus(RAW_DIR / "urlhaus.csv"))
     examples.extend(load_tranco(RAW_DIR / "tranco.csv", html_index, args.html_max_chars))
