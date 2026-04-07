@@ -1,0 +1,33 @@
+{
+  "id": "aesop-wolf-and-crane",
+  "tradition": "Aesop / European Fable",
+  "title": "The Wolf and the Crane",
+  "type": "fable",
+  "characters": [
+    {
+      "name": "The Wolf",
+      "role": "Choking on a bone, who promises reward for help — and breaks his promise"
+    },
+    {
+      "name": "The Crane",
+      "role": "The long-necked bird who removes the bone from the wolf's throat and asks for the promised payment"
+    }
+  ],
+  "summary": "A wolf with a bone stuck in his throat persuades a crane to remove it, promising a generous reward. The crane reaches her long beak deep into the wolf's mouth and pulls the bone out. When she asks for her reward, the wolf says: 'Your reward is that you put your head in a wolf's mouth and brought it out again.'",
+  "full_text": "A wolf was eating his prey too greedily and a sharp bone caught in his throat. He could neither swallow it nor cough it out. He gasped and choked and could not breathe.\n\nIn his desperation he ran from animal to animal, begging for help. 'I will pay you handsomely,' he croaked, 'if you can only get this bone out of my throat. I will give you whatever reward you ask.'\n\nNo animal trusted him. They all knew what a wolf was. They all turned him away.\n\nAt last he came to a crane — a tall bird with a very long neck and a very long beak. 'Crane,' said the wolf, 'you have the long neck and beak that none of the others have. You can reach down into my throat and take the bone out. Save me, and I will pay you any reward you ask.'\n\nThe crane was reluctant — she did not trust wolves either — but she also could not bear to see a creature suffering. She agreed. She told the wolf to lie on his back and open his mouth as wide as he could. Then, very carefully, she put her long beak down into the wolf's throat and, after some searching, found the bone and pulled it out.\n\nThe wolf rose, breathed deeply, and shook himself in relief. The crane stood waiting. 'Now,' she said, 'I will take my reward.'\n\nThe wolf laughed. 'Reward?' he said. 'Your reward is great. You put your head into a wolf's mouth, and I let you take it out again. There are not many cranes who can say as much. Be content with that.'\n\nAnd the wolf walked away.",
+  "themes": [
+    "ingratitude",
+    "the broken promise",
+    "the wolf as untrustworthy",
+    "service to the powerful",
+    "the cost of helping the wicked"
+  ],
+  "moral": "Expect no gratitude from the wicked. To save them is reward enough — they will offer no other.",
+  "source": {
+    "citation": "Aesop, traditional. Perry Index #156. Also told as a Buddhist Jataka (the Javasakuna Jataka, #308) in which the bird is a woodpecker — suggesting very ancient cross-cultural transmission. Public domain. Standard English: Townsend, Aesop's Fables (1867).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/The_Wolf_and_the_Crane"
+  },
+  "cultural_notes": "This fable exists in nearly identical form in both the Aesopic Greek tradition and the Buddhist Jataka tradition (where the bird is a woodpecker rather than a crane), suggesting an extremely ancient origin somewhere along the trade routes between the eastern Mediterranean and India. The lesson — that helping the powerful and wicked is its own punishment — is one of the more cynical Aesopic fables but is widely told. The wolf here is the classic European fable wolf: powerful, hungry, and untrustworthy.",
+  "license": "public_domain"
+}

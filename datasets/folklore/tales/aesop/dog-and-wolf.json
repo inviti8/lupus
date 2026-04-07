@@ -1,0 +1,34 @@
+{
+  "id": "aesop-dog-and-wolf",
+  "tradition": "Aesop / European Fable",
+  "title": "The Dog and the Wolf",
+  "type": "fable",
+  "characters": [
+    {
+      "name": "The Wolf",
+      "role": "Thin, hungry, free, and ultimately the chooser of freedom over comfort"
+    },
+    {
+      "name": "The Dog",
+      "role": "Sleek, well-fed, and unaware of the meaning of the mark on his neck"
+    }
+  ],
+  "summary": "A starving wolf meets a sleek well-fed dog who invites him to come live with humans, promising regular meals and shelter. The wolf is tempted — until he sees the worn mark of a collar on the dog's neck. He turns and walks back into the forest, preferring hunger and freedom to comfort and chains.",
+  "full_text": "A wolf was wandering the forest in the depth of winter. He had not eaten in many days. His ribs showed beneath his coat, and his step was slow with hunger.\n\nIn the road outside a farmer's house he met a dog — a great strong dog with a sleek coat and a bright eye and a body so well-fed that the wolf marveled at him. The wolf greeted him and asked: 'Cousin, how is it that you are so well? I am starving in the forest, and you look as if you have never wanted for a meal.'\n\nThe dog replied: 'It is easy. I live with humans. I guard their house at night and I am their companion by day, and they give me food. Plenty of food. Twice a day. I sleep by their fire when it is cold. I am never hungry. Come with me. The humans will surely take you in too. You will never starve again.'\n\nThe wolf was tempted. He had not been warm in months. He had not been full in longer. The thought of food and fire and companionship was almost more than he could bear. He fell in beside the dog and they walked together toward the farm.\n\nAs they walked, the wolf glanced at the dog's neck. He saw, where the fur was worn, a band of bare skin where something heavy had pressed for a long time. He stopped.\n\n'What is that mark on your neck?' he asked.\n\n'Oh, that is nothing,' said the dog. 'The humans tie me with a chain at night, by my collar. To make sure I do not wander. The chain is not heavy and I am quite used to it.'\n\nThe wolf looked at the dog for a long moment. Then he turned and began to walk back the way he had come.\n\n'Where are you going?' the dog cried.\n\n'Goodbye, cousin,' the wolf called over his shoulder. 'Enjoy your meals. I would rather starve free than feast in chains.'\n\nAnd the wolf walked back into the forest, hungry, but not turning his head, and he did not look at the farmer's house again.",
+  "themes": [
+    "freedom",
+    "the cost of comfort",
+    "the chain on the comfortable",
+    "the dignity of the wolf",
+    "freedom over security",
+    "the wild over the tame"
+  ],
+  "moral": "Better to be lean and free than fat and chained.",
+  "source": {
+    "citation": "Aesop, traditional. Perry Index #346. Public domain. La Fontaine adapted it as 'Le Loup et le Chien' (1668), one of his most famous fables. Standard English: Townsend, Aesop's Fables (1867).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/The_Dog_and_the_Wolf"
+  },
+  "cultural_notes": "This is one of the philosophically deepest of Aesop's fables, and one of the few in which the wolf is the hero rather than the villain. It is a meditation on the cost of comfort and the dignity of freedom, and it has been read for two thousand years as a defense of the unconquered spirit. La Fontaine's French version is among the most famous lyric poems in French literature. Note that this fable preserves a positive view of the wolf — wild, unconquered, dignified — that comes much closer to the pathfinder traditions of other cultures than the predator-wolves of the Boy Who Cried Wolf or the Wolf and the Lamb. Even within the European fable tradition, the wolf is not always the villain. When freedom is the question, the wolf is the answer.",
+  "license": "public_domain"
+}

@@ -1,0 +1,34 @@
+{
+  "id": "aesop-hares-and-frogs",
+  "tradition": "Aesop / European Fable",
+  "title": "The Hares and the Frogs",
+  "type": "fable",
+  "characters": [
+    {
+      "name": "The Hares",
+      "role": "Despairing creatures who decide to drown themselves — until they discover that other beings are more frightened than they are"
+    },
+    {
+      "name": "The Frogs",
+      "role": "The creatures whose fear teaches the hares that their own situation is not as bad as they thought"
+    }
+  ],
+  "summary": "A flock of hares despair of their lot — frightened of every shadow, hunted by everything — and decide to drown themselves in a lake. As they approach the water, the frogs sitting on the bank leap into it in fear. The hares realize there are creatures even more timid than themselves, and they take heart and decide to go on living.",
+  "full_text": "There was a time when the hares of a certain valley met together to discuss their misfortunes. 'We are the most pitiful of all creatures,' said one. 'Every shadow frightens us. Every footstep sends us bolting. The fox hunts us. The wolf hunts us. The owl hunts us. The hawk hunts us. We have no peace. We are afraid every moment of every day. There is no joy in such a life.'\n\nThe other hares agreed. They had been living in fear since the day they were born, and they could see no end to it. 'Let us put an end to this,' said one of the older hares. 'Let us all together go to the lake and drown ourselves. Better to die quickly than to die a thousand small deaths every day.'\n\nThe hares agreed, and the whole flock set out toward the lake — not in a panic but in a slow, mournful procession, accepting their decision.\n\nThey came to the bank of the lake. The water was still and dark. The hares gathered themselves and prepared to leap in.\n\nBut the moment their feet touched the wet edge of the bank, a great splashing erupted on the lake. Frogs — dozens of them, hundreds of them — that had been sitting on lily pads and stones along the shore, leapt all at once into the water in terror at the approach of the hares. The whole surface of the lake was suddenly thrashing with frogs diving for cover.\n\nThe hares stopped, astonished. One of the older ones laughed — actually laughed, for the first time in his life.\n\n'Brothers,' he said, 'look at this. The frogs are afraid of us. There are creatures in the world more timid than the hare. We are not the most pitiful after all. There are beings whose fear is greater than our own. If they can find a way to live, then so can we.'\n\nThe hares turned around and went home. They were still afraid of foxes and wolves and owls and hawks. But they were no longer despairing. There was at least one kind of creature in the world that was afraid of them — and that was something. They went on living.",
+  "themes": [
+    "despair and recovery",
+    "perspective",
+    "comparing fears",
+    "the courage of the small",
+    "finding heart through comparison",
+    "no creature is the most pitiful"
+  ],
+  "moral": "There is always someone worse off than you are. Comparison can be cruel, but sometimes it can be the gift that lets you go on living.",
+  "source": {
+    "citation": "Aesop, traditional. Perry Index #138. Public domain. Standard English: Townsend, Aesop's Fables (1867); Vernon Jones, Aesop's Fables (1912).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/The_Frogs_and_the_Hares"
+  },
+  "cultural_notes": "One of the more psychologically interesting Aesopic fables — a meditation on despair, perspective, and the strange comfort of knowing that other beings are more frightened than oneself. The hares in this fable are not the trickster-hares of other traditions; they are timid prey animals who live in fear, and the fable takes their fear seriously rather than mocking it. The conclusion is gentle: there is no shame in being afraid, but there is also no need to despair. This is one of the few Aesopic fables that addresses the inner life of the animals rather than just their actions, and it remains widely told as a fable about the value of perspective.",
+  "license": "public_domain"
+}

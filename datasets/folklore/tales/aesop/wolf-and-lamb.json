@@ -1,0 +1,34 @@
+{
+  "id": "aesop-wolf-and-lamb",
+  "tradition": "Aesop / European Fable",
+  "title": "The Wolf and the Lamb",
+  "type": "fable",
+  "characters": [
+    {
+      "name": "The Wolf",
+      "role": "The powerful predator who invents pretexts to justify what he intends to do anyway"
+    },
+    {
+      "name": "The Lamb",
+      "role": "The innocent who answers each accusation truthfully but cannot escape the wolf's purpose"
+    }
+  ],
+  "summary": "A wolf finds a lamb drinking at a stream and accuses it of muddying the water. The lamb points out that he is downstream and could not be muddying the water. The wolf invents another accusation, then another, until he finally drops the pretense entirely and devours the lamb.",
+  "full_text": "A wolf came to a stream to drink, and saw a lamb at the same stream a little further down. The wolf was hungry, but he wished to find some pretense to justify what he intended to do.\n\n'How dare you,' said the wolf in a loud voice, 'muddy the water that I am drinking?'\n\nThe lamb looked up in fear. 'But sir,' he answered politely, 'I cannot be muddying your water. I am downstream from you. The water flows from you to me, not from me to you.'\n\nThe wolf was angry to be caught in a foolish accusation. He thought for a moment. 'Perhaps that is true,' he said. 'But last year you insulted me. I have not forgotten it.'\n\n'Last year I had not been born, sir,' said the lamb.\n\nThe wolf grew angrier. 'Then it must have been your father.'\n\n'I do not know my father, sir,' said the lamb. 'I only know my mother.'\n\nThe wolf seemed to think a moment longer. Then he said: 'It does not matter. The truth is, I want to eat you. And I will eat you. The reasons I have given are unimportant. I should not have bothered with them at all.'\n\nAnd he sprang on the lamb and devoured him.\n\nThe lesson, said the old people who told this fable, is that the powerful do not need true reasons to harm the weak. They invent reasons because the appearance of justice pleases them. But strip away the reasons, and what remains is the appetite. The lamb's only defense was the truth, and the truth is no defense at all against an appetite that has decided what it wants.",
+  "themes": [
+    "power and weakness",
+    "the pretext of justice",
+    "the futility of reason against appetite",
+    "the wolf as tyrant",
+    "innocence destroyed",
+    "the powerful invent reasons"
+  ],
+  "moral": "The tyrant always finds a pretext for his tyranny. Reason is no defense against an appetite that has decided.",
+  "source": {
+    "citation": "Aesop, traditional. Perry Index #155. Public domain. Standard English: Townsend, Aesop's Fables (1867); Vernon Jones, Aesop's Fables (1912).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/The_Wolf_and_the_Lamb"
+  },
+  "cultural_notes": "This is one of the most politically pointed of Aesop's fables and has been read for two thousand years as a commentary on tyranny — the way the powerful invent justifications for what they intended to do anyway. La Fontaine's French version (Le Loup et l'Agneau, 1668) is one of his most famous fables. Phaedrus (1st century CE Latin) explicitly framed the fable as a commentary on those 'who oppress the innocent under invented pretexts.' The wolf in this fable is not a mythological pathfinder — he is a stand-in for the tyrant, and the fable is one of the foundational European meditations on the asymmetry of power.",
+  "license": "public_domain"
+}

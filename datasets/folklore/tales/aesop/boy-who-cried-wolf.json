@@ -1,0 +1,42 @@
+{
+  "id": "aesop-boy-who-cried-wolf",
+  "tradition": "Aesop / European Fable",
+  "title": "The Boy Who Cried Wolf",
+  "type": "fable",
+  "characters": [
+    {
+      "name": "The Shepherd Boy",
+      "role": "A young shepherd who entertains himself by crying false alarms"
+    },
+    {
+      "name": "The Villagers",
+      "role": "Who come running to help when they hear the alarm — and who learn not to come"
+    },
+    {
+      "name": "The Wolf",
+      "role": "The real predator who finally comes — and finds no one to stop him"
+    },
+    {
+      "name": "The Sheep",
+      "role": "The flock the boy was meant to guard"
+    }
+  ],
+  "summary": "A shepherd boy entertains himself by crying 'Wolf!' to bring the villagers running for nothing. After he has done it twice for amusement, the villagers no longer believe him. When a real wolf comes, the boy cries out and no one responds — and the flock is destroyed.",
+  "full_text": "There was once a shepherd boy who watched a flock of sheep on a hillside near his village. The work was lonely, and the boy became bored.\n\nTo entertain himself, he ran toward the village shouting at the top of his voice: 'Wolf! Wolf! A wolf is among the sheep!' The villagers dropped their work and came running with sticks and clubs to help him. When they reached the hillside, they found the boy laughing and the sheep grazing peacefully. There was no wolf. The boy thought it was very funny.\n\nA few days later, the boy did the same thing. Again the villagers came running. Again there was no wolf. Again the boy laughed. The villagers were angry, but they returned to their work.\n\nThen one afternoon, as the sun was beginning to set, a wolf truly did come out of the forest and fall upon the sheep. The boy, terrified, ran toward the village shouting: 'Wolf! Wolf! Help me, please!' The villagers heard him. They looked at each other. Some shrugged. Others said, 'He is lying again.' No one came.\n\nThe wolf scattered the flock and killed many of the sheep. The boy returned at evening to the village in tears. The elders met him at the gate and said: 'Nobody believes a liar, even when he tells the truth.'\n\nThe sheep were lost. The boy had no flock to tend. And the village remembered the lesson, and told it to their children, and their children's children, for a long time after.",
+  "themes": [
+    "honesty",
+    "trust",
+    "the cost of lying",
+    "the wolf as predator",
+    "consequences",
+    "the destruction of credibility"
+  ],
+  "moral": "Liars are not believed even when they speak the truth.",
+  "source": {
+    "citation": "Aesop, traditional. Perry Index #210. Earliest written collections: Phaedrus (Latin, 1st century CE) and Babrius (Greek, 2nd century CE). Standard public-domain English: George Fyler Townsend, Aesop's Fables (1867); V.S. Vernon Jones, Aesop's Fables (1912, with Arthur Rackham illustrations).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/The_Boy_Who_Cried_Wolf"
+  },
+  "cultural_notes": "This is perhaps the most universally known Aesopic fable in the Western world. It is the source of the English idiom 'crying wolf' for false alarms, and similar expressions exist in nearly every European language. The fable encodes a deep truth about the social currency of trust: dishonesty does not just harm the moment, it erodes the speaker's credibility for all moments after. Note that the wolf in this fable is purely a predator, not a helper or pathfinder — this is the European fable wolf, the source of the modern 'Big Bad Wolf' image, and the cultural counterweight to the pathfinder-wolf traditions of Anishinaabe, Japanese, Egyptian, and Russian folklore.",
+  "license": "public_domain"
+}

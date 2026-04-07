@@ -1,0 +1,38 @@
+{
+  "id": "aesop-tortoise-and-hare",
+  "tradition": "Aesop / European Fable",
+  "title": "The Tortoise and the Hare",
+  "type": "fable",
+  "characters": [
+    {
+      "name": "The Hare",
+      "role": "Swift, vain, overconfident, and the loser of the race despite his speed"
+    },
+    {
+      "name": "The Tortoise",
+      "role": "Slow, steady, patient, and the winner of the race despite his slowness"
+    },
+    {
+      "name": "The Other Animals",
+      "role": "Witnesses to the race who learn the lesson"
+    }
+  ],
+  "summary": "The hare mocks the tortoise's slowness. The tortoise challenges him to a race. The hare, confident he will win easily, takes a nap halfway through. The tortoise, plodding steadily, passes the sleeping hare and reaches the finish line first.",
+  "full_text": "There was once a hare who was always boasting of his speed. 'I am the fastest of all the creatures,' he would say. 'Nothing in the forest can outrun me. Watch how I leap! Watch how I dart! Show me anyone who can keep up.'\n\nThe other animals had grown tired of his boasting, but none of them could match his speed, so none of them could silence him.\n\nOne day a tortoise — slow, plodding, his shell heavy on his back — stopped in the path beside the hare and said quietly: 'I will race you.'\n\nThe hare laughed until he could not breathe. 'You? Race me? With those little legs and that house on your back? You couldn't beat me if I went backwards! Yes, yes, of course I will race you. Choose the course. Name the prize. I shall be at the finish line eating my dinner before you have even started.'\n\nThe tortoise calmly proposed a course — across the meadow, over the small hill, around the great oak, and back again to the starting place. The other animals gathered to watch. A fox was chosen as the judge.\n\nThe fox dropped his paw and the race began. The hare burst from the starting line in a cloud of dust and was over the hill almost before the tortoise had taken three steps. He was so far ahead that he could not even see the tortoise behind him.\n\nThe hare slowed. 'I am so far ahead that I can rest a moment and still win easily.' He sat down beneath a tree. The sun was warm. He thought he would close his eyes for just a moment. He fell deeply asleep.\n\nThe tortoise plodded. He did not stop. He did not look up. He did not waste energy on pride or rest. Step by step, he crossed the meadow. Step by step, he climbed the small hill. Step by step, he rounded the great oak. As he came back across the meadow toward the finish line, he passed the sleeping hare beneath the tree and did not pause.\n\nThe hare woke when he heard the cheering of the other animals. He sprang to his feet and ran with all his speed. But it was too late. The tortoise was already at the finish line, and the fox had named him the winner.\n\nThe hare hung his head. The tortoise looked at him and said: 'Slow and steady wins the race.'",
+  "themes": [
+    "perseverance",
+    "the cost of pride",
+    "slow and steady",
+    "the patient winner",
+    "speed without discipline",
+    "the boastful loser"
+  ],
+  "moral": "Slow and steady wins the race. Speed without discipline loses to patience without pride.",
+  "source": {
+    "citation": "Aesop, traditional. Perry Index #226. Public domain. Standard English: Townsend, Aesop's Fables (1867); Vernon Jones, Aesop's Fables (1912 with Rackham illustrations); Joseph Jacobs, The Fables of Aesop (1894).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/The_Tortoise_and_the_Hare"
+  },
+  "cultural_notes": "Universally the most famous hare fable in the Western world. The phrase 'slow and steady wins the race' has entered English and many other European languages as a proverb. The hare in this fable is a very different figure from the trickster-hares of Anishinaabe (Nanabozho), Japanese (Inaba no Shirousagi), and other traditions: the Aesopic hare is the overconfident loser, undone by his own vanity. This is the only fable in which the hare's speed becomes a weakness rather than a virtue, and it's one of the most-cited moral examples in Western teaching.",
+  "license": "public_domain"
+}

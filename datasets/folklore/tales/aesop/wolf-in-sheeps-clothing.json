@@ -1,0 +1,38 @@
+{
+  "id": "aesop-wolf-in-sheeps-clothing",
+  "tradition": "Aesop / European Fable",
+  "title": "The Wolf in Sheep's Clothing",
+  "type": "fable",
+  "characters": [
+    {
+      "name": "The Wolf",
+      "role": "The deceiver who hides himself among the sheep by wearing a sheepskin"
+    },
+    {
+      "name": "The Shepherd",
+      "role": "Who unknowingly lets the disguised wolf into the fold — and who, in some versions, is the unwitting cause of the wolf's death"
+    },
+    {
+      "name": "The Sheep",
+      "role": "Innocent prey gathered into the fold"
+    }
+  ],
+  "summary": "A wolf finds a sheepskin and wraps himself in it to infiltrate a flock unnoticed. He succeeds in walking among the sheep — but in some tellings, the shepherd, planning to slaughter a sheep for dinner that night, picks the disguised wolf by mistake.",
+  "full_text": "A wolf once thought of a clever way to capture sheep. He found the skin of a sheep that had been butchered and abandoned in a field. He pulled the skin over his own back and walked carefully into the meadow where the flock was grazing.\n\nThe sheep took no notice of him. They went on with their grazing. The shepherd dog gave the wolf only a passing glance and saw nothing strange. Even the lamb whose mother had been butchered for the skin came up to him, mistaking him in the failing light for one of her own kind. The wolf was triumphant. From that day on, he could come and go among the sheep as he pleased, taking one when he wanted, and no one would suspect him.\n\nBut that very evening, the shepherd decided he wanted mutton for his supper. He came into the fold with his knife and his lantern. He looked over the flock to choose. His eye fell on what looked like a fat, fine sheep — broader at the shoulder than the others, healthier-coated, plumper. He took hold of it. He drew the knife. Only when the wolf was already dead did the shepherd see, in the lantern-light, the strange shape of the limbs beneath the sheepskin and realize what he had killed.\n\nThe shepherd took the wolf's pelt as a trophy and the lesson as a warning. The fable spread, and ever after, the man who pretends to be what he is not — who hides himself in the appearance of harmlessness in order to do harm — is called a wolf in sheep's clothing.",
+  "themes": [
+    "deception",
+    "disguise",
+    "hidden danger",
+    "the appearance of harmlessness",
+    "the deceiver caught by his own trick",
+    "the wolf as predator"
+  ],
+  "moral": "Appearances can deceive — but the deceiver who relies on appearances may be undone by them.",
+  "source": {
+    "citation": "Aesop, traditional. Perry Index #451. The fable is also referenced in the Christian Gospel of Matthew (7:15): 'Beware of false prophets, who come to you in sheep's clothing, but inwardly are ravening wolves.' Public domain. Standard English: Townsend, Aesop's Fables (1867).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/Wolf_in_sheep%27s_clothing"
+  },
+  "cultural_notes": "This fable is the source of the English phrase 'a wolf in sheep's clothing' for any deceiver who hides his true nature. It is also referenced in the New Testament (Matthew 7:15), which carried the image into Christian moral teaching across Europe and the world. The image of the wolf as the deceptive predator who hides his true form is one of the foundational elements of the European fable wolf tradition.",
+  "license": "public_domain"
+}
