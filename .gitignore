@@ -25,6 +25,12 @@ target/
 datasets/raw/
 datasets/downloaded/
 
+# Security dataset: ignore downloaded raw data and built JSONL examples,
+# but preserve directory structure via .gitkeep
+datasets/security/raw/*
+!datasets/security/raw/.gitkeep
+datasets/security/examples/*.jsonl
+
 # Environment
 .env
 
