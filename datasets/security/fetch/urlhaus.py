@@ -29,8 +29,9 @@ USER_AGENT = "lupus-security-research/0.1 (+https://github.com/inviti8/lupus)"
 def download(url: str, output_path: Path, force: bool = False) -> int:
     """Download the URLhaus CSV. Returns the number of bytes written.
 
-    URLhaus serves a ZIP-compressed CSV; we save the raw bytes and let
-    build_dataset.py handle decompression.
+    URLhaus serves the CSV with gzip Content-Encoding, which requests
+    transparently decompresses. The result is a plain CSV regardless of
+    what we name the output file.
     """
     if output_path.exists() and not force:
         size = output_path.stat().st_size
@@ -58,8 +59,8 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(__file__).parent.parent / "raw" / "urlhaus.csv.zip",
-        help="Output path (default: ../raw/urlhaus.csv.zip)",
+        default=Path(__file__).parent.parent / "raw" / "urlhaus.csv",
+        help="Output path (default: ../raw/urlhaus.csv)",
     )
     parser.add_argument(
         "--full",

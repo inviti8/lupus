@@ -102,7 +102,7 @@ def load_phishtank(csv_path: Path) -> Iterable[SecurityExample]:
     verified, verification_time, online, target
     """
     if not csv_path.exists():
-        LOG.warning("PhishTank source not found at %s", csv_path)
+        LOG.info("PhishTank source not found at %s (skipping)", csv_path)
         return
 
     fetched_at = now_iso()
@@ -127,7 +127,7 @@ def load_phishtank(csv_path: Path) -> Iterable[SecurityExample]:
                 html_truncated=False,
                 label=Label.PHISHING,
                 confidence=95 if verified else 70,
-                indicators=[],  # populated later by feature extraction if desired
+                indicators=[],
                 target_brand=row.get("target") or None,
                 threat_type=None,
                 fetched_at=fetched_at,
@@ -135,37 +135,106 @@ def load_phishtank(csv_path: Path) -> Iterable[SecurityExample]:
             )
 
 
+def load_openphish(csv_path: Path) -> Iterable[SecurityExample]:
+    """Yield SecurityExamples from an OpenPhish CSV.
+
+    OpenPhish provides only URLs (no metadata, no IDs). The CSV has a
+    single 'url' column.
+    """
+    if not csv_path.exists():
+        LOG.info("OpenPhish source not found at %s (skipping)", csv_path)
+        return
+
+    fetched_at = now_iso()
+    with csv_path.open("r", encoding="utf-8", errors="replace") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            url = (row.get("url") or "").strip()
+            if not url:
+                continue
+            domain = extract_domain(url)
+            if not domain:
+                continue
+
+            yield SecurityExample(
+                id=stable_id("openphish", url),
+                source=Source.OPENPHISH,
+                source_id=None,
+                url=url,
+                domain=domain,
+                html_content=None,
+                html_truncated=False,
+                label=Label.PHISHING,
+                confidence=90,  # OpenPhish doesn't expose verification metadata
+                indicators=[],
+                target_brand=None,
+                threat_type=None,
+                fetched_at=fetched_at,
+                verified=True,  # OpenPhish only publishes confirmed phishing
+            )
+
+
 def load_urlhaus(csv_or_zip_path: Path) -> Iterable[SecurityExample]:
     """Yield SecurityExamples from URLhaus CSV (raw or .zip).
 
-    URLhaus CSV starts with comment lines beginning with '#' that must be
-    skipped. Columns are: id, dateadded, url, url_status, last_online,
+    URLhaus CSV starts with comment lines beginning with '#'. The header
+    line is itself a comment ('# id,dateadded,url,...') and must be parsed
+    out specially. Columns are: id, dateadded, url, url_status, last_online,
     threat, tags, urlhaus_link, reporter
     """
     if not csv_or_zip_path.exists():
-        LOG.warning("URLhaus source not found at %s", csv_or_zip_path)
+        LOG.debug("URLhaus source not found at %s", csv_or_zip_path)
         return
 
     fetched_at = now_iso()
 
-    if csv_or_zip_path.suffix == ".zip":
-        with zipfile.ZipFile(csv_or_zip_path) as zf:
-            csv_name = next((n for n in zf.namelist() if n.endswith(".csv")), None)
-            if csv_name is None:
-                LOG.warning("URLhaus zip contains no CSV: %s", csv_or_zip_path)
-                return
-            with zf.open(csv_name) as raw:
-                text = raw.read().decode("utf-8", errors="replace")
-    else:
+    # Try as zip first; fall back to plain text. URLhaus serves with gzip
+    # Content-Encoding which requests transparently decompresses, so even
+    # files named .zip are usually plain CSV at this point.
+    text: str
+    try:
+        if csv_or_zip_path.suffix == ".zip":
+            with zipfile.ZipFile(csv_or_zip_path) as zf:
+                csv_name = next((n for n in zf.namelist() if n.endswith(".csv")), None)
+                if csv_name is None:
+                    LOG.warning("URLhaus zip contains no CSV: %s", csv_or_zip_path)
+                    return
+                with zf.open(csv_name) as raw:
+                    text = raw.read().decode("utf-8", errors="replace")
+        else:
+            text = csv_or_zip_path.read_text(encoding="utf-8", errors="replace")
+    except zipfile.BadZipFile:
+        # File named .zip but actually plain text (auto-decompressed)
         text = csv_or_zip_path.read_text(encoding="utf-8", errors="replace")
 
-    # Skip comment lines starting with #
-    data_lines = [line for line in text.splitlines() if line and not line.startswith("#")]
+    # URLhaus places its header line as a comment: "# id,dateadded,url,..."
+    # We need to find that line, strip the comment prefix, and use it as
+    # the header. Other comment lines are skipped entirely.
+    URLHAUS_HEADER_FIELDS = (
+        "id", "dateadded", "url", "url_status", "last_online",
+        "threat", "tags", "urlhaus_link", "reporter",
+    )
+    fieldnames: Optional[list[str]] = None
+    data_lines: list[str] = []
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        if line.startswith("#"):
+            # Check if this comment line is the header
+            stripped = line.lstrip("#").strip()
+            if all(field in stripped for field in ("id", "url", "threat")):
+                fieldnames = [f.strip() for f in stripped.split(",")]
+            continue
+        data_lines.append(line)
+
+    if fieldnames is None:
+        # Fallback to known schema if header detection fails
+        fieldnames = list(URLHAUS_HEADER_FIELDS)
+
     if not data_lines:
         return
 
-    # First non-comment line is the header
-    reader = csv.DictReader(io.StringIO("\n".join(data_lines)))
+    reader = csv.DictReader(io.StringIO("\n".join(data_lines)), fieldnames=fieldnames)
     for row in reader:
         url = (row.get("url") or "").strip().strip('"')
         if not url:
@@ -180,7 +249,7 @@ def load_urlhaus(csv_or_zip_path: Path) -> Iterable[SecurityExample]:
         yield SecurityExample(
             id=stable_id("urlhaus", url),
             source=Source.URLHAUS,
-            source_id=row.get("id"),
+            source_id=(row.get("id") or "").strip().strip('"') or None,
             url=url,
             domain=domain,
             html_content=None,
@@ -361,6 +430,7 @@ def main() -> int:
 
     examples: list[SecurityExample] = []
     examples.extend(load_phishtank(RAW_DIR / "phishtank.csv"))
+    examples.extend(load_openphish(RAW_DIR / "openphish.csv"))
     examples.extend(load_urlhaus(RAW_DIR / "urlhaus.csv.zip"))
     examples.extend(load_urlhaus(RAW_DIR / "urlhaus.csv"))
     examples.extend(load_tranco(RAW_DIR / "tranco.csv", html_index, args.html_max_chars))
@@ -371,9 +441,10 @@ def main() -> int:
 
     if not examples:
         LOG.error("No examples loaded. Did you run the fetcher scripts first?")
-        LOG.error("  python fetch/phishtank.py")
-        LOG.error("  python fetch/urlhaus.py")
-        LOG.error("  python fetch/tranco.py")
+        LOG.error("  python fetch/openphish.py     # phishing (no registration)")
+        LOG.error("  python fetch/phishtank.py     # phishing (requires API key)")
+        LOG.error("  python fetch/urlhaus.py       # malware")
+        LOG.error("  python fetch/tranco.py        # safe URLs")
         return 1
 
     # Show class distribution

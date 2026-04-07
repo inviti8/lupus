@@ -1,19 +1,28 @@
 """PhishTank fetcher — downloads verified phishing URLs.
 
-PhishTank provides a daily-updated CSV of verified phishing URLs at
-http://data.phishtank.com/data/online-valid.csv (anonymous access).
+PhishTank now requires a free registered API key for bulk CSV downloads.
+The historical anonymous endpoint (http://data.phishtank.com/data/online-valid.csv)
+redirects to a signed CDN URL that returns 404 without authentication.
 
-With an API key, use the keyed endpoint for higher rate limits:
-http://data.phishtank.com/data/{apikey}/online-valid.csv
+To use this fetcher:
+  1. Register for a free account at https://phishtank.org/
+  2. Generate an application key in your account settings
+  3. Run: python phishtank.py --api-key YOUR_KEY
+     Or set the PHISHTANK_API_KEY environment variable.
+
+If you don't want to register, use openphish.py instead — it provides
+a smaller but free no-registration phishing feed.
 
 Usage:
-    python phishtank.py [--output PATH] [--api-key KEY] [--force]
+    python phishtank.py --api-key YOUR_KEY [--output PATH] [--force]
+    PHISHTANK_API_KEY=YOUR_KEY python phishtank.py
 """
 
 from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -21,7 +30,6 @@ import requests
 
 LOG = logging.getLogger("phishtank")
 
-ANON_URL = "http://data.phishtank.com/data/online-valid.csv"
 KEYED_URL = "http://data.phishtank.com/data/{api_key}/online-valid.csv"
 
 USER_AGENT = "lupus-security-research/0.1 (+https://github.com/inviti8/lupus)"
@@ -60,7 +68,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--api-key",
-        help="PhishTank API key (optional, gives higher rate limits)",
+        help="PhishTank API key (or set PHISHTANK_API_KEY env var). REQUIRED.",
     )
     parser.add_argument("--force", action="store_true", help="Overwrite existing file")
     parser.add_argument("--verbose", "-v", action="store_true")
@@ -71,7 +79,17 @@ def main() -> int:
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
     )
 
-    url = KEYED_URL.format(api_key=args.api_key) if args.api_key else ANON_URL
+    api_key = args.api_key or os.environ.get("PHISHTANK_API_KEY")
+    if not api_key:
+        LOG.error(
+            "PhishTank requires a free registered API key for bulk downloads. "
+            "Register at https://phishtank.org/ and pass --api-key, or set "
+            "the PHISHTANK_API_KEY environment variable. "
+            "Alternatively, use openphish.py for a no-registration phishing feed."
+        )
+        return 1
+
+    url = KEYED_URL.format(api_key=api_key)
 
     try:
         download(url, args.output, force=args.force)

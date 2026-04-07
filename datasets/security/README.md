@@ -8,10 +8,13 @@ Unlike the search adapter dataset (which requires Claude-generated training exam
 
 | Source | Type | Volume | Cost | License |
 |---|---|---|---|---|
-| [PhishTank](https://phishtank.org/) | Verified phishing URLs | 50,000+ active | Free, registration optional | CC-BY |
-| [URLhaus](https://urlhaus.abuse.ch/) | Malware distribution URLs | 100,000+ active | Free | CC-0 |
+| [OpenPhish](https://openphish.com/) | Phishing URLs (active feed) | ~500 active at any time | Free, **no registration** | Free non-commercial |
+| [PhishTank](https://phishtank.org/) | Verified phishing URLs | 50,000+ active | Free but **requires API key registration** | CC-BY |
+| [URLhaus](https://urlhaus.abuse.ch/) | Malware distribution URLs | 100,000+ active | Free, no registration | CC-0 |
 | [Tranco Top 1M](https://tranco-list.eu/) | Legitimate sites (negative examples) | 1,000,000 ranked | Free, academic | Tranco license |
 | Manual / heuristic | Known scam patterns, deceptive UI | ~100s | Volunteer | — |
+
+**On PhishTank**: as of late 2025 PhishTank deprecated the anonymous CSV download endpoint and now requires a registered API key for bulk downloads. The registration is free but adds friction. OpenPhish provides a smaller no-registration alternative — use both together for diversity, or just OpenPhish if you want zero registration friction.
 
 **Target:** ~20,000 labeled examples — 10K threat (split between phishing and malware) + 10K safe.
 
@@ -42,7 +45,8 @@ datasets/security/
   schema.py                       Pydantic models + validation
   fetch/
     __init__.py
-    phishtank.py                  Download PhishTank CSV → raw/phishtank.csv
+    openphish.py                  Download OpenPhish feed → raw/openphish.csv
+    phishtank.py                  Download PhishTank CSV → raw/phishtank.csv (needs API key)
     urlhaus.py                    Download URLhaus CSV → raw/urlhaus.csv
     tranco.py                     Download Tranco list → raw/tranco.csv
     html_fetcher.py               Safe HTML retrieval utility
@@ -94,10 +98,11 @@ The model learns to take URL + HTML and produce structured JSON matching the dae
 # Install dependencies
 pip install pydantic requests tldextract
 
-# Step 1: Download source data (network-bound, ~5 minutes)
-python fetch/phishtank.py
-python fetch/urlhaus.py
-python fetch/tranco.py --top 50000   # sample top 50K from Tranco
+# Step 1: Download source data (network-bound, ~5 minutes total)
+python fetch/openphish.py                        # phishing (no registration)
+python fetch/phishtank.py --api-key YOUR_KEY     # optional: more phishing data
+python fetch/urlhaus.py                          # malware
+python fetch/tranco.py --top 50000               # safe URLs (top 50K)
 
 # Step 2: Optionally fetch HTML for safe Tranco URLs (network-bound, ~hours)
 python fetch/html_fetcher.py --input raw/tranco.csv --output raw/tranco_html.jsonl
