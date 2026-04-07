@@ -1,0 +1,39 @@
+{
+  "id": "egyptian-hieroglyph-wn-hare-being",
+  "tradition": "Egyptian",
+  "title": "The Hieroglyph wn (𓃹) — The Hare That Means 'To Be'",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "The Hare (Wn / Sekhat)",
+      "role": "The animal whose image became the hieroglyph for the verb 'to be' in Egyptian writing"
+    },
+    {
+      "name": "Wenet",
+      "role": "The hare goddess whose name shares its root with the verb 'to be'"
+    },
+    {
+      "name": "The Egyptian Scribes",
+      "role": "Who wrote the hare hieroglyph thousands of times across three millennia of texts"
+    }
+  ],
+  "summary": "In ancient Egyptian writing, the image of a hare (Gardiner sign E34) is the hieroglyph 'wn,' which means 'to be,' 'to exist.' One of the most fundamental verbs in the Egyptian language is written with the figure of a hare. The hare and the verb of being share a single sign — and a single root — across three thousand years of Egyptian writing.",
+  "full_text": "In the system of Egyptian hieroglyphic writing, certain signs are everywhere. The reed-leaf, the loaf of bread, the basket, the throne, the seated man, the seated woman — these appear so often in any Egyptian text that any reader of hieroglyphs comes to know them at a glance. Among these foundational signs is a small image of a hare in profile, alert, with its long ears laid back along its body. In the Gardiner sign list (the modern catalog of Egyptian hieroglyphs) it is sign E34. Its phonetic value is 'wn.'\n\nAnd 'wn' is one of the most important verbs in the Egyptian language. It means 'to be.' To exist. To be present. To remain. The hare hieroglyph appears in countless Egyptian texts as the verb of being itself — every time an Egyptian scribe wrote that something existed, was, or remained, they drew a small hare.\n\nThe association is not arbitrary. The hare goddess Wenet — Wnt in the unvocalized writing — bears a name from the same root. The 15th nome of Upper Egypt was Wnt, the Hare Nome. And the verb wn — to be — runs through all of these. The hare and being and the goddess are linked at the root of the language itself. To say 'I am' in Egyptian is to draw the image of a hare.\n\nNo one knows for certain why the Egyptians made this connection. It may have been the swiftness of the hare — the way it darts into being and out of being so quickly that to see it is to be reminded of the verb of presence. It may have been the hare's reputation for sudden appearance: one moment the field is empty, the next the hare is there, and then it is gone again. To 'be' is to suddenly appear, to be present for a moment, and to be elusive — and that is the hare exactly.\n\nWhatever the original reasoning, the result is that the Egyptian language carries the hare in its very verb of being. Three thousand years of Egyptian writing — from the Pyramid Texts to the late Demotic papyri — used the hare to mean 'to be.' Among all the cultures that placed the hare on the moon or made the hare a trickster or paired the hare with the wolf as cosmic companions, ancient Egypt did something none of the others did: it made the hare the sign of existence itself.",
+  "themes": [
+    "language",
+    "the hare as being",
+    "writing",
+    "hieroglyphs",
+    "the hare in linguistic root",
+    "Wenet",
+    "philosophical depth"
+  ],
+  "moral": "What is most ordinary in nature can become the deepest sign of what is. The hare appears, and the hare is.",
+  "source": {
+    "citation": "Sir Alan H. Gardiner, Egyptian Grammar: Being an Introduction to the Study of Hieroglyphs (Oxford University Press, 1927; multiple editions). Gardiner sign list E34. Also documented in James P. Allen, Middle Egyptian: An Introduction to the Language and Culture of Hieroglyphs (Cambridge University Press, 2010).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/Gardiner%27s_sign_list"
+  },
+  "cultural_notes": "The Egyptian connection between the hare and the verb 'to be' is one of the most striking and least-known elements of hare folklore worldwide. While other cultures placed the hare on the moon (Buddhist Jataka, Japanese Tsuki no Usagi, Chinese Yutu, Aztec Tecciztecatl), ancient Egypt placed the hare at the root of the verb of being. This is not folklore in the narrative sense — it is something deeper, encoded into the writing system itself, and it makes the hare arguably the most philosophically central animal in any ancient language.",
+  "license": "public_domain"
+}

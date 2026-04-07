@@ -1,0 +1,43 @@
+{
+  "id": "egyptian-anubis-guide-of-the-dead",
+  "tradition": "Egyptian",
+  "title": "Anubis (Inpu) — The Jackal Who Walks the Two Worlds",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Anubis (Inpu, Anpu)",
+      "role": "Jackal- or wolf-headed Egyptian deity, embalmer of the dead, guide through the underworld, weigher of the heart"
+    },
+    {
+      "name": "Wepwawet",
+      "role": "Wolf-deity often paired with Anubis, sometimes confused with him, but distinct in role and origin"
+    },
+    {
+      "name": "Osiris",
+      "role": "Lord of the dead, whose body Anubis first embalmed and whose underworld kingdom Anubis serves"
+    },
+    {
+      "name": "The Dead",
+      "role": "Whom Anubis guides through the trials of the Duat to the Hall of Two Truths"
+    }
+  ],
+  "summary": "Anubis, the jackal-headed Egyptian deity, is the guide of the dead — the one who walks beside the soul through the trials of the underworld and who weighs the heart against the feather of Ma'at. He is the canid pathfinder of the underworld, distinct from but parallel to Wepwawet, who is the canid pathfinder of the living.",
+  "full_text": "If Wepwawet walks before the king in the world of the living, Anubis walks beside the soul in the world of the dead. The two are not the same — though they have often been confused, even in antiquity, because both are canid-headed Egyptian deities of similar form. Wepwawet is older, originally independent, the gray wolf of Asyut. Anubis is the black-coated jackal (or African wolf) of the embalming chamber and the underworld trials.\n\nAnubis is one of the great Egyptian gods of the dead. His name in Egyptian was Inpu (also Anpu), and his role was multiple. He was the inventor of mummification — the one who first preserved a body, that of Osiris, when Set had killed and dismembered him. He was the embalmer, the priest who oversaw the seventy-day ritual of preparing the dead for eternity. He was the guide, walking beside the soul through the dangers of the Duat, the Egyptian underworld, where serpents and lakes of fire and gates with terrible names had to be crossed. And he was the weigher of the heart — the one who placed the heart of the dead on one side of the great scale and the feather of Ma'at (truth) on the other, determining whether the soul was light enough to enter the kingdom of Osiris.\n\nIn all of these roles, Anubis is the canid as walker of the path through death. He does not lead the soul as a herald, the way Wepwawet leads the king as a scout. He walks beside the soul, as a companion, through territory that the soul has never crossed and that no living being can describe. He is the silent guide — and in this he resembles the Japanese okuri-ōkami, the silent wolf that walks beside the lone traveler through the dangerous mountain night, never speaking, never approaching, but never leaving until the destination is reached.\n\nThe two great canid deities of Egypt — Wepwawet and Anubis — are the wolf-as-pathfinder of the day and the canid-as-companion of the night. Together they cover the whole journey: through the world of the living and through the world of the dead, the wolf walks with the people. The Egyptians saw it more clearly than almost anyone.",
+  "themes": [
+    "guide of the dead",
+    "underworld",
+    "embalming",
+    "weighing of the heart",
+    "canid as companion",
+    "the journey through death",
+    "Anubis and Wepwawet paired"
+  ],
+  "moral": "The guide does not lead from in front — sometimes the guide walks beside, in silence, through the darkness one could not have crossed alone.",
+  "source": {
+    "citation": "Egyptian Book of the Dead (Papyrus of Ani and other versions, c. 1250 BCE), public domain in Budge's translation. Pyramid Texts and Coffin Texts. Modern scholarship: Wilkinson, The Complete Gods and Goddesses of Ancient Egypt (Thames & Hudson, 2003); Salima Ikram, Death and Burial in Ancient Egypt (American University in Cairo Press, 2003).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/Anubis"
+  },
+  "cultural_notes": "Anubis is far more famous in popular culture today than Wepwawet, but in Egyptian terms the two are deeply linked. They were sometimes paired in temple iconography and sometimes confused with each other. The distinction matters: Wepwawet is the scout (walking before, in life), Anubis is the companion (walking beside, in death). Together they form the complete canid-pathfinder picture. The recent reclassification of the Egyptian 'jackal' (Canis lupaster) as the African wolf rather than a jackal proper means that both Wepwawet and Anubis are, taxonomically, wolves — not jackals as long believed.",
+  "license": "public_domain"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "egyptian-wepwawet-opener-of-ways",
+  "tradition": "Egyptian",
+  "title": "Wepwawet (wp-wAwt) — Opener of the Ways",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Wepwawet",
+      "role": "Wolf-headed (or jackal-headed) Egyptian deity, 'Opener of the Ways,' scout and pathfinder of kings, gods, and the dead. One of the oldest attested Egyptian deities."
+    },
+    {
+      "name": "The King (Pharaoh)",
+      "role": "Whose processions Wepwawet's standard preceded as scout and herald"
+    },
+    {
+      "name": "The Dead",
+      "role": "For whom Wepwawet opens the path through the underworld"
+    }
+  ],
+  "summary": "Wepwawet is one of the oldest Egyptian deities — a wolf-headed god whose name literally means 'Opener of the Ways.' He scouts ahead of kings in procession, opens the path for the sun's daily journey, and walks before the dead through the underworld. He is the Egyptian wolf-as-pathfinder, named for his role in the most direct way any culture has named one.",
+  "full_text": "Of all the deities of Egypt, Wepwawet is among the very oldest. He is attested from the Early Dynastic Period — over five thousand years ago — and his name appears in the Pyramid Texts of the Old Kingdom, the oldest religious writings in human civilization. His name is written wp-wAwt: 'wp' meaning 'to open,' and 'wAwt' meaning 'the ways' or 'the paths.' Wepwawet: Opener of the Ways.\n\nHe was depicted as a wolf — or in some periods a jackal, the canid distinction in Egyptian iconography being fluid and the African wolf (Canis lupaster) only recently classified as a true wolf rather than a jackal. He stood erect, sometimes on a standard, alert and forward-facing. His color was gray, the color of the wolf, distinct from Anubis whose color was the black of mummification.\n\nWepwawet's role was the most literal pathfinder role of any deity in any tradition: he opened paths. He walked before the king in procession, his standard carried at the head of the royal retinue, scouting the way and clearing it of dangers physical and spiritual. He opened the path for the sun in its daily journey across the sky and through the underworld. He opened the path for the dead, walking before them as they journeyed through the realm of the west toward judgment and rebirth.\n\nThe Pyramid Texts call him 'the one who walks before' — the scout, the herald, the pathfinder. In funerary contexts he was sometimes called 'the one who opens the body' (referring to the mummification ritual where the mouth was opened so the dead could breathe and speak again). In military contexts his standard preceded the army into battle. In religious contexts his image preceded the gods in their festival processions.\n\nHe is the Egyptian wolf, named in his very title for what the Anishinaabe call the wolf-as-pathfinder, what the Japanese call hodophilax. Three cultures, three continents, no contact — three wolves named the path-guardian. Wepwawet is the oldest of the three.",
+  "themes": [
+    "wolf as pathfinder",
+    "opener of the ways",
+    "scout",
+    "guide of the dead",
+    "ancient deity",
+    "the path-guardian archetype",
+    "Pyramid Texts"
+  ],
+  "moral": "The wolf walks before. What walks before makes the way safe for what follows.",
+  "source": {
+    "citation": "Pyramid Texts (c. 2400-2300 BCE), the oldest religious writings in human civilization, public domain. Modern scholarly sources include Richard H. Wilkinson, The Complete Gods and Goddesses of Ancient Egypt (Thames & Hudson, 2003) and George Hart, The Routledge Dictionary of Egyptian Gods and Goddesses (Routledge, 2005). Plutarch discusses the wolf at Lycopolis in De Iside et Osiride (c. 100 CE), public domain.",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/Wepwawet"
+  },
+  "cultural_notes": "Wepwawet is the third major culture (after Anishinaabe Ma'iingan and the Japanese Honshū wolf Canis lupus hodophilax) to name the wolf explicitly as path-guardian — and he is the oldest, with his cult attested from c. 3000 BCE. The cross-cultural emergence of the wolf-as-pathfinder archetype across three completely independent traditions (Indigenous North American, East Asian, and Ancient Egyptian) is one of the most striking patterns in world folklore and forms the philosophical heart of the Lupus project's naming. Note that Egyptian iconography did not always distinguish sharply between wolf, jackal, and African wolf — modern taxonomy classifies the Egyptian canid as Canis lupaster (the African wolf) rather than the jackal (Canis aureus) it was long assumed to be.",
+  "license": "public_domain"
+}

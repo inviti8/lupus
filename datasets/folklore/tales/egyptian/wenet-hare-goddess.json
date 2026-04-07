@@ -1,0 +1,39 @@
+{
+  "id": "egyptian-wenet-hare-goddess",
+  "tradition": "Egyptian",
+  "title": "Wenet (Wnt) — The Hare Goddess of Hermopolis",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Wenet (also Unut, Wnut)",
+      "role": "Hare goddess of the 15th nome of Upper Egypt, swift and ancient, predating the rise of Thoth at Hermopolis"
+    },
+    {
+      "name": "Thoth",
+      "role": "The ibis-headed god of wisdom who later became the dominant deity of Hermopolis, but who never displaced Wenet entirely"
+    },
+    {
+      "name": "The People of the Hare Nome",
+      "role": "Worshippers of Wenet for whom the hare was both deity and symbol of the land itself"
+    }
+  ],
+  "summary": "Wenet was the hare goddess of the 15th nome of Upper Egypt — a region so identified with her that the nome itself was called 'Wnt,' the Hare Nome. She is one of Egypt's oldest deities, attested from the Old Kingdom, and though Thoth later rose to dominance at her cult city of Hermopolis, Wenet was never displaced from her place as the hare-deity of swift movement and the land of the hare.",
+  "full_text": "In the long and complicated theology of ancient Egypt, where every nome (province) had its local deities and local stories, the 15th nome of Upper Egypt belonged to the hare. Its name was Wnt — the Hare Nome — and its principal deity was Wenet, the goddess of swift movement and the land itself. Some sources name her Unut or Wnut; the Egyptian writing system did not consistently transcribe vowels.\n\nWenet was depicted as a hare or as a woman with a hare's head, alert and watchful. She was associated with speed, with the swift dart and the sudden change of direction that characterizes the hare's flight. In a culture that revered cats for their domestic grace and ibis for their wisdom and falcon for their predatory clarity, the hare was honored for what only the hare can do: move faster than the eye can follow, vanish, reappear elsewhere, never quite be caught.\n\nHer cult center was the city the Greeks called Hermopolis — Egyptian Khmun ('Eight Town,' for the Ogdoad of eight primordial deities worshipped there) — though earlier the city seems to have been called something closer to her own name, Wnt or Wenu. She is attested from the Old Kingdom, around the same period as Wepwawet's earliest appearances. Together, Wenet and Wepwawet are the hare-and-wolf pair of ancient Egyptian religion: the swift one and the path-opener, the hare goddess of one nome and the wolf god of another, both walking through Egyptian culture from before the building of the great pyramids.\n\nIn the later periods, Thoth rose to dominance at Hermopolis as the great god of wisdom and writing, and the city became famous as the seat of the Ogdoad cosmology. But Wenet was never displaced. She was an older deity, the local one, and she remained as the goddess of the hare and of the land called Wnt. Her name lived on in the name of the nome itself, and the hare hieroglyph that meant 'wn' — to be, to exist — carried her echo into every Egyptian text that ever spoke the verb of being.",
+  "themes": [
+    "hare goddess",
+    "ancient deity",
+    "speed and movement",
+    "Hermopolis",
+    "the hare nome",
+    "local deity",
+    "the hare and the wolf as paired deities"
+  ],
+  "moral": null,
+  "source": {
+    "citation": "Wilkinson, The Complete Gods and Goddesses of Ancient Egypt (Thames & Hudson, 2003); George Hart, The Routledge Dictionary of Egyptian Gods and Goddesses (Routledge, 2005). Wenet is attested in Old Kingdom inscriptions and in nome lists throughout pharaonic history.",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/Wenet"
+  },
+  "cultural_notes": "Wenet is much less famous than Wepwawet today, but she occupied the same structural position in Egyptian religion: the local deity in animal form, attested from the earliest periods, with a cult center named for her. The pairing of Wenet (hare goddess) and Wepwawet (wolf god) in ancient Egypt — both as nome deities, both ancient, both connected to the Egyptian language at its roots (the hare hieroglyph wn, the wolf hieroglyph that may have inspired the form of the wAwt 'paths' sign) — is itself a small Egyptian echo of the cross-cultural hare-and-wolf pairing that runs through this compendium.",
+  "license": "public_domain"
+}

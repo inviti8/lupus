@@ -1,0 +1,39 @@
+{
+  "id": "egyptian-lycopolis-wolf-city",
+  "tradition": "Egyptian",
+  "title": "Lycopolis — The Wolf City of Asyut",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Wepwawet",
+      "role": "The wolf-deity whose principal cult center was at Asyut/Lycopolis"
+    },
+    {
+      "name": "The People of Asyut",
+      "role": "Worshippers of Wepwawet across more than three thousand years of continuous tradition"
+    },
+    {
+      "name": "Plutarch",
+      "role": "Greek writer (c. 100 CE) who recorded the Greek name 'Lycopolis' for Asyut and explained its meaning"
+    }
+  ],
+  "summary": "The ancient Egyptian city of Asyut (Sauty), in Upper Egypt, was the principal cult center of Wepwawet for over three thousand years. The Greeks called it Lycopolis — 'Wolf City' — because of the wolf-deity worshipped there. It is one of the few cities in human history named directly for a wolf.",
+  "full_text": "In the heart of Upper Egypt, on the western bank of the Nile, stood a city called Sauty. It was an ancient city even in ancient times — its name appears in records from the Old Kingdom, more than four thousand years ago. It was the capital of the 13th nome (province) of Upper Egypt, and its principal deity was Wepwawet, the wolf-headed Opener of the Ways.\n\nThe people of Sauty venerated Wepwawet for so long, with such devotion, that the wolf became inseparable from the city itself. When the Greeks came to Egypt with Alexander and the Ptolemies and began to rename Egyptian cities in their own language, they called Sauty 'Lycopolis' — Wolf City — from the Greek 'lykos' (wolf) and 'polis' (city). To the Greeks, this was the city of the wolf, and that was its identity.\n\nThe Greek geographer Strabo, writing in the first century BCE, recorded that the people of Lycopolis kept actual wolves at the temple and that the wolf was sacred there above all other animals. The historian Diodorus Siculus told the same. Plutarch, writing around 100 CE in De Iside et Osiride, repeated the tradition. The wolf at Lycopolis was as much a fact of the ancient Mediterranean world as the cats at Bastet's temples or the crocodiles at Crocodilopolis.\n\nThe city is still there. Today it is called Asyut. It is one of the largest cities in modern Upper Egypt, and it has been continuously inhabited for over five thousand years — one of the longest-occupied sites in human history. The wolf-cult is gone, of course, with the long centuries of Christianity and Islam that followed the pharaohs. But the layers of the city beneath the modern streets still hold the temples of Wepwawet, and the name 'Asyut' itself is descended from the ancient 'Sauty' — meaning 'guardian' or 'protector.' The city of the path-guardian still bears the name.",
+  "themes": [
+    "wolf city",
+    "cult center",
+    "continuous tradition",
+    "Wepwawet",
+    "ancient Egypt",
+    "Greco-Egyptian",
+    "longevity of veneration"
+  ],
+  "moral": null,
+  "source": {
+    "citation": "Plutarch, De Iside et Osiride (c. 100 CE), public domain. Strabo, Geography Book XVII (c. 7 BCE - 24 CE), public domain. Diodorus Siculus, Library of History (c. 60-30 BCE), public domain. Modern scholarship: Wilkinson, The Complete Gods and Goddesses of Ancient Egypt (Thames & Hudson, 2003).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/Asyut"
+  },
+  "cultural_notes": "Lycopolis/Asyut is a remarkable example of a city whose identity was defined by veneration of the wolf for thousands of years. The Egyptian name 'Sauty' (later vocalized as Asyut) means 'guardian' or 'protector' — appropriate for the city of the path-guardian deity. The continuous occupation of Asyut from the Old Kingdom to the present day makes it one of the oldest continuously inhabited cities in human history.",
+  "license": "public_domain"
+}

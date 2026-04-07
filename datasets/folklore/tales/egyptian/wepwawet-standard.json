@@ -1,0 +1,39 @@
+{
+  "id": "egyptian-wepwawet-standard",
+  "tradition": "Egyptian",
+  "title": "The Standard of Wepwawet — The Wolf Who Walked Before the King",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Wepwawet (on his standard)",
+      "role": "The wolf-figure carried at the head of royal and divine processions, scouting the way"
+    },
+    {
+      "name": "The King (Pharaoh)",
+      "role": "Whose procession the standard preceded"
+    },
+    {
+      "name": "The Standard-Bearer",
+      "role": "The priest or official who carried the wolf-standard at the head of the procession"
+    }
+  ],
+  "summary": "From the earliest dynasties, the standard of Wepwawet — a small wolf figure mounted on a tall pole — was carried at the head of every royal procession in ancient Egypt. The wolf walked before the king, scouting the way, just as Wepwawet's name promised.",
+  "full_text": "The Standard of Wepwawet was a sacred object of the Egyptian state from before the unification of Upper and Lower Egypt — that is, from before there was an Egypt as such. Pre-dynastic palettes (the Narmer Palette and others) show standards carried at the head of processions, and among them is a small wolf figure on a pole. This is Wepwawet — already, in the earliest images of kingship that exist from the Nile valley, walking before the king.\n\nThe form of the standard remained remarkably stable across three thousand years. A short pole, sometimes ornamented; mounted on it, a small figure of the wolf in profile, alert, forward-facing, sometimes with the uraeus (the rearing cobra) above its head as a sign of royal authority. The standard was carried by a priest who walked at the very front of the procession, before the king, before the gods, before everything. Wepwawet led the way.\n\nThis was not symbolic in the modern sense. The Egyptians believed the standard genuinely held a portion of the deity. Where the standard went, Wepwawet went, and his presence opened the way — cleared it of obstacles physical and spiritual, made it safe for the king to walk. In military campaigns, the standard preceded the army. In religious festivals, it preceded the divine images. In funerary processions, it preceded the body of the dead. In the daily ritual of the royal court, it preceded the king himself.\n\nThe Pyramid Texts speak of Wepwawet as the one who 'goes forth' before the deceased king on his journey to the stars. The wolf walks ahead. The king follows. This image — the wolf as scout for the most powerful figure in the state — is one of the deepest cultural expressions of the wolf-as-pathfinder anywhere. In Anishinaabe tradition, the wolf walks beside the Great Hare. In Japan, the wolf walks behind the lone traveler. In Egypt, the wolf walks before the king. Three positions, three traditions, one role: the wolf makes the way safe.",
+  "themes": [
+    "royal procession",
+    "wolf as scout",
+    "the wolf walks before",
+    "the standard",
+    "Pyramid Texts",
+    "wolf as pathfinder",
+    "kingship"
+  ],
+  "moral": "The wolf goes forth, and the way is opened. What walks ahead makes the path for what follows.",
+  "source": {
+    "citation": "Pyramid Texts (c. 2400-2300 BCE), public domain. Narmer Palette and other pre-dynastic processional palettes, c. 3100 BCE. Modern scholarship: Wilkinson, The Complete Gods and Goddesses of Ancient Egypt; Wilkinson, Reading Egyptian Art (Thames & Hudson, 1992).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/Wepwawet"
+  },
+  "cultural_notes": "The Wepwawet standard is one of the most iconographically stable elements in all of Egyptian religious art — virtually unchanged from the pre-dynastic period to the late Ptolemaic era. Its consistent placement at the head of processions reflects an unbroken three-thousand-year tradition of the wolf-as-pathfinder in the highest religious and political contexts of one of the world's oldest civilizations.",
+  "license": "public_domain"
+}

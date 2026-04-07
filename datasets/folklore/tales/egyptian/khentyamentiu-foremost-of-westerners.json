@@ -1,0 +1,39 @@
+{
+  "id": "egyptian-khentyamentiu-foremost-of-westerners",
+  "tradition": "Egyptian",
+  "title": "Khentyamentiu — Foremost of the Westerners",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Khentyamentiu (xnty-imntw)",
+      "role": "Early canid funerary deity at Abydos, 'Foremost of the Westerners' (i.e., chief of the dead, the western desert being the realm of the dead)"
+    },
+    {
+      "name": "Osiris",
+      "role": "Who later absorbed Khentyamentiu's title and role at Abydos"
+    },
+    {
+      "name": "The Westerners (the Dead)",
+      "role": "The dead, whose 'foremost' Khentyamentiu was"
+    }
+  ],
+  "summary": "Before Anubis and before Osiris dominated the cult of the dead at Abydos, there was Khentyamentiu — 'Foremost of the Westerners' — a canid funerary deity, almost certainly a wolf or jackal, who watched over the necropolis of Egypt's first kings. He is one of the oldest pathfinder-of-the-dead figures in human religion, predating even the Pyramid Texts.",
+  "full_text": "Long before Osiris rose to dominance as the Egyptian lord of the dead, the cult center of Abydos in Upper Egypt was sacred to a different deity: Khentyamentiu. His name in Egyptian was xnty-imntw, which means 'Foremost of the Westerners' — the 'westerners' being the dead, since the western desert beyond the Nile was the realm to which the dead went. He was the chief of those who had crossed over.\n\nKhentyamentiu was depicted as a canid — almost certainly a wolf or jackal in the same family as Wepwawet and Anubis, though scholars have debated his exact iconography across the millennia. He stood guard over the tombs of Egypt's earliest kings, the rulers of the First and Second Dynasties whose burials are at Abydos. In a sense, he was the original Egyptian wolf-deity of the dead, the ancestor of both Anubis and Wepwawet in the long unfolding of Egyptian religious thought.\n\nWhen the cult of Osiris rose during the Old Kingdom, it absorbed the cult of Khentyamentiu at Abydos. Osiris took the title 'Foremost of the Westerners' as one of his own epithets, and Abydos became the principal cult center of Osiris rather than of Khentyamentiu. The earlier wolf-deity faded from prominence, though his name continued to be invoked as an epithet of Osiris through the rest of pharaonic history.\n\nKhentyamentiu is a glimpse of something even older than the wolf-as-pathfinder traditions of historical Egypt: the original canid-guardian of the dead, the wolf at the gates of the western desert, the one who was foremost among those who had walked the road. He is attested from the very beginning of Egyptian writing — from the early dynasties, c. 3000 BCE — which makes him contemporary with the earliest images of Wepwawet on processional standards. Together, these two earliest canid deities of Egypt establish that the wolf-as-pathfinder is not a late development in any culture: it is among the very oldest religious ideas anywhere in the human record.",
+  "themes": [
+    "canid funerary deity",
+    "the foremost of the dead",
+    "the western desert",
+    "earliest religion",
+    "ancestor of Anubis and Wepwawet",
+    "Abydos",
+    "the original wolf-deity"
+  ],
+  "moral": "The wolf at the gate of the dead is older than any temple. The path-guardian was first imagined where the path itself first led beyond the living world.",
+  "source": {
+    "citation": "Wilkinson, The Complete Gods and Goddesses of Ancient Egypt (Thames & Hudson, 2003); David O'Connor, Abydos: Egypt's First Pharaohs and the Cult of Osiris (Thames & Hudson, 2009). Khentyamentiu is attested from First Dynasty inscriptions at Abydos.",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/Khentiamentiu"
+  },
+  "cultural_notes": "Khentyamentiu is virtually unknown outside specialist Egyptology, but his historical importance is significant: he is one of the earliest attested canid funerary deities anywhere in the human record. His later absorption into the Osiris cult is a typical pattern in Egyptian religion (older local deities being assimilated into the cults of rising state gods), but his name and iconography were not erased — they simply became epithets of the new dominant deity. The name 'Khentyamentiu' continues to appear as a title of Osiris through the entire pharaonic period.",
+  "license": "public_domain"
+}
