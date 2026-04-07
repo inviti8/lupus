@@ -91,32 +91,61 @@ Connected to s3://7oqdtnkk5f/
 
 ## Phase 2 — Provision the RunPod instance
 
-This is a manual step in the RunPod web console.
+This is a manual step in the RunPod web console. There is no button literally labeled "Provision" — the deploy button lives in the Pods section.
 
-### Step 2.1 — Create the pod
+### Step 2.0 — A note on network volumes (read this first)
+
+If you've already created a **network volume** in RunPod (recommended for spot training), the workflow is significantly nicer:
+
+- The same network volume that exposes the S3 API at `s3api-us-il-1.runpod.io` (which our `.env` credentials talk to) **also mounts as a regular filesystem on any pod that attaches it**, typically at `/workspace`.
+- This means: data we pushed to S3 is **already on the pod's disk** the moment the pod starts. No re-download needed.
+- It also means: the HuggingFace base model cache (~1 GB), Python deps, training checkpoints, and the cloned repo can all live on the volume and **persist across pod terminations**. When a spot pod gets killed and replaced, the next pod starts where the last one left off in seconds, not minutes.
+
+**Critical constraint:** **Network volumes are region-locked.** You can only attach a network volume to a pod that lives in the **same datacenter**. Your volume is in `us-il-1` (Israel), so you must filter for pods in that region. If `us-il-1` has no RTX 4090s available right now, options are:
+1. Wait for capacity in `us-il-1`
+2. Try a different GPU type that's available in `us-il-1` (RTX A5000, A4000)
+3. Create a new network volume in another region (`us-east`, `eu-central`, etc.) and re-push the dataset to that volume's S3 endpoint by updating `.env`
+
+### Step 2.1 — Find the deploy button (no "Provision" label exists)
 
 1. Log in to https://www.runpod.io/console
-2. Click **Deploy** → **GPU Pod**
-3. Choose:
-   - **GPU type:** RTX 4090 (24 GB)
-   - **Pod type:** **Spot** (interruptable, $0.29/hr) — recommended for training iteration. Use Secure Cloud only for the final publishable training run.
-   - **Container image:** `runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04` or any recent PyTorch+CUDA image
-   - **Volume disk:** 50 GB (enough for base model + checkpoints + dataset)
-   - **Container disk:** 20 GB
-4. Click **Deploy On-Demand** (or **Deploy Spot**)
+2. In the **left sidebar**, click **Pods** (or **GPU Cloud** in some UI versions). NOT "Storage" — that's where your volume lives.
+3. On the Pods page, look for one of these buttons (label varies by current UI version):
+   - **`+ Deploy`** ← most common label
+   - **`Deploy`**
+   - **`+ GPU Pod`**
+   - **`+ New Pod`**
+   
+   It's typically near the top of the page. If you can't find it, the alternative URL is https://www.runpod.io/console/deploy
 
-Wait for the pod to come up (usually 30-60 seconds). The status will go from `Provisioning` to `Running`.
+### Step 2.2 — Configure the pod
 
-### Step 2.2 — Connect to the pod
+On the deploy page:
 
-Click the pod in the console and either:
+| Setting | What to choose | Why |
+|---|---|---|
+| **GPU Type** | RTX 4090 (24 GB) | Plenty of VRAM for Qwen2.5-Coder-0.5B at batch size 32+ |
+| **Pod Type** | Spot / Community Cloud / Interruptable (≈$0.29/hr) | Cheapest tier; spot interruption is recoverable thanks to S3 checkpointing |
+| **Datacenter / Region** | **MUST match your network volume's region** (e.g. `us-il-1`) | Network volumes are region-locked |
+| **Template / Image** | `runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04` | PyTorch + CUDA pre-installed; saves ~5 min on bootstrap |
+| **Container Disk** | 20 GB | Pod-local ephemeral scratch space |
+| **Volume Mount Path** | `/workspace` (default) | Where the network volume gets mounted inside the pod |
+| **Network Volume** | **← attach your existing volume** (dropdown on the deploy page) | Persistence across pod restarts |
 
-- **Web terminal**: click "Connect" → "Start Web Terminal" — works in your browser, no setup
-- **SSH**: click "Connect" → "SSH Terminal" and follow the displayed `ssh root@<host> -p <port> -i <key>` command
+Then click **Deploy On-Demand** or **Deploy Spot** at the bottom.
 
-The web terminal is fastest for getting started. SSH is better for long sessions because the connection is more stable.
+Wait for the pod to come up (usually 30-60 seconds). The status in the Pods list will go from `Provisioning` → `Running`.
 
-✓ **Phase 2 complete.** You should now have a shell prompt on a fresh GPU pod.
+### Step 2.3 — Connect to the pod
+
+Click the running pod in the Pods list. Then either:
+
+- **Web terminal** (fastest): "Connect" button → "Start Web Terminal". Works in your browser, no SSH setup needed.
+- **SSH** (better for long sessions): "Connect" → "SSH Terminal", copy the displayed `ssh root@<host> -p <port>` command and run it locally.
+
+Once connected, you should be in a shell on the pod. The current working directory will probably be `/` or `/root` — that's fine, we'll `cd` into the volume next.
+
+✓ **Phase 2 complete** when you have a shell prompt on the pod.
 
 ---
 
@@ -124,15 +153,24 @@ The web terminal is fastest for getting started. SSH is better for long sessions
 
 Everything from here happens **on the RunPod pod**, not your local machine.
 
-### Step 3.1 — Clone the repo
+### Step 3.1 — Clone the repo (into the network volume!)
+
+If you attached a network volume in Phase 2, **clone the repo into the volume mount**, not the pod's ephemeral filesystem. That way the cloned working tree, your `.env` file, and any installed Python deps survive pod termination.
 
 ```bash
-cd /workspace
+cd /workspace                                  # ← the network volume mount
 git clone https://github.com/inviti8/lupus.git
 cd lupus
 ```
 
-If the repo is private and clone fails: use a personal access token, or push your local working copy to a temporary remote, or use `runpodctl send` to copy the working directory from your local machine.
+If `/workspace/lupus` already exists from a previous pod, just `cd` into it and pull:
+
+```bash
+cd /workspace/lupus
+git pull
+```
+
+If the repo is private and `git clone` fails: use a personal access token (`https://<user>:<token>@github.com/inviti8/lupus.git`), or push your local working copy to a temporary remote, or use `runpodctl send` to copy the working directory from your local machine.
 
 ### Step 3.2 — Copy your `.env` file to the pod
 
