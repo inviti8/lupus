@@ -1,0 +1,39 @@
+{
+  "id": "japanese-mitsumine-sacred-wolves",
+  "tradition": "Japanese",
+  "title": "The Sacred Wolves of Mitsumine Shrine",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Yamato Takeru no Mikoto",
+      "role": "Legendary prince of the Yamato dynasty, hero of the Kojiki and Nihon Shoki, lost in the mountains of Chichibu"
+    },
+    {
+      "name": "Oinusama (Honorable Wolf)",
+      "role": "The pack of wolves who appear as messengers of the mountain god to lead the prince to safety"
+    },
+    {
+      "name": "Yamatsumi-no-Kami",
+      "role": "The mountain god whose messengers the wolves are"
+    }
+  ],
+  "summary": "Long ago, the legendary Prince Yamato Takeru became lost in the mountains of Chichibu. A pack of wolves appeared from the fog and silently led him to safety. The prince proclaimed the wolves messengers of the mountain god, and the shrine that grew on that spot — Mitsumine Jinja — has venerated wolves as sacred for over a thousand years.",
+  "full_text": "Long ago, in the age of the early emperors, the legendary Prince Yamato Takeru no Mikoto journeyed through the eastern lands on behalf of his father. His path took him into the deep mountains of Chichibu, where the slopes are steep and the forests are old. The fog came down. The trails vanished. The prince and his companions could not find their way.\n\nAs they stood in the mist, uncertain whether to climb or descend, a pack of wolves appeared silently from the trees. They did not threaten. They did not flee. They watched the prince for a long moment with steady, intelligent eyes, then turned and walked slowly into the fog. The prince followed.\n\nThe wolves led him through the white mist, never hurrying, always pausing to let the men keep up. They guided him to safe ground, to a clearing where he could rest, and from there to the path that would carry him out of the mountains. When the prince was safely on the trail, the wolves vanished back into the forest.\n\nPrince Yamato Takeru understood that the wolves had been sent by Yamatsumi-no-Kami, the mountain god, as messengers of protection. He proclaimed them sacred — Oinusama, 'Honorable Wolf' — and ordered that a shrine be built to honor them and the mountain spirits. That shrine grew into Mitsumine Jinja, the Three Peaks Shrine, high in the mountains of Saitama Prefecture, where wolves have been venerated for over a thousand years.\n\nTo this day, Mitsumine and its sister shrines distribute o-fuda — paper charms stamped with the image of a wolf — to protect homes from fire and theft and to safeguard travelers on the mountain paths. The wolf is the messenger of the mountain god. Where the wolf walked, the boundary between the human world and the spirit world is thin.\n\nAnd when Western zoologists named the Japanese wolf in 1839, they called it Canis lupus hodophilax — from the Greek hodos, 'path,' and phylax, 'guardian.' The path-guardian. Even the scientific name carries the truth that the Japanese mountain people had always known: the wolf walks the trails to keep the travelers safe.",
+  "themes": [
+    "wolf as pathfinder",
+    "wolf as guardian",
+    "messenger of the gods",
+    "mountain spirits",
+    "guidance through fog",
+    "shrine origin",
+    "Canis lupus hodophilax"
+  ],
+  "moral": "The wolf that walks beside you in the mist is not your enemy. Where the wolf is honored, the mountain blesses the traveler.",
+  "source": {
+    "citation": "Brett L. Walker, The Lost Wolves of Japan (University of Washington Press, 2005) — the definitive English-language account. Also documented in Yanagita Kunio's collected folkloric works and in the official records of Mitsumine Jinja. The Yamato Takeru cycle is recorded in the Kojiki (712 CE) and Nihon Shoki (720 CE), public domain.",
+    "indigenous_author": true,
+    "url": "https://en.wikipedia.org/wiki/Mitsumine_Shrine"
+  },
+  "cultural_notes": "Mitsumine Jinja is real and active — it is one of the most important wolf-veneration sites in Japan. The Honshū wolf (Canis lupus hodophilax) was driven extinct in 1905 by imported diseases and government bounties, but the wolf-veneration traditions continue to this day. The species name 'hodophilax' — 'path-guardian' — was bestowed by the Dutch zoologist Coenraad Jacob Temminck in 1839 and is genuinely the wolf's scientific name. This connection between the project's name (Lupus, the wolf constellation) and the path-guardian etymology is one of the deepest serendipities of the cross-cultural wolf-as-pathfinder theme.",
+  "license": "indigenous_published"
+}

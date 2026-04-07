@@ -1,0 +1,43 @@
+{
+  "id": "japanese-tsuki-no-usagi",
+  "tradition": "Japanese",
+  "title": "Tsuki no Usagi (月の兎) — The Rabbit on the Moon",
+  "type": "moral_tale",
+  "characters": [
+    {
+      "name": "Usagi (the Rabbit)",
+      "role": "The compassionate hare who offers its own body as food"
+    },
+    {
+      "name": "Saru (the Monkey)",
+      "role": "Companion who gathers fruits"
+    },
+    {
+      "name": "Kitsune (the Fox)",
+      "role": "Companion who catches fish"
+    },
+    {
+      "name": "Taishakuten (Indra/Sakra)",
+      "role": "The deity who descends in the form of an old beggar to test the friends"
+    }
+  ],
+  "summary": "A rabbit, a fox, and a monkey are tested by the deity Indra disguised as a hungry beggar. The fox brings fish and the monkey brings fruit, but the rabbit has only grass. So the rabbit throws itself into a fire to offer its own body. The deity, deeply moved, places the rabbit on the moon as an eternal image of compassion.",
+  "full_text": "In the early days, three friends — a rabbit, a fox, and a monkey — lived together in the forest. They wished to learn the way of compassion. The deity Taishakuten (known in India as Indra and in Buddhism as Sakra) decided to test them. He came down from heaven disguised as an old man, weak with hunger, and asked them for food.\n\nThe monkey climbed the trees and gathered ripe fruits. The fox went to the river and caught fish. But the rabbit went into the field and could find only grass — and grass the old man could not eat. The rabbit was ashamed. It looked at its empty paws and said: 'I have nothing to offer but myself. Please accept the only thing I have.'\n\nThe rabbit asked the monkey to gather firewood and the fox to light the fire. When the flames were leaping, the rabbit took a breath and threw itself into the heart of the fire. It offered its own body as food, so that the old man would not go hungry.\n\nThe deity, witnessing this, revealed himself in his true form. He wept at the rabbit's sacrifice. He took the rabbit's body and placed it on the face of the moon, so that all beings, forever, looking up at the full moon, would see the rabbit and remember its compassion. To this day, in Japan, the markings on the moon are seen as a rabbit pounding mochi (rice cakes) — the rabbit's offering made eternal.\n\nEach autumn at Tsukimi (the Moon-Viewing Festival), the people of Japan offer mochi and silver grass to the moon, and they look up to see the rabbit who gave everything.",
+  "themes": [
+    "self-sacrifice",
+    "compassion",
+    "moon",
+    "buddhism",
+    "generosity",
+    "the test of the divine",
+    "eternal honor"
+  ],
+  "moral": "The greatest gift is the gift of oneself. Compassion offered freely is honored forever.",
+  "source": {
+    "citation": "Originates in the Śaśajātaka (the Hare Jataka, Jataka tale #316), one of the canonical Buddhist birth-stories of the Buddha in a previous life as a hare. Carried to Japan with Buddhism (6th century CE) and integrated into Japanese moon-viewing traditions. Public domain text in Cowell's translation of the Jataka (Cambridge, 1895-1907).",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/Sasajataka"
+  },
+  "cultural_notes": "The Moon Rabbit appears across many East and Southeast Asian cultures (China's Yutu the Jade Rabbit, Korea's Dal-tokki, Vietnam's Thỏ Ngọc) but the self-sacrifice version comes specifically from the Buddhist Jataka tradition. In Japan it merged with the older Tsukimi (moon-viewing) festival to become the dominant cultural image of the moon. The image of the rabbit pounding mochi on the moon is one of the most beloved in Japanese visual culture and appears constantly in art, festivals, and contemporary media.",
+  "license": "public_domain"
+}

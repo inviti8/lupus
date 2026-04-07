@@ -1,0 +1,39 @@
+{
+  "id": "japanese-yama-no-kami-wolves",
+  "tradition": "Japanese",
+  "title": "The Wolves of Yama no Kami — Messengers of the Mountain God",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Yama no Kami",
+      "role": "The mountain god (or mountain gods) of Japanese folk Shinto, of whom the wolf is the principal messenger"
+    },
+    {
+      "name": "Honshū Ōkami (the Japanese Wolf)",
+      "role": "Canis lupus hodophilax, the path-guardian wolf of the Japanese mountains, messenger and protector"
+    },
+    {
+      "name": "The Mountain Farmers",
+      "role": "Villagers who venerated the wolf and received its protection from boars and crop-raiders"
+    }
+  ],
+  "summary": "In Japanese mountain villages, the wolf was venerated as the messenger of Yama no Kami, the mountain god. The wolves protected farmers by hunting the boars and deer that destroyed crops, and shrines distributed wolf-charms each year. The bond was both practical and sacred — and it persisted long after the wolves themselves were driven extinct.",
+  "full_text": "In Japan, the wolf was not the figure of fear that European tradition made of it. The wolf was the messenger of Yama no Kami — the mountain god — and where the wolf walked, the boundary between the human world and the spirit world was thin.\n\nIn the mountain villages of central and western Japan, farmers kept wolf-charms in their houses: small wooden tablets stamped with the image of a wolf, blessed at the great wolf shrines like Mitsumine, Mitsuminecho, and the smaller mountain shrines of the Kii Peninsula. The charms were said to protect the household against fire, against theft, against the wild boars and deer that would otherwise have destroyed the harvest.\n\nThe practical reality reinforced the sacred. Living wolves did hunt the boars and deer. They patrolled the edge of the cultivated land. A village with wolves nearby was a village with fewer crop losses. The farmers gave thanks to the wolves and to Yama no Kami who sent them, and the cycle of veneration continued for generation after generation.\n\nEvery year, in many mountain villages, families would walk for days through the mountain trails to reach the great shrines. There they would receive new wolf-tablets from the shrine priests — the old tablets returned, the new ones blessed and carried home. The tablets were pasted above doors, kept in family altars, given to travelers about to set out on long journeys.\n\nWhen the Honshū wolf was driven extinct in 1905 — by imported diseases and a government bounty intended to modernize the countryside — the wolf-tablet tradition did not die. The shrines kept distributing them. The farmers kept pasting them above doors. The wolf was gone from the mountains, but the wolf was still the messenger, and the messenger was still trusted. To this day, at Mitsumine and at the shrines of the Kii Peninsula, you can receive a wolf charm. The wolf no longer walks the trails in body, but it still walks them in name.",
+  "themes": [
+    "wolf as messenger",
+    "mountain god",
+    "Yama no Kami",
+    "practical and sacred",
+    "wolf-tablets",
+    "shrine traditions",
+    "the bond that outlives the species"
+  ],
+  "moral": "What we venerate, we keep, even after it is gone in body. The relationship between the people and the wolf survives the absence of the wolf.",
+  "source": {
+    "citation": "Brett L. Walker, The Lost Wolves of Japan (University of Washington Press, 2005); Yanagita Kunio's collected folklore works on Japanese mountain religion. Both are foundational sources on Japanese wolf veneration.",
+    "indigenous_author": true,
+    "url": null
+  },
+  "cultural_notes": "Wolf veneration in Japan is well-documented and was once nearly universal in mountain villages. It is closely tied to the broader Yama no Kami complex of mountain religion, which predates and underlies institutional Shinto. The wolf shrines (Mitsumine in Saitama, the Tamaki Shrine on the Kii Peninsula, and many smaller ones) continue to operate today and continue to issue wolf charms despite the extinction of the actual Japanese wolf in 1905. The relationship survives the loss of the species, which is itself a deep teaching.",
+  "license": "indigenous_published"
+}

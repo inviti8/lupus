@@ -1,0 +1,43 @@
+{
+  "id": "japanese-inaba-no-shirousagi",
+  "tradition": "Japanese",
+  "title": "Inaba no Shirousagi (因幡の白兎) — The White Hare of Inaba",
+  "type": "trickster_tale",
+  "characters": [
+    {
+      "name": "Shirousagi (the White Hare)",
+      "role": "Trickster hare from the island of Oki, prophet of Ōkuninushi's success"
+    },
+    {
+      "name": "Wani (the Crocodiles, sometimes translated as 'sea creatures' or 'sharks')",
+      "role": "The sea creatures the hare deceives and who tear off its fur"
+    },
+    {
+      "name": "Yaso-gami (the Eighty Deities)",
+      "role": "The cruel brothers of Ōkuninushi who give the hare false advice"
+    },
+    {
+      "name": "Ōkuninushi-no-Mikoto",
+      "role": "The kind deity who heals the hare; later becomes ruler of Izumo and one of the great Shinto kami"
+    }
+  ],
+  "summary": "A hare on the island of Oki tricks the crocodiles into forming a bridge so it can cross to the mainland, mocks them at the end, and has its fur torn off. After being cruelly misled by wicked deities, it is healed by the kind Ōkuninushi — and prophesies that he will win the princess of Inaba.",
+  "full_text": "On the island of Oki, a white hare wished to cross the sea to the mainland of Inaba but had no way. So it called out to the wani — the crocodiles of the sea — and said: 'Let us hold a contest. Who is more numerous, your kind or mine? Stretch yourselves in a line from this island to the shore of Inaba, and I will hop across your backs and count you all.'\n\nThe wani agreed, proud. They lined themselves up across the sea. The hare hopped from back to back, counting aloud as it went. As it neared the last crocodile and felt the sand of Inaba beneath its paws, it laughed and called: 'I have tricked you! There were never that many of me — I only wanted to cross!'\n\nThe last crocodile, furious, seized the hare and tore off all its fur with its teeth. The hare lay weeping on the sand of Inaba, naked and bleeding.\n\nThe yaso-gami — the Eighty Deities, sons and brothers of Ōkuninushi — came along the road. They were on their way to woo Princess Yagami of Inaba. Seeing the suffering hare, they cruelly told it: 'Bathe in the salt water of the sea and lie in the wind. That will heal you.' The hare did so, and the salt burned its raw skin terribly, and the wind made the burning worse.\n\nThen Ōkuninushi came along, walking last in the procession, carrying a heavy bag for his cruel brothers. He saw the hare weeping. He stopped and asked what had happened. The hare told its story.\n\n'Wash yourself in fresh water at the river mouth,' Ōkuninushi said gently, 'then gather the pollen of the kama (cattail) plant and roll in it. You will be healed.' The hare did so, and its fur grew back, soft and white.\n\nThen the hare looked at Ōkuninushi and prophesied: 'You, kind one, will win the princess of Inaba. Not your cruel brothers — you.' And so it was. Ōkuninushi went on to become one of the great kami of Japan, ruler of Izumo and lord of the unseen world.",
+  "themes": [
+    "trickster",
+    "cruelty and kindness",
+    "healing",
+    "prophecy",
+    "kindness rewarded",
+    "the cost of mockery",
+    "Shinto origin"
+  ],
+  "moral": "Cleverness without kindness leads to ruin. The hand that heals is greater than the tongue that mocks.",
+  "source": {
+    "citation": "Kojiki (古事記), Book I, compiled by Ō no Yasumaro in 712 CE — Japan's oldest extant chronicle. Public domain. English translations include Donald L. Philippi, Kojiki (Princeton University Press, 1968) and Basil Hall Chamberlain, Translation of the Ko-ji-ki (1882, public domain).",
+    "indigenous_author": true,
+    "url": "https://en.wikipedia.org/wiki/Hare_of_Inaba"
+  },
+  "cultural_notes": "This is one of the foundational Shinto myths and appears in the Kojiki, Japan's earliest chronicle. The hare is honored at the Hakuto Jinja (White Hare Shrine, 白兎神社) in Tottori Prefecture, where the events are said to have taken place. The translation of 'wani' is debated — older translations use 'crocodile' (not native to Japan, suggesting an older mainland Asian origin to the tale), while modern scholars often use 'shark' or 'sea creature.' This tale teaches both the dangers of trickster cleverness and the rewards of compassion.",
+  "license": "public_domain"
+}

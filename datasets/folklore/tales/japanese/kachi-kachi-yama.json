@@ -1,0 +1,42 @@
+{
+  "id": "japanese-kachi-kachi-yama",
+  "tradition": "Japanese",
+  "title": "Kachi-kachi Yama (かちかち山) — Crackling Mountain",
+  "type": "moral_tale",
+  "characters": [
+    {
+      "name": "Ojiisan (the Old Farmer)",
+      "role": "A kind old farmer whose wife is killed by a wicked tanuki"
+    },
+    {
+      "name": "Obaasan (the Old Wife)",
+      "role": "Killed by the tanuki she trusted enough to free"
+    },
+    {
+      "name": "Tanuki (the Raccoon Dog)",
+      "role": "The wicked trickster who betrays the old couple's mercy"
+    },
+    {
+      "name": "Usagi (the Hare)",
+      "role": "The righteous avenger who delivers the tanuki's punishment"
+    }
+  ],
+  "summary": "A wicked tanuki kills an old farmer's wife after being shown mercy. A righteous hare takes revenge through a series of cruel tricks — burning the tanuki's back, salving its wounds with red pepper, and finally drowning it in a boat made of mud — restoring justice to the old farmer.",
+  "full_text": "An old farmer caught a wicked tanuki (raccoon dog) that had been raiding his fields. He bound the tanuki and brought it home, intending to make it pay for its thefts. But while the old farmer was away, the tanuki begged the old wife: 'Please, untie me. I will pound the millet for you, I will help with all your chores.' The old wife was kind. She freed the tanuki.\n\nThe moment it was free, the tanuki turned on her and killed her. Then it took her form by shape-shifting and waited for the old farmer to return — and in the cruelest versions of the tale, served him a soup made from his own wife. When the old farmer discovered the betrayal, he wept until his eyes were dry.\n\nA hare lived nearby. The hare came to the old farmer and said: 'I will avenge you. I will deliver justice to the tanuki.'\n\nThe hare invited the tanuki to gather firewood on the mountain. The tanuki agreed, and they climbed together, each with a great bundle on their back. As the tanuki walked ahead, the hare struck flint behind it: 'kachi-kachi' — the sound of striking sparks.\n\n'What is that crackling sound?' the tanuki asked, looking back.\n\n'Oh, that?' said the hare. 'That is just Kachi-kachi Yama, the Crackling Mountain. The mountain is always crackling. It's nothing.'\n\nThe hare set the tanuki's bundle of firewood ablaze. The tanuki ran screaming, its back terribly burned. The hare followed and offered to nurse the wounds — with a salve made of red pepper, which burned the tanuki's raw skin even worse.\n\nWhen the tanuki had recovered enough to walk, the hare invited it to go fishing. They built two boats — the hare's of strong wood, the tanuki's of clay and mud, though the tanuki did not know this. They rowed out onto the lake. In the middle of the deep water, the mud boat began to dissolve. The tanuki cried for help, but the hare watched calmly from its wooden boat as the tanuki sank beneath the water.\n\nThe old farmer was avenged. The hare returned to the village and reported what had been done.",
+  "themes": [
+    "revenge",
+    "justice",
+    "betrayal of mercy",
+    "moral complexity",
+    "the trickster as avenger",
+    "darkness in folktales"
+  ],
+  "moral": "Mercy given to the wicked is mercy wasted. But the cost of vengeance is borne even by the just.",
+  "source": {
+    "citation": "Traditional Japanese folktale, recorded by Yanagita Kunio in his collected folklore studies (early 20th century) and earlier collectors. Public domain. The tale appears in many Japanese children's storybooks though often in softened versions.",
+    "indigenous_author": true,
+    "url": "https://en.wikipedia.org/wiki/Kachi-kachi_Yama"
+  },
+  "cultural_notes": "Kachi-kachi Yama is one of Japan's most famous folktales, but it is also one of the darkest. The cruelty is deliberate and uncomfortable, and modern retellings often soften or omit the wife's death and the grim soup. The tale is included here not because it is gentle but because it shows the moral complexity of folkloric hare-figures across cultures: the hare is hero, trickster, and (when wronged) terrible avenger. This is the same hare-trickster archetype seen in Anishinaabe Nanabozho, just colored darker.",
+  "license": "public_domain"
+}

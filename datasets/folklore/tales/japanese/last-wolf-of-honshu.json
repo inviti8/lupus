@@ -1,0 +1,43 @@
+{
+  "id": "japanese-last-wolf-of-honshu",
+  "tradition": "Japanese",
+  "title": "The Last Wolf of Honshū",
+  "type": "moral_tale",
+  "characters": [
+    {
+      "name": "Canis lupus hodophilax (the Honshū Wolf)",
+      "role": "The Japanese wolf species, smaller and darker than its continental cousins, venerated for centuries and driven extinct in 1905"
+    },
+    {
+      "name": "The Hunter",
+      "role": "The man who killed the last confirmed wolf in Higashi-Yoshino, Nara Prefecture, in 1905"
+    },
+    {
+      "name": "The Foreign Zoologist",
+      "role": "The buyer who took the body abroad, where it remains in a museum in London"
+    },
+    {
+      "name": "The People of Higashi-Yoshino",
+      "role": "The villagers who today maintain a small shrine and memorial to the lost wolf"
+    }
+  ],
+  "summary": "The Honshū wolf, Canis lupus hodophilax — the path-guardian — was venerated across Japan for over a thousand years. In 1905, the last confirmed wolf was killed in Nara Prefecture, and its body was sold to a foreign zoologist. Today the village where it died maintains a small shrine to the lost wolf, and the extinction has become its own folklore — a story of mourning and the bond that outlived the species.",
+  "full_text": "The Honshū wolf was small. Smaller than the gray wolves of the continent, dark-coated, fast through the cedar forests. For more than a thousand years it walked the mountains of Japan as Yama no Kami's messenger, as the silent okuri-ōkami of the night trails, as the guardian of the farmers' fields against the boar and the deer. The Western zoologist Coenraad Jacob Temminck named it in 1839 with a name that turned out to be both a description and an elegy: Canis lupus hodophilax, the path-guardian.\n\nThen the modern age came to Japan. Imported diseases — rabies and canine distemper — moved through the wolf populations. The Meiji government, wanting to modernize agriculture and protect Western-style cattle farming, placed a bounty on wolves. Hunters came into the mountains. The wolves grew fewer.\n\nIn January 1905, in the village of Higashi-Yoshino in Nara Prefecture, hunters cornered a young male wolf. They killed it. They sold its body to Malcolm Anderson, an American zoologist working for the Duke of Bedford. Anderson sent the specimen to England, where it was preserved and is today housed in the Natural History Museum in London. It was the last confirmed Honshū wolf.\n\nNo wild Honshū wolf has been verified since. The species was declared extinct.\n\nBut the story did not end there. In Higashi-Yoshino today there is a small shrine to the last wolf. There is a stone monument at the place where it died. Each year, on the anniversary of the killing, the villagers hold a small ceremony of remembrance. Some mountain people in Japan still claim to hear wolves howling in the deepest forests of the Kii Peninsula, the Shimokita Peninsula, the Daisetsuzan range. Some believe the wolf has returned in spirit if not in body. Some say the wolf has been seen — a flash of dark fur in the trees, a paw print in the snow that should not be there.\n\nThe wolf is mourned in Japan. The image of the wolf still appears on the charms of Mitsumine Shrine. The okuri-ōkami still walks in folktales told to children. The path-guardian, the messenger of Yama no Kami, the shadow that walked beside the lone traveler — it is gone in body, but it has not been forgotten. And the loss has become its own teaching: that what is venerated is preserved, even after it is gone.",
+  "themes": [
+    "extinction",
+    "mourning",
+    "the bond that outlives the species",
+    "modernization and loss",
+    "memorial",
+    "the path-guardian",
+    "what we have lost"
+  ],
+  "moral": "The wolf is gone from the mountains but not from the people. What we have honored, we carry forward — even when we have failed to keep it alive.",
+  "source": {
+    "citation": "Brett L. Walker, The Lost Wolves of Japan (University of Washington Press, 2005) — the definitive history of the Honshū wolf and its veneration. Walker's work draws on Japanese ethnographic, zoological, and shrine sources.",
+    "indigenous_author": false,
+    "url": "https://en.wikipedia.org/wiki/Japanese_wolf"
+  },
+  "cultural_notes": "The extinction of the Honshū wolf in 1905 is a real historical event and the memorial in Higashi-Yoshino is real. The Japanese wolf has become a powerful symbol in contemporary Japanese ecological and conservation thought, parallel to the Anishinaabe Ma'iingan teaching about the linked fates of the wolf and the people. Brett Walker is not himself Japanese, but his book is widely respected in Japan and is the standard English-language source. The story is included in this compendium because the wolf-as-path-guardian is foundational to the Lupus project's naming, and the Honshū wolf — literally named 'path-guardian' in Latin — embodies that meaning more directly than any other wolf in world folklore.",
+  "license": "public_domain"
+}

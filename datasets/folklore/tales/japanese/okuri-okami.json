@@ -1,0 +1,34 @@
+{
+  "id": "japanese-okuri-okami",
+  "tradition": "Japanese",
+  "title": "Okuri-Ōkami (送り狼) — The Sending-off Wolf",
+  "type": "moral_tale",
+  "characters": [
+    {
+      "name": "The Okuri-Ōkami",
+      "role": "The silent wolf who follows travelers through the mountain trails at night, escort or attacker depending on the traveler's spirit"
+    },
+    {
+      "name": "The Mountain Traveler",
+      "role": "The lone walker who must keep their composure in the presence of the wolf"
+    }
+  ],
+  "summary": "In old Japan, mountain travelers walking the night trails would sometimes hear the soft padding of feet behind them — a single wolf, watching silently. The okuri-ōkami would escort the traveler all the way home if they kept their composure, but would attack if they showed fear or fell. A small offering at the threshold thanked the wolf and sent it back to the mountains.",
+  "full_text": "In the old time, when the mountains of Japan were thick with forest and the trails between villages were long, a traveler walking alone at night would sometimes hear something. A soft sound behind — the padding of feet on pine needles, the brush of a body against undergrowth. If the traveler turned, they might see, just at the edge of vision, a single wolf. Watching. Following. Always at the same distance, never closing, never falling behind.\n\nThis was the okuri-ōkami — the 'sending-off wolf' — and the elders taught what to do.\n\nDo not run. Do not show fear. Do not look back too long, but do not pretend not to see. Walk steadily. Breathe evenly. Speak softly to yourself if you must, but do not cry out. The wolf is testing your spirit. The wolf is reading whether you are worthy of escort.\n\nIf the traveler walked with composure, the wolf would walk with them — through the dark trees, across the lonely mountain passes, past the places where bandits and yokai might wait. The wolf would escort them all the way to their door. Some travelers reported looking back at the very threshold of their home and seeing the wolf one last time at the edge of the trees, watching, before it turned and vanished back into the mountain.\n\nBut if the traveler stumbled, fell, panicked, or began to run — then the wolf might attack. For the wolf had judged them unworthy, or it had judged that the traveler had shown the test that the mountain spirits had set, and failed.\n\nWhen the traveler reached home safely, they were to leave a small offering at the threshold or just outside the door — a handful of cooked rice, a single sandal, a bit of dried fish. The wolf would take the offering as thanks and disappear back into the mountains. The next traveler walking those trails would walk safer for it.\n\nThe okuri-ōkami is the silent face of the wolf-as-pathfinder in Japanese folk tradition. It is the wolf who walks beside you when you cannot see your own footing.",
+  "themes": [
+    "wolf as pathfinder",
+    "silent escort",
+    "test of the spirit",
+    "composure",
+    "offering and thanks",
+    "the wolf as guardian of the trail"
+  ],
+  "moral": "The wolf walks with those who walk steadily. To be escorted is to be tested.",
+  "source": {
+    "citation": "Yanagita Kunio, Tōno Monogatari (遠野物語, Tales of Tōno, 1910), the foundational text of Japanese folklore studies. Also documented in Brett L. Walker, The Lost Wolves of Japan (University of Washington Press, 2005). Public domain (Tōno Monogatari).",
+    "indigenous_author": true,
+    "url": "https://en.wikipedia.org/wiki/Tono_Monogatari"
+  },
+  "cultural_notes": "The okuri-ōkami belief is documented across many regions of mountainous Japan, with variations on what offering to leave and how the wolf tests the traveler. It is one of the deepest folk expressions of the wolf-as-companion bond in Japanese culture and parallels the Anishinaabe teaching of Ma'iingan as Nanabozho's pathfinder. The phrase 'okuri-ōkami' has, in modern Japanese, taken on a darker secondary meaning (a man who escorts a woman home with bad intentions) — but the original folkloric meaning is the silent wolf-escort of the mountain trails.",
+  "license": "indigenous_published"
+}
