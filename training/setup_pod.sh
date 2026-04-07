@@ -67,12 +67,33 @@ if [ $VOLUME_DETECTED -eq 1 ]; then
     echo "HuggingFace cache: $HF_HOME (persists on volume)"
 fi
 
-# 5. System dependencies (most RunPod base images already have these,
-#    but install if missing — apt-get is idempotent)
-if command -v apt-get >/dev/null 2>&1; then
-    echo "Installing system packages (apt-get)..."
-    sudo apt-get update -qq
-    sudo apt-get install -y -qq git curl wget python3-pip
+# 5. System dependencies. RunPod's PyTorch base images already have all
+#    of these (git, curl, wget, pip), so this step is usually a no-op.
+#    Use sudo only if we're not root and sudo is available — RunPod
+#    containers run as root with no sudo installed.
+if [ "$EUID" -eq 0 ]; then
+    SUDO=""
+elif command -v sudo >/dev/null 2>&1; then
+    SUDO="sudo"
+else
+    SUDO=""
+fi
+
+# Only run apt-get if any of the required tools are missing
+NEED_APT=0
+for cmd in git curl wget pip3; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        NEED_APT=1
+        break
+    fi
+done
+
+if [ $NEED_APT -eq 1 ] && command -v apt-get >/dev/null 2>&1; then
+    echo "Installing missing system packages..."
+    $SUDO apt-get update -qq
+    $SUDO apt-get install -y -qq git curl wget python3-pip
+else
+    echo "System packages already present (skipping apt-get)"
 fi
 
 # 6. Python dependencies. The PyTorch base image already has torch + CUDA
