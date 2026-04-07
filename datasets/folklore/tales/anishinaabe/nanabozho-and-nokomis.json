@@ -1,0 +1,44 @@
+{
+  "id": "anishinaabe-nanabozho-and-nokomis",
+  "tradition": "Anishinaabe",
+  "title": "Nanabozho and his Grandmother Nokomis",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Nokomis",
+      "role": "Grandmother of Nanabozho, the one who raised him after his mother's death; also a name for the Earth herself"
+    },
+    {
+      "name": "Wenonah",
+      "role": "Mother of Nanabozho, daughter of Nokomis, loved by the West Wind"
+    },
+    {
+      "name": "Epingishmook (the West Wind)",
+      "role": "Father of Nanabozho, a manitou of the four winds"
+    },
+    {
+      "name": "Nanabozho",
+      "role": "The Great Hare, fourth and last son of Wenonah, manitou and culture hero"
+    }
+  ],
+  "summary": "Nanabozho's mother Wenonah was loved by the West Wind and bore four sons before dying in childbirth. It was Nokomis, the grandmother, who raised the infant Nanabozho and taught him the names of plants, the songs of birds, and the ways of all beings.",
+  "full_text": "Wenonah was the daughter of Nokomis. She was beautiful and kind, and when she walked in the forest the West Wind — Epingishmook — saw her and loved her. Four times she bore his sons. The fourth son was Nanabozho. But the West Wind was a careless father, and Wenonah died in the birthing of her last child.\n\nNokomis took the infant Nanabozho into her arms. She did not weep where the child could see, for she did not want him to begin his life in tears. She wrapped him in soft moss and skins and carried him home.\n\nAs Nanabozho grew, Nokomis taught him everything. She walked with him through the forests and named for him every plant — which would heal a fever, which would close a wound, which would give strength, which would bring sleep. She taught him the songs of the chickadee and the call of the loon and the language of the wind in the pines. She taught him the ways of the deer and the bear and the wolf and the otter. Above all, she taught him that he carried a debt — to his mother who had died for him, and to the people who would one day come and need his gifts.\n\nWhen Nanabozho grew tall, he asked Nokomis: 'Who is my father?' And Nokomis told him the story of the West Wind, and that began another tale — for Nanabozho went to find his father, and that journey was the beginning of his many wanderings. But always, when his journeys grew long and hard, Nanabozho remembered his grandmother Nokomis, and he remembered what he had been given, and what he owed.",
+  "themes": [
+    "kinship",
+    "teaching",
+    "grief",
+    "grandmother",
+    "debt",
+    "growing up",
+    "mother love",
+    "origin of the hero"
+  ],
+  "moral": "Every gift carries a debt. The teachings of those who raise us are what we must carry into the world.",
+  "source": {
+    "citation": "Basil Johnston, Ojibway Heritage (McClelland & Stewart, 1976). The Wenonah cycle is widely told across Anishinaabe traditions and was famously adapted by Henry Wadsworth Longfellow in 'The Song of Hiawatha' (with significant inaccuracies).",
+    "indigenous_author": true,
+    "url": null
+  },
+  "cultural_notes": "Nokomis means 'my grandmother' in Anishinaabemowin and is also a sacred name for the Earth herself in some Anishinaabe teachings. The Nanabozho origin story has many variants across Algonquian peoples; this version follows Basil Johnston. Note that Longfellow's 'The Song of Hiawatha' confuses Nanabozho with the historical Iroquois leader Hiawatha — they are not the same figure.",
+  "license": "indigenous_published"
+}

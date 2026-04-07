@@ -145,13 +145,21 @@ From the Bylaws and cooperative documentation:
 
 This is a small dataset (~100 documents) but important for cooperative-specific vocabulary.
 
-### 2.5 Hare & Wolf Folklore Compendium
+### 2.5 Hare & Wolf Folklore — Knowledge-Aware Examples for the Search Adapter
 
-Lupus and Lepus are named from the wolf and hare constellations. The project draws on Anishinaabe tradition (the wolf as Nanabozho's companion and pathfinder). To give the model genuine cultural depth — not just a mascot — we train on a comprehensive compendium of hare and wolf folklore from world mythology.
+Lupus and Lepus are named from the wolf and hare constellations. The project draws on Anishinaabe tradition (the wolf as Nanabozho's companion and pathfinder). To give the model genuine cultural depth — not just a mascot — we incorporate hare and wolf folklore from world mythology directly into the search adapter's training data, as **knowledge-aware function-calling examples**.
 
 **Why this matters for a search engine:** When users search for topics the cooperative cares about — mythology, folklore, indigenous knowledge, storytelling — the model should have real understanding, not surface-level pattern matching. It also gives Lupus a distinct voice grounded in the traditions that inspired it.
 
-**Compendium structure:**
+**How it integrates with the search adapter:** The folklore data is not a separate dataset. It is a **subset of the search adapter training data** — roughly 10-15% of the 10K total examples, so ~1000-1500 knowledge-aware examples. Each one teaches the model to *both* demonstrate cultural knowledge *and* call the appropriate tools to search for related cooperative content. The model learns *both* to know the material *and* to search the local index for related entries. No separate adapter, no extra training cost — just a meaningful slice of the search dataset.
+
+**Two artifacts, one source of truth:**
+
+1. **`datasets/folklore/`** — The cultural compendium (`FolkloreTale` JSON entries). The curated, structured source material — the cultural artifact itself. Each entry includes the tale text, characters, themes, source citation, and cultural notes. Maintained as a permanent reference, valuable in its own right beyond ML training.
+
+2. **`datasets/search/examples/knowledge_aware.jsonl`** — Training examples derived from the compendium. A conversion script generates one or more `SearchExample` entries from each `FolkloreTale`, embedding the knowledge into a query-response-tool-call training instance. Re-derivable from the compendium with different prompts as the training methodology evolves.
+
+**Compendium coverage:**
 
 | Tradition | Hare Stories | Wolf Stories | Sources |
 |-----------|-------------|-------------|---------|
@@ -180,33 +188,57 @@ Lupus and Lepus are named from the wolf and hare constellations. The project dra
 - **Moon associations** — Jade Rabbit, Tsuki no Usagi, Śaśajātaka: the hare lives in the moon across cultures
 - **Constellation myths** — Lupus and Lepus in the southern sky, adjacent constellations
 
-**Dataset format:**
+**Compendium entry format (`FolkloreTale`):**
 
 ```json
 {
+  "id": "anishinaabe-nanabozho-and-maiingan",
   "tradition": "Anishinaabe",
   "title": "Nanabozho and Ma'iingan",
   "type": "creation_myth",
-  "characters": ["Nanabozho (Great Hare)", "Ma'iingan (Wolf)"],
-  "summary": "The Creator sends Wolf to walk with Nanabozho and name all the beings...",
+  "characters": [
+    {"name": "Nanabozho", "role": "Great Hare, manitou, culture hero"},
+    {"name": "Ma'iingan", "role": "Wolf, companion to Nanabozho, pathfinder"}
+  ],
+  "summary": "After creation, the Great Spirit gave Nanabozho a companion — the Wolf — and they walked the world together, naming all beings. Their fates remain forever linked.",
   "full_text": "...",
-  "themes": ["companionship", "pathfinding", "naming", "creation"],
-  "source": "Basil Johnston, Ojibway Heritage",
-  "license": "public_domain_or_cc"
+  "themes": ["companionship", "pathfinding", "naming", "linked fates"],
+  "moral": "What befalls one of us befalls us all — the wolf's fate and the human's fate are bound together.",
+  "source": {
+    "citation": "Basil Johnston, Ojibway Heritage (1976)",
+    "indigenous_author": true
+  },
+  "cultural_notes": "Basil Johnston was an Ojibwe scholar who explicitly published these stories to share Anishinaabe teachings with broader audiences.",
+  "license": "indigenous_published"
 }
 ```
 
-**How to build this dataset:**
+**Derived training example (`SearchExample`):**
+
+```json
+{
+  "id": "knowledge-anishinaabe-001",
+  "category": "knowledge_aware",
+  "user_query": "Tell me about the wolf in Anishinaabe tradition",
+  "assistant_response": "In Anishinaabe tradition, the wolf — Ma'iingan — is the companion and pathfinder of Nanabozho, the Great Hare. After creation, the Creator gave Nanabozho the Wolf as a companion, and the two walked the world together, naming all beings. The teaching is that their fates are forever linked: 'what befalls one of us befalls us all.' This is from Basil Johnston's *Ojibway Heritage*.\n\n<|function_call|>{\"name\": \"search_local_index\", \"arguments\": {\"query\": \"Anishinaabe Nanabozho Maiingan wolf companion pathfinder\"}}<|end_function_call|>",
+  "metadata": {
+    "tradition": "Anishinaabe",
+    "themes": ["companionship", "pathfinding", "linked fates"],
+    "source_tale_id": "anishinaabe-nanabozho-and-maiingan"
+  }
+}
+```
+
+**How to build the compendium:**
 
 | Source | Method | Volume | Cost |
 |--------|--------|--------|------|
-| Public domain texts | Gutenberg, Sacred Texts Archive, Internet Archive | 200-500 tales | $0 |
-| Academic collections | Folklore journals, anthropological records (pre-1928 = public domain) | 100-300 tales | $0 |
-| Synthetic summaries | Use Claude to summarize and structure known tales from referenced works | 500-1,000 structured entries | $20-50 |
-| Constellation mythology | Star lore databases, IAU records, ethnoastronomy papers | 50-100 entries | $0 |
-| Cross-reference synthesis | Generate thematic connections across traditions | 100-200 synthesis entries | $10-20 |
+| Public domain texts | Gutenberg, Sacred Texts Archive, Internet Archive | 50-100 tales | $0 |
+| Indigenous-authored collections | Basil Johnston, Erdoes & Ortiz, etc. (curated retellings) | 30-60 tales | Volunteer |
+| Direct generation in Claude Code | Compendium entries written in-session, validated against Pydantic schemas | 100-150 tales | Subscription only |
+| Academic folklore collections | Public domain pre-1928 sources | 30-50 tales | $0 |
 
-**Target:** 500-1,000 structured folklore entries covering all traditions above, plus 100-200 cross-tradition thematic syntheses.
+**Realistic target:** 100-200 high-quality `FolkloreTale` entries in the compendium → 1000-1500 derived `SearchExample` entries (multiple training examples can be generated from each tale via different query angles). The earlier 500-1000 figure was overshooting — for a 1.1B model with LoRA, 100-200 culturally-resonant tales is genuinely sufficient.
 
 **Important:** Prioritize Indigenous sources that are already public and shared by their communities. Do not scrape sacred or restricted knowledge. Use published collections by Indigenous authors where possible. When in doubt about a story's status, omit it.
 
@@ -217,9 +249,9 @@ Lupus and Lepus are named from the wolf and hare constellations. The project dra
 | Synthetic data generation | API calls to Claude/GPT-4 for 10K examples | $50-200 |
 | Phishing data collection | Free databases, scripted download | $0 |
 | Safe page crawling | Scripted from Tranco list | $0 |
-| Folklore compendium | Public domain texts + synthetic structuring | $30-70 |
+| Folklore compendium | Direct generation in Claude Code (subscription) | $0 |
 | Manual curation | Cooperative member time | Volunteer hours |
-| **Total** | | **$80-270** |
+| **Total** | | **$50-200** |
 
 ---
 
@@ -229,41 +261,44 @@ Lupus and Lepus are named from the wolf and hare constellations. The project dra
 
 | Provider | GPU | Price/Hour | Best For |
 |----------|-----|-----------|----------|
-| **RunPod** | A100 80GB | $1.64/hr | Best value for LoRA training |
+| **RunPod** | RTX 4090 (interruptable/spot) | $0.29/hr | **Recommended** — dev, iteration, hyperparameter search. Requires checkpointing. |
+| **RunPod** | RTX 4090 (on-demand) | $0.44/hr | Final publishable training runs (no interruption risk) |
+| **RunPod** | A100 80GB | $1.64/hr | Overkill for 1B models with LoRA — only if doing larger experiments |
 | **Lambda** | A100 80GB | $1.29/hr (reserved) | Cheapest A100 if committing hours |
-| **Vast.ai** | A100 80GB | $0.80-1.50/hr (spot) | Budget option, less reliable |
-| **RunPod** | RTX 4090 | $0.44/hr | Sufficient for 1B models with QLoRA |
+| **Vast.ai** | A100 80GB | $0.80-1.50/hr (spot) | Alternative budget option |
 | **Google Colab Pro** | A100 40GB | $10/month + compute | Good for experimentation |
+
+**Spot/interruptable strategy:** Use $0.29/hr interruptable instances for everything except the final training run. Configure HuggingFace Trainer with `save_steps=200` (~5-10 min checkpoints) and use a RunPod network volume (~$0.07/GB/month) for persistence so a killed pod can be replaced and resumed without losing progress. Switch to on-demand only for the final publishable training run.
 
 ### Training Time Estimates
 
-For LoRA fine-tuning on a single A100 80GB:
+For QLoRA fine-tuning on a single RTX 4090 (24GB VRAM, spot pricing $0.29/hr):
 
 | Model | Dataset Size | Epochs | Estimated Time | Cost |
 |-------|-------------|--------|----------------|------|
-| Pythia-1.4B search adapter | 10,000 examples | 3 | ~30 minutes | ~$1 |
-| Pythia-1.4B content adapter | 15,000 examples | 3 | ~45 minutes | ~$1.50 |
-| Qwen-Coder-0.5B security | 20,000 examples | 5 | ~20 minutes | ~$0.50 |
-| **Total first training run** | | | **~2 hours** | **~$3-5** |
+| TinyAgent-1.1B search adapter | 10,000 examples | 3 | ~60 minutes | ~$0.30 |
+| TinyAgent-1.1B content adapter | 15,000 examples | 3 | ~90 minutes | ~$0.45 |
+| Qwen-Coder-0.5B security | 20,000 examples | 5 | ~40 minutes | ~$0.20 |
+| **Total first training run** | | | **~3 hours** | **~$1** |
 
-These estimates are for QLoRA (4-bit quantized base) with LoRA rank 16-32. The models are small enough that training is extremely fast.
+These estimates are for QLoRA (4-bit quantized base) with LoRA rank 16-32. The models are small enough that training is extremely fast even on consumer hardware.
 
 ### Iteration Budget
 
 First-run training is cheap. The real cost is in **iteration** — training, evaluating, adjusting data, retraining:
 
-| Phase | Runs | Hours | Cost |
-|-------|------|-------|------|
-| Initial training (3 models) | 1 | 2 hrs | $5 |
-| Hyperparameter search | 10-20 | 10-20 hrs | $20-40 |
-| Dataset quality iteration | 5-10 | 5-10 hrs | $10-20 |
-| Evaluation and refinement | 10 | 10 hrs | $20 |
-| Final training runs | 3 | 3 hrs | $5 |
-| **Total Phase 3** | | **30-45 hrs** | **$60-90** |
+| Phase | Runs | Hours | Cost (spot $0.29/hr) |
+|-------|------|-------|---------------------|
+| Initial training (3 models) | 1 | 3 hrs | $1 |
+| Hyperparameter search | 10-20 | 15-30 hrs | $4-9 |
+| Dataset quality iteration | 5-10 | 10-15 hrs | $3-5 |
+| Evaluation and refinement | 10 | 10 hrs | $3 |
+| Final training runs (on-demand $0.44/hr) | 3 | 5 hrs | $2 |
+| **Total Phase 3** | | **45-65 hrs** | **$13-20** |
 
 ### Estimated Cost: Phase 3
 
-**$60-90** for GPU compute. Potentially less with spot instances or Colab Pro.
+**$13-20** for GPU compute on RTX 4090 spot instances. Far below the original $60-90 estimate that assumed A100 pricing.
 
 ---
 
@@ -421,30 +456,30 @@ python export/publish.py \
 | Phase | Cost | Time |
 |-------|------|------|
 | 1. Base model selection | $0 | 1 day (evaluation) |
-| 2. Dataset creation | $80-270 | 2-4 weeks |
-| 3. Training infrastructure | $60-90 | Included in phase 4 |
+| 2. Dataset creation | $50-200 | 2-4 weeks |
+| 3. Training infrastructure | $13-20 | Included in phase 4 |
 | 4. Training execution | Included above | 1-2 weeks (iterating) |
 | 5. Evaluation | $0 (uses training GPU time) | 1 week |
 | 6. Export and distribution | $0 | 1 day |
-| **Total** | **$140-360** | **4-8 weeks** |
+| **Total** | **$63-220** | **4-8 weeks** |
 
 ### Cost Breakdown
 
 ```
-Dataset generation (synthetic via API):  $50-200
-Folklore compendium (structuring):       $30-70
-GPU compute (30-45 hours A100):          $60-90
-                                         --------
-Total:                                   $140-360
+Dataset generation (synthetic via API, optional):  $50-200
+Folklore compendium (in Claude Code session):      $0
+GPU compute (45-65 hours RTX 4090 spot):           $13-20
+                                                   --------
+Total:                                             $63-220
 ```
 
-This is remarkably cheap for a custom AI model. The key insight: at 0.5-1.5B parameters with LoRA, training is measured in minutes per run, not days. The cost is dominated by iteration (trying different hyperparameters, adjusting datasets) rather than raw compute.
+This is remarkably cheap for a custom AI model. Key insights: at 0.5-1.5B parameters with LoRA, training is measured in minutes per run on consumer GPUs. Generating the folklore compendium directly in Claude Code (using a subscription) eliminates dataset generation cost for that portion. Spot RTX 4090 instances drop training compute by ~5x vs A100. The cost is dominated by optional iteration and any synthetic data generation through API calls — both of which can be reduced or eliminated.
 
 ### Cost Comparison
 
 | Approach | Cost |
 |----------|------|
-| Fine-tune Lupus (0.5B + 1.4B) | $140-360 |
+| Fine-tune Lupus (0.5B + 1.4B) | $63-220 |
 | Fine-tune a 7B model | $1,500-5,000 |
 | Fine-tune a 70B model | $50,000-100,000 |
 | Train a model from scratch | $1M+ |

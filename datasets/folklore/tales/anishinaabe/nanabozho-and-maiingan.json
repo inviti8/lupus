@@ -1,0 +1,39 @@
+{
+  "id": "anishinaabe-nanabozho-and-maiingan",
+  "tradition": "Anishinaabe",
+  "title": "Nanabozho and Ma'iingan (The Great Hare and the Wolf)",
+  "type": "creation_myth",
+  "characters": [
+    {
+      "name": "Kitche Manitou",
+      "role": "The Great Mystery, the Creator"
+    },
+    {
+      "name": "Nanabozho",
+      "role": "The Great Hare, manitou born of a spirit and a human, culture hero of the Anishinaabe (also called Nanabush, Wenebojo)"
+    },
+    {
+      "name": "Ma'iingan",
+      "role": "The Wolf, brother and companion to Nanabozho, pathfinder of the world"
+    }
+  ],
+  "summary": "After Kitche Manitou completed the four-fold creation and Nanabozho had walked the earth, the Creator gave Nanabozho a brother — Ma'iingan, the Wolf. The two walked the world together, naming all beings, until the Creator told them they must part, but that their fates would forever be linked.",
+  "full_text": "After Kitche Manitou — the Great Mystery — had completed the four-fold creation of the physical world, the plant beings, the animal beings, and the human beings, the manitou Nanabozho walked the earth. Nanabozho was the Great Hare, born of a spirit father and a human mother, and he was lonely upon the earth, for there was no one to share his journeys.\n\nKitche Manitou took pity on Nanabozho and gave him a brother. This brother was Ma'iingan, the Wolf. From the moment they met, Nanabozho and Ma'iingan were as one. They walked the world together. They named the plants, the animals, the rivers, the mountains. They learned the nature of all beings. They were brothers in every way that mattered, and their journey was one journey.\n\nBut Kitche Manitou foresaw that the time of the human beings would soon come, and that humans would not always understand the wolf. The Creator called Nanabozho and Ma'iingan to him and told them: 'You must part now. You cannot walk together any longer. But know this — your fates will forever be linked. What happens to one of you will happen to the other. As the human beings treat the wolf, so will the human beings be treated. As the wolf is hunted, so will the people be hunted. As the wolf is given a place to live in peace, so will the people have a place to live in peace.'\n\nAnd so Nanabozho and Ma'iingan parted, but the teaching of their bond remained: that the wolf and the people are kin, that what befalls one befalls the other, and that the way the human beings live with their wolf brother is the measure of how they live with all of creation.",
+  "themes": [
+    "companionship",
+    "pathfinding",
+    "naming",
+    "linked fates",
+    "kinship with creation",
+    "ecology",
+    "creation"
+  ],
+  "moral": "What befalls the wolf befalls the people. The way humans live with the wolf is the measure of how they live with all of creation.",
+  "source": {
+    "citation": "Basil Johnston, Ojibway Heritage (McClelland & Stewart, 1976); also retold in Johnston, The Manitous (HarperCollins, 1995). Widely referenced in Ojibwe cultural and environmental teachings.",
+    "indigenous_author": true,
+    "url": null
+  },
+  "cultural_notes": "Basil Johnston (1929-2015) was an Ojibwe scholar and member of the Chippewas of Nawash Unceded First Nation who wrote extensively to share Anishinaabe teachings with broader audiences. This tale is foundational to Ojibwe ecological and political thought and is regularly invoked in contemporary Ojibwe wolf protection and treaty advocacy. It is publicly told and freely shared by tradition-bearers. This entry uses 'Nanabozho' as the most common scholarly transliteration; Johnston himself uses 'Nanabush.' Other regional spellings include Wenebojo, Wenabozho, and Manabozho.",
+  "license": "indigenous_published"
+}

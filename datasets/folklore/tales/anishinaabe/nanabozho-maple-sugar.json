@@ -1,0 +1,39 @@
+{
+  "id": "anishinaabe-nanabozho-maple-sugar",
+  "tradition": "Anishinaabe",
+  "title": "Nanabozho and the Maple Sugar",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Nanabozho",
+      "role": "The Great Hare, teacher of the people, who watches them grow lazy under the maples"
+    },
+    {
+      "name": "The Maple Trees (Ininaatig)",
+      "role": "The trees that once gave pure sweet syrup straight from their trunks"
+    },
+    {
+      "name": "The People",
+      "role": "Who lay beneath the maples and forgot to work"
+    }
+  ],
+  "summary": "In the early days, the maple trees gave pure thick syrup straight from their trunks, and the people lay beneath them and grew lazy. Nanabozho poured water into the maples to thin the sap, so that to taste the sweetness, the people would have to gather and boil and remember work.",
+  "full_text": "In the early days, when the world was still new, Nanabozho came to the maple trees and saw a wonder: the sap of the maples ran from their trunks as pure thick syrup, sweet and golden. The people had only to come to the trees, hold up their cups, and drink as much as they wanted.\n\nBut Nanabozho watched the people, and he was troubled. They no longer hunted. They no longer fished. They no longer tended the gardens, no longer cared for the children, no longer told the stories around the fire. They simply lay beneath the maple trees and drank, and slept, and drank again. They had grown lazy, and the lazy people forget who they are.\n\nNanabozho thought for a long time. Then he climbed the maples one by one, and he poured water into them — water from the lakes and the rivers and the rain. He poured until the thick syrup became thin sap, the sap we know today.\n\nThe people came to the trees and tasted, and the sweetness was almost gone. Only a little remained, in many cups of water. They cried out: 'Nanabozho! What have you done?'\n\n'I have not taken the sweetness from you,' said Nanabozho. 'It is still there. But now you must gather the sap when the spring sun warms the trunks. You must build fires and boil the sap down through long days and longer nights. You must work for the sweetness. And in the working, you will remember who you are. You will remember to hunt and to fish and to tend the gardens and to tell the stories. The sweetness will be the sweeter for the work.'\n\nAnd so it has been ever since. The people gather sap each spring and boil it down to make sugar, and the work is part of the sweetness, and the people remember.",
+  "themes": [
+    "labor",
+    "sweetness",
+    "balance",
+    "ecology",
+    "teaching",
+    "the cost of ease",
+    "seasons"
+  ],
+  "moral": "A gift too easy is no gift at all. The work is part of the sweetness, and to forget the work is to forget who you are.",
+  "source": {
+    "citation": "Basil Johnston, Ojibway Heritage (McClelland & Stewart, 1976). Common Anishinaabe and broader Algonquian teaching, told each spring during sugaring season.",
+    "indigenous_author": true,
+    "url": null
+  },
+  "cultural_notes": "Maple sugaring is an essential spring activity for the Anishinaabe and other northeastern Indigenous peoples, and this teaching is told and retold during the sugaring moon (March-April). The lesson connects work, sweetness, and identity — three things the Anishinaabe consider inseparable.",
+  "license": "indigenous_published"
+}

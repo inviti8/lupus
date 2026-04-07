@@ -1,0 +1,39 @@
+{
+  "id": "anishinaabe-nanabozho-birch-bark-markings",
+  "tradition": "Anishinaabe",
+  "title": "Why the Birch Tree Has Markings",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Nanabozho",
+      "role": "The Great Hare, fleeing from the Thunderbirds"
+    },
+    {
+      "name": "The Thunderbirds (Animikiig)",
+      "role": "Storm-spirits of the upper world, hurling lightning"
+    },
+    {
+      "name": "Wiigwaas (the Birch)",
+      "role": "The birch tree, who opens her bark to hide Nanabozho"
+    }
+  ],
+  "summary": "Nanabozho was being chased by the Thunderbirds and ran until he could run no more. The birches opened their bark and hid him inside. In gratitude, Nanabozho marked the birch's bark with dark patterns and made the bark resistant to fire and lightning forever.",
+  "full_text": "There was a time when the Thunderbirds — the great storm-spirits of the upper world, the Animikiig — were chasing Nanabozho across the land. They were furious with him, for reasons that are told in another story. They hurled lightning at him from above, and the rain came down in sheets, and Nanabozho ran.\n\nHe ran until his legs would carry him no further. He came at last to a stand of birch trees by the edge of a lake, and he begged them: 'Wiigwaas! Hide me! The Thunderbirds will find me here in the open and I will be killed!'\n\nThe birches were kind. They opened their white bark and let Nanabozho slip inside the trunk of the largest among them, and the bark closed around him. The Thunderbirds passed overhead, hurling lightning into the lake, splitting other trees, but they could not see Nanabozho where he lay hidden in the birch.\n\nWhen the storm had passed and the Thunderbirds had gone, Nanabozho stepped out of the birch and put his hand on her trunk in gratitude. 'For your kindness,' he said, 'I will mark you so that all the people will remember what you did for me. The dark marks on your bark will be my thanks. And forever, your bark will not burn even when struck by lightning. The Thunderbirds will not touch you again.'\n\nThat is why the birch has its dark markings. That is why birch bark resists fire even when wet. That is why the birch is used by the people for canoes and shelters and the sacred birch-bark scrolls on which the old stories are recorded. The birch sheltered Nanabozho, and Nanabozho marked her in return, and the gift is still being repaid today, every time a child traces the dark marks on a white birch trunk.",
+  "themes": [
+    "gratitude",
+    "gift",
+    "ecology",
+    "storytelling",
+    "refuge",
+    "the marks of remembering",
+    "fire resistance"
+  ],
+  "moral": "A small kindness given to the world is repaid in marks that last forever.",
+  "source": {
+    "citation": "Basil Johnston, Ojibway Heritage (McClelland & Stewart, 1976). Widespread Anishinaabe and broader Algonquian teaching about the birch.",
+    "indigenous_author": true,
+    "url": null
+  },
+  "cultural_notes": "The birch is one of the most important trees to Anishinaabe life — used for canoes, lodging, baskets, and most importantly the wiigwaasabakoon (birch-bark scrolls) on which the Midewiwin society recorded sacred teachings. This story honors the tree's importance through Nanabozho's gratitude.",
+  "license": "indigenous_published"
+}

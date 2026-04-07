@@ -1,0 +1,51 @@
+{
+  "id": "anishinaabe-nanabozho-flood-earth-diver",
+  "tradition": "Anishinaabe",
+  "title": "Nanabozho, the Flood, and the Earth Diver",
+  "type": "creation_myth",
+  "characters": [
+    {
+      "name": "Nanabozho",
+      "role": "The Great Hare, manitou and culture hero, grieving the loss of his wolf-nephew"
+    },
+    {
+      "name": "Mishipeshu",
+      "role": "The Great Underwater Lynx, manitou of the deep waters, sender of the flood"
+    },
+    {
+      "name": "Maang (the Loon)",
+      "role": "First diver, fails to reach the bottom"
+    },
+    {
+      "name": "Amik (the Beaver)",
+      "role": "Second diver, also fails"
+    },
+    {
+      "name": "Nigig (the Otter)",
+      "role": "Third diver, dives so long he is unconscious when he surfaces"
+    },
+    {
+      "name": "Wajashk (the Muskrat)",
+      "role": "The smallest and humblest diver, who succeeds where the others fail"
+    }
+  ],
+  "summary": "After Nanabozho killed the Great Underwater Lynx in revenge for his wolf-nephew, the underwater manitous sent a flood. Nanabozho asked the animals to dive for earth so he could remake the world — and it was the smallest, the muskrat, who succeeded.",
+  "full_text": "When Nanabozho killed the Great Lynx, Mishipeshu, in revenge for the death of his wolf-nephew, the underwater manitous answered with a flood. Water rose over the hills and over the forests and finally over the highest mountains. Nanabozho climbed the tallest pine tree on the highest peak and commanded it to grow taller, but still the water rose. When it reached his chin, Nanabozho stopped and called to the animals who could swim.\n\n'Who will dive to the bottom and bring up earth, so I can remake the world?'\n\nMaang the Loon dove first. He was gone a long time, but when he surfaced gasping, his beak was empty. Amik the Beaver dove next, with his strong legs and powerful tail — he too came back with nothing. Nigig the Otter dove longest of all and was unconscious when he floated to the surface, but he had found nothing.\n\nThen Wajashk the Muskrat — small, humble, easily overlooked — said: 'I will try.'\n\nNanabozho doubted. The Muskrat was so much smaller than the others. But he agreed. Wajashk dove. He was gone for what seemed like forever. When at last his small body floated up, lifeless, Nanabozho took him gently and opened his tiny clenched paws. In one paw was a single grain of earth.\n\nFrom that grain, Nanabozho remade the world. And the people remember: it was the smallest and most overlooked who did what the strong could not.",
+  "themes": [
+    "creation",
+    "humility",
+    "perseverance",
+    "the value of the small",
+    "flood",
+    "recreation",
+    "wolf-bond grief"
+  ],
+  "moral": "The smallest and most overlooked can do what the strong cannot. Greatness is not measured by size.",
+  "source": {
+    "citation": "Basil Johnston, Ojibway Heritage (McClelland & Stewart, 1976) and The Manitous (HarperCollins, 1995). Variants told across all Algonquian peoples.",
+    "indigenous_author": true,
+    "url": null
+  },
+  "cultural_notes": "The earth-diver creation story is found across many Algonquian and Indigenous North American traditions, with the Muskrat as hero in the Anishinaabe version specifically. The story is connected to the Mishipeshu (Underwater Lynx) cycle and to Nanabozho's grief over his wolf-nephew. It is a foundational and widely-shared teaching.",
+  "license": "indigenous_published"
+}

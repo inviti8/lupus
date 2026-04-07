@@ -1,0 +1,35 @@
+{
+  "id": "anishinaabe-nanabozho-cedar-medicine",
+  "tradition": "Anishinaabe",
+  "title": "Nanabozho and the Cedar",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "Nanabozho",
+      "role": "The Great Hare, gathering the medicines from the trees"
+    },
+    {
+      "name": "Giizhik (the Cedar)",
+      "role": "The cedar tree, who offers bark, leaves, wood, and shelter for both wolf and hare"
+    }
+  ],
+  "summary": "When Nanabozho was making the four sacred medicines, he asked each tree what it would give. The cedar offered bark for tea, leaves for cleansing smoke, wood for shelter, and refuge in winter for wolf and hare alike. So cedar became one of the four sacred medicines.",
+  "full_text": "When Nanabozho was gathering the medicines for the people, he walked among the trees and asked each one what it would give. Some gave only their fruit. Some gave only their shade. Some gave their wood for fire and nothing more.\n\nThen Nanabozho came to the cedar — Giizhik — and asked the same question.\n\nThe cedar answered: 'I will give my bark to be steeped as tea, for fevers and for cleansing the body. I will give my leaves to be burned as smoke, for cleansing the spirit and the lodge and the people who enter ceremony. I will give my wood to be carved for shelters and for canoes. And in the deep snow, when the wind is cruel, I will spread my low branches and give shelter beneath my trunk to the wolf and to the hare alike, for they are kin and they are cold.'\n\nNanabozho was pleased. He named the cedar as one of the four sacred medicines, alongside sage and sweetgrass and tobacco. To this day, cedar is burned in the lodges. Cedar branches are laid down as a path for the spirits to walk. Cedar tea is drunk for healing. And in the winter forests of the north, when the snow is deep, the wolf curls beneath the cedar for warmth, and so does the hare, just as the cedar promised in the early days.",
+  "themes": [
+    "medicine",
+    "ceremony",
+    "gift",
+    "shelter",
+    "ecology",
+    "wolf and hare together",
+    "the four sacred medicines"
+  ],
+  "moral": "What is given freely to the world is honored forever. The cedar's gift made it sacred to all who come.",
+  "source": {
+    "citation": "Basil Johnston, Ojibway Heritage (McClelland & Stewart, 1976); Anishinaabe medicine teachings.",
+    "indigenous_author": true,
+    "url": null
+  },
+  "cultural_notes": "The four sacred medicines of the Anishinaabe are tobacco, sage, cedar, and sweetgrass. Each has its own teachings and uses in ceremony. This story explains why cedar holds its place. The detail of the wolf and hare both sheltering beneath the cedar is the kind of small Anishinaabe teaching that ties the project's namesake constellations together — they share the same shelter in the deep cold.",
+  "license": "indigenous_published"
+}

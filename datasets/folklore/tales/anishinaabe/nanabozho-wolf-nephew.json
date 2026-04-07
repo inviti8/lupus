@@ -1,0 +1,40 @@
+{
+  "id": "anishinaabe-nanabozho-wolf-nephew",
+  "tradition": "Anishinaabe",
+  "title": "Nanabozho's Wolf Nephew",
+  "type": "hero_tale",
+  "characters": [
+    {
+      "name": "Nanabozho",
+      "role": "The Great Hare, walking the world alone after parting from Ma'iingan"
+    },
+    {
+      "name": "The Wolf Nephew",
+      "role": "Young wolf who comes to Nanabozho as kin, becomes his hunting companion and scout"
+    },
+    {
+      "name": "Mishipeshu",
+      "role": "The Great Underwater Lynx, jealous of the wolf-bond, who pulls the nephew under the ice"
+    }
+  ],
+  "summary": "After the Creator told Nanabozho and Ma'iingan they must part, Nanabozho walked the world alone — until a young wolf came to him as kin. The wolf became his nephew and companion. But the underwater manitous were jealous, and one day they pulled the wolf-nephew under the ice. Nanabozho's grief set in motion the great flood.",
+  "full_text": "After the Creator told Nanabozho and Ma'iingan that they must part, Nanabozho walked the world alone for a long time. The trails seemed empty without his brother beside him. The forests were quiet. He knew that the Creator's word could not be undone, but his loneliness was deep.\n\nThen one day, as Nanabozho walked through a stand of birches, a young wolf came to him out of the trees. The wolf was lean and bright-eyed and watchful. Nanabozho looked at him and knew, as one knows a face from long ago, that this wolf was kin to Ma'iingan — perhaps a grandson or a great-grandson, or perhaps something more than blood.\n\n'You are my kin,' said Nanabozho. 'Walk with me as my nephew.'\n\nAnd the wolf walked with Nanabozho. He hunted for them both. He scouted the trails ahead and warned of danger. He slept beside Nanabozho through the long winter nights. Nanabozho loved him as he had loved Ma'iingan — perhaps not quite the same, but deeply.\n\nBut the Mishipeshu, the great underwater lynx-manitous of the deep waters, were jealous. They watched the wolf-nephew and waited. One winter day, the wolf-nephew chased a deer out onto the ice of a great lake. The ice cracked beneath him. The Mishipeshu pulled him under, and he was gone.\n\nNanabozho came to the shore and called and called, but the wolf-nephew did not come. Then Nanabozho understood what had been done. His grief was so terrible that he wept for four days and four nights, and the world wept with him. From that grief came his vow to take revenge on the Mishipeshu — and from that vow came the great flood, and the remaking of the world.",
+  "themes": [
+    "kinship",
+    "grief",
+    "loss",
+    "wolf-bond",
+    "linked fates",
+    "revenge",
+    "the depth of love",
+    "underwater powers"
+  ],
+  "moral": "The wolf and the people are bound, but the bond is precious because it can be broken. What is lost demands answer, and grief shapes the world.",
+  "source": {
+    "citation": "Basil Johnston, The Manitous: The Spiritual World of the Ojibway (HarperCollins, 1995). Central to the Mishipeshu cycle in Anishinaabe tradition.",
+    "indigenous_author": true,
+    "url": null
+  },
+  "cultural_notes": "This tale is the bridge between two of the most important Nanabozho cycles — the parting from Ma'iingan (the founding wolf-bond) and the flood that remakes the world. It shows that the wolf-bond, once given, takes new forms even after the original brothers are parted. Some versions describe the relationship as nephew, others as younger brother; the Anishinaabe kinship terms do not map cleanly to English ones.",
+  "license": "indigenous_published"
+}

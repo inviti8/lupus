@@ -1,0 +1,38 @@
+{
+  "id": "anishinaabe-nanabozho-dancing-ducks",
+  "tradition": "Anishinaabe",
+  "title": "Nanabozho and the Dancing Ducks",
+  "type": "trickster_tale",
+  "characters": [
+    {
+      "name": "Nanabozho",
+      "role": "The Great Hare, hungry and clever, in his trickster aspect"
+    },
+    {
+      "name": "The Ducks",
+      "role": "Plump and trusting, gathered on the lake"
+    },
+    {
+      "name": "Hell-diver (the Loon)",
+      "role": "The one duck who peeks and saves the rest, but is kicked by Nanabozho — explaining why the loon's legs are set so far back"
+    }
+  ],
+  "summary": "Nanabozho is hungry and tricks a flock of ducks into closing their eyes for a 'magic dance,' then catches and kills them one by one. But the loon peeks, gives the alarm, and is kicked in the back — which is why the loon's legs are set so far back on its body that it cannot walk on land.",
+  "full_text": "Nanabozho was hungry. He came to a lake and saw a great flock of ducks — fat, plump, beautiful ducks. He could not catch them by chasing, for the ducks would simply fly. So Nanabozho went into the woods and gathered moss and bark, bundled them into a great pack, and slung the pack on his back. Then he shuffled toward the lake, bent low under his load.\n\nThe ducks called out: 'Nanabozho! What are you carrying?'\n\n'Songs!' Nanabozho answered. 'I am carrying songs to teach the people. They are very heavy.'\n\n'Sing us a song!' cried the ducks. 'Teach us!'\n\n'I can do better than that,' said Nanabozho. 'I can teach you a sacred dance that goes with the song. But you must close your eyes very, very tight. If even one of you opens your eyes, the magic will be broken and the song will be lost forever.'\n\nThe ducks were eager. They closed their eyes tight. Nanabozho began to sing — a slow song, an old song — and the ducks danced in a circle, eyes shut, swaying to his rhythm. As each duck danced past him, Nanabozho seized it by the neck and twisted. He worked quickly and silently. Many ducks died before one — Hell-diver, the Loon — peeked.\n\nThe Loon saw what was happening and gave the alarm. The remaining ducks burst into the air. Nanabozho, furious, kicked the Loon in the back as it tried to fly. That is why, to this day, the loon's legs are set so far back on its body that it can barely walk on land — it can only swim and dive. But the Loon also gave its warning, and so the people remember not to be deceived by clever tongues, even when the cleverness wears the face of a friend.",
+  "themes": [
+    "trickster",
+    "hunger",
+    "deception",
+    "appetite",
+    "the cost of cleverness",
+    "origin of animal traits"
+  ],
+  "moral": "Even the trickster pays for his cleverness. And the one who sees through deception, though punished, saves the others.",
+  "source": {
+    "citation": "Basil Johnston, Ojibway Heritage (McClelland & Stewart, 1976). Variants are widely told across Algonquian peoples; this is one of the most well-known Nanabozho trickster tales.",
+    "indigenous_author": true,
+    "url": null
+  },
+  "cultural_notes": "Trickster tales are an important teaching genre in Anishinaabe tradition — Nanabozho's foolishness and cleverness both teach the people what to do and what not to do. The 'why animals are as they are' element (the loon's legs) is a common feature of Anishinaabe origin tales.",
+  "license": "indigenous_published"
+}
