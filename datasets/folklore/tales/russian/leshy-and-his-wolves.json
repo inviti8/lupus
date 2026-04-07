@@ -1,0 +1,39 @@
+{
+  "id": "russian-leshy-and-his-wolves",
+  "tradition": "Russian / Slavic",
+  "title": "The Leshy and His Wolves",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "The Leshy (Лесовик, Лесной Дед, 'Forest Old Man')",
+      "role": "The Slavic forest spirit, master of the trees and the beasts, commander of wolves and bears"
+    },
+    {
+      "name": "The Wolves",
+      "role": "Servants and agents of the Leshy, hunting at his command and guarding the deep forest"
+    },
+    {
+      "name": "The Lost Traveler",
+      "role": "The human who enters the deep forest and must reckon with the Leshy's mood"
+    }
+  ],
+  "summary": "Before Christianity, the wolves of the Slavic forests were the servants of the Leshy — the forest spirit, the old man of the woods. The Leshy commanded the wolves as his pack, sending them to guide travelers who showed respect or to devour those who did not. He was the original master of the wolf-shepherd role that St. George would later absorb.",
+  "full_text": "Before the Christian saints came to the Slavic forests, the wolves had a different master. They served the Leshy.\n\nThe Leshy (also called Lesovik, Lesnoy Ded, 'Forest Old Man') is the spirit of the deep Russian forest. He is shape-shifting and mercurial — sometimes appearing as a tall man with green eyes and skin like bark, sometimes as a giant taller than the trees, sometimes as an old peasant in a coat turned inside-out, sometimes as a great gray wolf himself. He has no shadow. His footprints leave no mark on moss. He is the forest's awareness of itself.\n\nThe Leshy owns the trees, the mushrooms, the berries, the rivers, and above all the beasts. The wild animals of the forest are his herds. He grants them their territory, their game, their lives. The wolves are his particular servants — his pack — and he commands them in their hunting. When a peasant complained that wolves had taken a sheep, the elders would say: 'The Leshy has needed it for his wolves.'\n\nThe Leshy is not evil. He is not even unfriendly, by the standards of forest spirits. But he must be respected. A traveler entering his forest should not whistle (it is rude). Should not curse (it offends him). Should not boast of finding the way out (the Leshy will lead them in circles forever). Should leave a small offering at the edge of the forest — bread, salt, a small coin — when seeking the Leshy's hospitality. Should always speak softly and walk humbly.\n\nA traveler who showed proper respect might find that the Leshy's wolves walked alongside them — silent escorts through the dangerous deep wood, much like the Japanese okuri-ōkami. A traveler who was rude or arrogant might find that the wolves came for them in the night.\n\nWhen Christianity came, the Leshy did not vanish — he simply became the more dangerous figure of the dark forest in a Christian moral framework, while his role as wolf-shepherd was largely transferred to St. George. But in the deepest Russian forests, in the villages closest to the wild, the Leshy is still spoken of by the old people. The wolves still answer to him. And the rule is still the same: respect the forest, and the wolves will walk beside you. Disrespect it, and the wolves will come.",
+  "themes": [
+    "forest spirit",
+    "master of the wolves",
+    "respect for the wild",
+    "Slavic paganism",
+    "the wolves as servants of the spirit",
+    "shape-shifter",
+    "the original wolf-shepherd"
+  ],
+  "moral": "The forest has its own awareness, and the wolves are its eyes. Walk humbly, and you walk safely.",
+  "source": {
+    "citation": "Linda J. Ivanits, Russian Folk Belief (M.E. Sharpe, 1989); W.R.S. Ralston, The Songs of the Russian People (1872), public domain. The Leshy is documented across the East Slavic world in ethnographic sources from the 19th and early 20th centuries.",
+    "indigenous_author": true,
+    "url": "https://en.wikipedia.org/wiki/Leshy"
+  },
+  "cultural_notes": "The Leshy is one of the most thoroughly documented figures of Slavic folk religion. He is the survival, in folk tradition, of an older pre-Christian forest god whose name has been lost. His association with wolves places him in the same category as the Japanese Yama no Kami (mountain god, served by wolves) and the various Native American spirit-figures with wolf-pack associations. The Slavic 'respect the forest, walk humbly' ethic is one of the deeper continuities between pre-Christian and Christian rural belief in Russia.",
+  "license": "public_domain"
+}

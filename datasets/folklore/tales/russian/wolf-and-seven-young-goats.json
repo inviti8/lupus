@@ -1,0 +1,42 @@
+{
+  "id": "russian-wolf-and-seven-young-goats",
+  "tradition": "Russian / Slavic",
+  "title": "The Wolf and the Seven Young Goats (Волк и Семеро Козлят)",
+  "type": "moral_tale",
+  "characters": [
+    {
+      "name": "The Mother Goat",
+      "role": "Who warns her seven kids not to open the door to anyone but her"
+    },
+    {
+      "name": "The Wolf",
+      "role": "The deceiver who imitates the mother goat to gain entry"
+    },
+    {
+      "name": "The Seven Young Kids",
+      "role": "Six of whom are devoured; the youngest hides and survives to tell the tale"
+    },
+    {
+      "name": "The Youngest Kid",
+      "role": "Hides in the clock case and reports what happened to the returning mother"
+    }
+  ],
+  "summary": "A mother goat warns her seven young kids not to open the door to anyone but her — they will know her by her gentle voice and her white feet. The wolf disguises his voice and whitens his paws and tricks his way in. He devours six of the kids, but the youngest hides in the clock case. When the mother returns, she cuts open the sleeping wolf and rescues her children.",
+  "full_text": "A mother goat lived in the forest with her seven young kids. When she had to go out to forage, she warned them: 'My little ones, do not open the door to anyone but me. You will know me by my gentle voice and by my white feet. The wolf has a rough voice and black paws. Open to no one else.'\n\nA wolf was passing and heard. He came to the door and called in a rough voice: 'Open up, my children, your mother is home.' The kids called back: 'Our mother's voice is gentle. Yours is rough. You are not our mother.' The wolf went away.\n\nHe went to the blacksmith and made the smith burn his throat with hot iron, so that his voice became smooth. He came back to the door and called in a gentle voice: 'Open up, my children, your mother is home.' The kids called back: 'Show us your feet under the door.' The wolf showed his black paws. The kids cried: 'Our mother has white feet. Yours are black. You are not our mother.' The wolf went away.\n\nHe went to the miller and made the miller dust his paws white with flour. He came back to the door, called in a gentle voice, and showed his now-white paws. The kids opened the door.\n\nThe wolf rushed in and devoured them — one, two, three, four, five, six. But the youngest, the smallest, hid himself in the case of the great wooden clock that stood in the corner. The wolf could not find him. The wolf, full and heavy, crawled out into the meadow and fell asleep beneath a tree.\n\nWhen the mother goat came home, she found the door open and the house empty. She wept terribly. Then a small voice came from the clock case: 'Mother, I am here. The wolf came and ate the others. He could not find me.' The youngest kid told her everything.\n\nThe mother went out into the meadow and found the wolf asleep, his belly heavy. She called to her youngest kid to bring scissors, needle, and thread. With great care she cut open the wolf's belly. Out tumbled all six of her children, alive and unharmed — for the wolf had swallowed them whole. She filled the wolf's belly with stones, sewed it shut with the needle and thread, and led her children home.\n\nWhen the wolf woke and went to drink at the river, the weight of the stones pulled him in, and he drowned.",
+  "themes": [
+    "deception",
+    "the mother who saves",
+    "the youngest who survives",
+    "hiding in plain sight",
+    "the wolf as deceiver",
+    "trickery and counter-trickery"
+  ],
+  "moral": "The deceiver who works hardest to enter is the deceiver who falls hardest at the end. The smallest and most overlooked may be the one who survives to tell.",
+  "source": {
+    "citation": "Recorded in many Slavic and Germanic variants. The Brothers Grimm published a German version (Der Wolf und die sieben jungen Geißlein, 1812), public domain. The Russian variant 'Волк и семеро козлят' is attested in Afanasyev's Narodnye Russkie Skazki (1855-1863), public domain.",
+    "indigenous_author": true,
+    "url": "https://en.wikipedia.org/wiki/The_Wolf_and_the_Seven_Young_Goats"
+  },
+  "cultural_notes": "This tale exists in nearly identical form across the entire Slavic and Germanic world, suggesting a very ancient common origin. It is one of the most widely recognized 'wolf as deceiver' tales — and stands as a counterweight in this compendium to the many positive wolf-as-pathfinder traditions. The wolf in folklore is not always the helper or the path-guardian; in this tale and many like it, the wolf is the deceiver who gains entry by hiding what he is. Including this tale shows the full range of how cultures see the wolf, not just the pathfinder aspect.",
+  "license": "public_domain"
+}

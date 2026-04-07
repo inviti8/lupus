@@ -1,0 +1,38 @@
+{
+  "id": "russian-st-george-wolf-shepherd",
+  "tradition": "Russian / Slavic",
+  "title": "Saint George (Yuri) the Wolf-Shepherd",
+  "type": "moral_tale",
+  "characters": [
+    {
+      "name": "Saint George (Yuri / Yegor)",
+      "role": "The Christian saint who, in Slavic folk religion, is master and shepherd of the wolves — controlling which animals they may take"
+    },
+    {
+      "name": "The Wolves",
+      "role": "Servants of Saint George, taking only what he allots them, no more and no less"
+    },
+    {
+      "name": "The Slavic Farmers",
+      "role": "Who pray to St. George for protection of their livestock, and who acknowledge that what the wolves take, the saint has allotted"
+    }
+  ],
+  "summary": "In Slavic folk Christianity, Saint George (called Yuri or Yegor in Russian) is the master of the wolves. He allots to each wolf its share of livestock — no more, no less — and farmers pray to him for protection. This is a Christianization of older Slavic pagan wolf-veneration, in which the wolf was a sacred animal of the forest spirits.",
+  "full_text": "In the Slavic Christian tradition, Saint George — known in Russian as Yuri or Yegor — is not only the dragon-slaying knight of the western legend. He is also the wolf-shepherd. The Slavic farmer believed that all the wolves of the forest answered to St. George, and that the saint allotted to each wolf the animals it might take from the human flocks. What the wolf took, the saint had granted. What the wolf left, the saint had spared.\n\nThe story, in its many regional variants, tells of a peasant who hides in a tree at night and overhears a meeting of wolves with St. George at its center. The saint sits on a stump in the moonlit clearing, and the wolves come to him in turn, and to each he assigns: 'You shall take the gray cow of the widow Marfa.' 'You shall take the white sheep of Ivan the smith.' 'You shall take the brown horse of the merchant from the next village.' The wolves bow and depart to do as they have been told.\n\nThe peasant in the tree is horrified to hear his own ox named — and so when the wolves come for it, he is ready and saves the animal by hiding it. But the next day, the ox dies anyway, of a sudden illness no one can explain. The lesson is that what St. George has allotted, the wolves shall have, one way or another.\n\nThis seems harsh, but the Slavic farmers found comfort in it. The losses to wolves were not random. They were not chaos. They were not the work of demonic forces. They were the work of a saint, distributing the share that belonged to the wild — taking some, sparing more — keeping a balance that no human could alone maintain. St. George's Day (April 23 in the Julian calendar, May 6 in the Gregorian) was the day to pray for protection of the spring herds, and to thank the saint for the wolves who, by his command, kept the forests clean and the balance kept.\n\nThis is the Christianization of an older Slavic pagan wolf-veneration. Before Christianity, the wolves were the servants of the Leshy, the forest spirit. After Christianity, they became the servants of St. George. The form of veneration changed; the wolves continued to be honored as the agents of a higher will, not as random predators. The bond between the human and the wolf-shepherd was kept.",
+  "themes": [
+    "wolf-shepherd",
+    "Christianization of pagan veneration",
+    "balance with the wild",
+    "saint as master of beasts",
+    "St. George",
+    "the wolves as agents of higher will"
+  ],
+  "moral": "The wolves take what they are allotted, and they leave what they are denied. The losses to the wild are not chaos — they are the keeping of a balance that only the wild can keep.",
+  "source": {
+    "citation": "Linda J. Ivanits, Russian Folk Belief (M.E. Sharpe, 1989) — the standard English-language reference on Russian folk Christianity. Also W.R.S. Ralston, The Songs of the Russian People (1872) and Russian Folk-Tales (1873), both public domain. The St. George wolf-shepherd tradition is documented across the East Slavic world.",
+    "indigenous_author": true,
+    "url": null
+  },
+  "cultural_notes": "Slavic folk Christianity is characterized by deep continuity with pre-Christian beliefs, in which Christian saints absorbed the roles and attributes of older pagan deities and spirits. St. George absorbing the wolf-shepherd role is one of the clearest examples — and it parallels the Japanese pattern in which the wolf-shrines continued to operate after the official rise of Buddhism, and the Egyptian pattern in which Khentyamentiu's role became an epithet of Osiris. The wolf-veneration survives the change of religion in many traditions; the form changes, the bond does not.",
+  "license": "public_domain"
+}

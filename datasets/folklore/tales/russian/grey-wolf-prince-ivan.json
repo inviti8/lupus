@@ -1,0 +1,51 @@
+{
+  "id": "russian-grey-wolf-prince-ivan",
+  "tradition": "Russian",
+  "title": "Tsarevich Ivan, the Firebird, and the Grey Wolf (Иван-царевич и Серый Волк)",
+  "type": "hero_tale",
+  "characters": [
+    {
+      "name": "Ivan-Tsarevich (Prince Ivan)",
+      "role": "The youngest of three sons of Tsar Vyslav, sent to find the Firebird that steals from his father's golden apple tree"
+    },
+    {
+      "name": "Seryi Volk (the Grey Wolf)",
+      "role": "Magical helper, scout, mount, and counselor — kills Ivan's horse but then offers himself as steed and companion for the entire quest"
+    },
+    {
+      "name": "Tsar Vyslav",
+      "role": "Ivan's father, owner of the golden apple tree"
+    },
+    {
+      "name": "The Firebird",
+      "role": "The magical golden bird Ivan must capture"
+    },
+    {
+      "name": "Princess Elena the Beautiful",
+      "role": "The bride Ivan must win, with the Wolf's help"
+    },
+    {
+      "name": "Ivan's Two Elder Brothers",
+      "role": "Treacherous brothers who kill Ivan to steal his prizes — defeated when the Wolf revives Ivan"
+    }
+  ],
+  "summary": "When Prince Ivan loses his horse to a Grey Wolf in the forest, the wolf — having killed the horse — offers himself as Ivan's mount and companion. The Grey Wolf carries Ivan across vast distances, advises him at every turn, helps him capture the Firebird, win Princess Elena, and even resurrects Ivan with the water of death and water of life after his treacherous brothers kill him. He is the Russian wolf-as-pathfinder in his most literal form.",
+  "full_text": "Tsar Vyslav had a garden with a tree that bore golden apples — and the apples were being stolen each night by a great Firebird with feathers like fire. The Tsar sent his three sons in turn to capture the thief. The two elder brothers failed. Then Ivan, the youngest, set out.\n\nIvan rode into the deep forest. There, by a stone marked with three roads, he stopped to read the inscription: 'He who rides this way shall hunger and cold but shall keep his life. He who rides that way shall keep his horse and lose his life. He who rides the third way shall lose his horse but shall live and find what he seeks.' Ivan chose the third road.\n\nHe rode for many days. Then a great Grey Wolf came out of the forest, leaped upon his horse, and killed it. Ivan wept. He had no mount, no food, no way forward.\n\nThe Grey Wolf spoke. 'Ivan-Tsarevich, do not weep. I have killed your horse, and I owe you a debt for it. From this day, I am your horse and your companion. Climb on my back. I will carry you to the Firebird, and to all you seek.'\n\nIvan climbed onto the Wolf's back. The Wolf ran like the wind — faster than any horse — across the rivers and over the mountains. He brought Ivan to the garden where the Firebird sleeps in its golden cage. He warned Ivan: 'Take the bird, but do not touch the cage.' Ivan, in his eagerness, touched the cage. The bells rang. The guards came. Ivan was captured by Tsar Dolmat.\n\nThe Wolf came and rescued him, on condition that Ivan would now bring Tsar Dolmat the magical horse with the golden mane. The Wolf carried Ivan to that kingdom too. He warned: 'Take the horse, but do not touch the bridle.' Ivan, again in his eagerness, touched the bridle. He was captured by Tsar Afron. The Wolf rescued him again, on condition that Ivan would now bring Princess Elena the Beautiful.\n\nThis time the Wolf himself stole the princess, carrying her on his back to where Ivan waited. Ivan and Elena fell in love. The Wolf, seeing this, transformed himself into the likeness of Princess Elena and let himself be given to Tsar Afron, while the real Elena rode with Ivan back toward home. Then the Wolf escaped and rejoined them. He did the same with the magical horse — transforming himself into the likeness of the horse and being given to Tsar Dolmat — and again escaping.\n\nAt last Ivan rode home with the Firebird, the magical horse, and Princess Elena, accompanied by the Grey Wolf. The Wolf said: 'Ivan-Tsarevich, here our roads must part. I have brought you what you sought. Be careful.' And the Wolf vanished into the forest.\n\nIvan slept. His treacherous elder brothers came upon him, killed him, took the Firebird and the horse and Elena, and went home to claim the prizes. Ivan lay dead in the field.\n\nThe Grey Wolf, sensing the wrong, came back. He caught a raven that was about to eat Ivan's body and forced the raven to fly to the ends of the earth and bring back the water of death and the water of life. With the water of death the Wolf closed Ivan's wounds. With the water of life he restored his breath. Ivan rose from the dead.\n\nThe Grey Wolf carried Ivan back to his father's palace. The truth came out. The treacherous brothers were punished. Ivan married Princess Elena and ruled in his father's place. The Grey Wolf returned to the forest, and was not seen again — but it was said that whenever a hero of Russia was in true need, the Grey Wolf would come.",
+  "themes": [
+    "wolf as magical helper",
+    "wolf as mount",
+    "wolf as resurrector",
+    "the pathfinder companion",
+    "death and resurrection",
+    "treacherous kin",
+    "the loyal beast"
+  ],
+  "moral": "The wolf you fear may carry you farther than any horse. The companion who walks beside the hero is worth more than the prize itself.",
+  "source": {
+    "citation": "Alexander Afanasyev, Narodnye Russkie Skazki (Народные русские сказки, Russian Folk Tales, 1855-1863), public domain. The Grey Wolf cycle is among the most famous in Russian folklore. English translations include W.R.S. Ralston, Russian Folk-Tales (1873, public domain) and Norbert Guterman, Russian Fairy Tales (Pantheon, 1945).",
+    "indigenous_author": true,
+    "url": "https://en.wikipedia.org/wiki/The_Tale_of_Tsarevich_Ivan,_the_Firebird_and_the_Gray_Wolf"
+  },
+  "cultural_notes": "Afanasyev's collection is the foundational corpus of Russian folklore, comparable in scope and importance to the Grimms' work in Germany. The Grey Wolf tale is one of the most beloved Russian fairy tales and has been illustrated by Ivan Bilibin, adapted into film, ballet, and modern children's books. The wolf in this tale is the Russian incarnation of the wolf-as-pathfinder archetype: not named for the role like Wepwawet or hodophilax, but functioning identically — the wolf who carries the hero to where they need to go, who scouts the way, who advises, who even brings the hero back from death. The Grey Wolf is, in some ways, the most literally helper-functional wolf in any folk tradition.",
+  "license": "public_domain"
+}

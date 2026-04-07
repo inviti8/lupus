@@ -1,0 +1,42 @@
+{
+  "id": "russian-zaikina-izbushka",
+  "tradition": "Russian",
+  "title": "Zaikina Izbushka (Заюшкина Избушка) — The Hare's Little Hut",
+  "type": "moral_tale",
+  "characters": [
+    {
+      "name": "The Hare (Zaika / Zayushka)",
+      "role": "The gentle owner of a wooden hut who is dispossessed by the fox and finally restored"
+    },
+    {
+      "name": "The Fox",
+      "role": "The cruel deceiver who, when her ice hut melts, takes the hare's wooden hut and refuses to leave"
+    },
+    {
+      "name": "The Dog, the Wolf, the Bear",
+      "role": "Larger animals who try to evict the fox and fail, frightened off by her threats"
+    },
+    {
+      "name": "The Cockerel (Petushok)",
+      "role": "The small rooster who, against all expectation, succeeds where the larger animals failed"
+    }
+  ],
+  "summary": "A hare has a small wooden hut and a fox has a hut of ice. When spring comes, the fox's ice hut melts and she begs to take shelter in the hare's hut — then refuses to leave. A dog, a wolf, and a bear all try to evict her and fail, frightened by her threats. Finally a small cockerel comes by and, with sheer courage and a sharp scythe, drives the fox out.",
+  "full_text": "Once there lived a hare and a fox in the forest. The hare built himself a small wooden hut, sturdy and warm. The fox, being clever and lazy, built herself a hut of ice — beautiful and crystal-bright in winter, when the cold held it together.\n\nWinter passed. Spring came. The sun warmed the earth, the snow melted, the rivers ran free — and the fox's ice hut melted away into a puddle. The fox was left with no shelter.\n\nShe came to the hare's wooden hut and knocked on the door. 'Little hare, dear hare, my hut has melted. Please let me in for just a little while.' The hare was kind. He opened the door. The fox came in and sat down by the fire.\n\nBut when the hare asked her to go, she refused. She bared her teeth. 'I am staying. This is my hut now. If you do not leave, I will eat you.' The poor hare went out into the cold and wept.\n\nA dog came by. 'Why do you weep, little hare?' The hare told his story. The dog said: 'I will help you.' The dog ran to the hut and barked: 'Out, fox, out of the hare's hut!' The fox shouted from inside: 'When I leap out, my fur will fly, my teeth will tear, my claws will scratch — there will be nothing of you left!' The dog was frightened and ran away. The hare wept harder.\n\nA wolf came by. 'Why do you weep, little hare?' The hare told the story again. The wolf said: 'I will help you.' The wolf came to the hut and howled: 'Out, fox, out of the hare's hut!' The fox shouted the same threat from inside. The wolf was frightened and ran away.\n\nA bear came by. The same thing happened. The bear too was frightened by the fox's threats and ran away. The hare sat under a tree in the cold and gave up hope.\n\nThen a small cockerel came down the path. He had a scythe over his shoulder and red feathers on his head and a bright proud step. 'Why do you weep, little hare?' The hare told the story for the fourth time. The cockerel said: 'I will help you.'\n\nThe cockerel marched up to the hut. He raised his scythe high and called out in a strong clear voice: 'Cock-a-doodle-doo! I am the cockerel, I carry a scythe, I have come to cut off the fox's head! Out, fox, out of the hare's hut!'\n\nFrom inside the hut, the fox heard the cockerel and was suddenly very afraid. 'I am dressing,' she called. The cockerel called again. 'I am putting on my coat.' The cockerel called a third time, raising his scythe higher. The fox burst out of the door and ran for the forest, and was never seen near the hare's hut again.\n\nThe hare went back into his little wooden hut and was warm and safe. From that day on, the hare and the cockerel lived together as friends, and shared the hut.",
+  "themes": [
+    "the gentle dispossessed",
+    "the small one who succeeds",
+    "courage over size",
+    "kindness exploited",
+    "friendship",
+    "the unexpected helper"
+  ],
+  "moral": "The largest who threaten may be the most easily frightened. The smallest who comes with steady courage may be the only one who succeeds.",
+  "source": {
+    "citation": "Alexander Afanasyev, Narodnye Russkie Skazki (Народные русские сказки, 1855-1863), public domain. One of the most beloved Russian children's fairy tales, illustrated countless times by Russian artists from Bilibin onward.",
+    "indigenous_author": true,
+    "url": "https://en.wikipedia.org/wiki/Russian_fairy_tale"
+  },
+  "cultural_notes": "Zaikina Izbushka is one of the first fairy tales told to Russian children and is universally recognized in Russia. It carries themes that echo across many traditions: the smallest hero who succeeds where the larger fail (compare the Anishinaabe muskrat who saves the world by diving for earth where the loon and beaver and otter failed), and the gentle one who is restored by an unexpected ally. The hare in Russian folklore is generally the gentle, often-victimized figure — quite different from the Anishinaabe trickster-hare or the Japanese moon-rabbit of self-sacrifice. Each tradition shapes its hare differently.",
+  "license": "public_domain"
+}

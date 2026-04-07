@@ -1,0 +1,35 @@
+{
+  "id": "russian-wolves-of-velja-noc",
+  "tradition": "Slavic",
+  "title": "The Wolves of Velja Noć — The Great Night and the Twelve Days",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "The Midwinter Wolves",
+      "role": "The wolves of the deep midwinter, most active during the twelve days of the Slavic 'Great Night,' associated with the dead and the boundary of the year"
+    },
+    {
+      "name": "The Slavic Villagers",
+      "role": "Who held vučari rituals and other midwinter wolf-traditions to mark the passage of the year"
+    }
+  ],
+  "summary": "In Slavic folk religion, the deepest twelve days of midwinter — Velja Noć, the 'Great Night' — were the time when the wolves were most active, when the boundary between the living and the dead was thinnest. Special rituals (the vučari, 'wolf-walkers,' and similar customs) marked these days as the wolf-time of the Slavic year.",
+  "full_text": "The Slavs reckoned the year by the seasons and by the great breaks between them. The deepest break of all was the midwinter — the twelve days from the winter solstice through the new year — which the South Slavs called Velja Noć, 'the Great Night.' This was the time when the old year died and the new year had not yet been born. The world hung in a thin place, and through that thinness, things could pass.\n\nThe wolves were strongest in the Great Night. They came down from the mountains and out of the deep forests. They howled at the edges of the villages. They were not the same as the wolves of summer — these were the wolves of the year-break, the wolves who walked between the living and the dead. The Slavs did not see this as evil. They saw it as natural: the wolves were doing the work of the boundary, and the boundary needed doing.\n\nIn many regions of the South and Western Slavic world, the Great Night was the time for the vučari — the 'wolf-walkers.' These were ritual processions in which young men dressed as wolves (or wore wolf-masks, wolf-pelts, wolf-skins) and went from house to house. They sang wolf-songs, performed wolf-dances, accepted gifts of bread and meat from each household, and in return blessed the household for the year to come. The vučari were the wolves brought into the village in safe form, accepted, fed, and sent on their way. By doing this, the village made peace with the wolves of the wild.\n\nIn other regions, the midwinter wolf was honored differently — through prayers to the Leshy or (later) to St. George, through special offerings left at the edge of the forest, through the carving of wolf-charms to be placed in the family hearth. But in all of them, the Great Night was wolf-time. The wolves walked. The dead walked. And the year turned through the long darkness toward the light.\n\nThis is the Slavic version of a pattern found in many northern traditions: the wolf as the spirit of the year-break, the keeper of the threshold between seasons, the marker of when one time ends and another begins. It is a different aspect of the wolf than the Anishinaabe wolf-companion or the Japanese mountain-wolf or the Egyptian Wepwawet of the royal procession — but it is the same wolf, in a sense: the wolf who walks the boundaries, the wolf who marks the path from one place to another.",
+  "themes": [
+    "midwinter",
+    "the great night",
+    "wolf and the year-break",
+    "boundary between living and dead",
+    "vučari",
+    "ritual of wolf-walkers",
+    "Slavic folk calendar"
+  ],
+  "moral": "The wolves walk at the year-break, and the village welcomes them in safe form. Where the wolves are honored, the year turns cleanly.",
+  "source": {
+    "citation": "Linda J. Ivanits, Russian Folk Belief (M.E. Sharpe, 1989); ethnographic studies of South and West Slavic vučari and koledari customs by Vera Bogdanović, Vesna Marjanović, and others. The vučari tradition is well-documented in Serbian, Bulgarian, and Macedonian ethnographic literature.",
+    "indigenous_author": true,
+    "url": "https://en.wikipedia.org/wiki/Koleda"
+  },
+  "cultural_notes": "The vučari ('wolf-walker') tradition is most strongly attested in the South Slavic world (Serbia, Bulgaria, Macedonia) but has parallels across the Slavic world in midwinter koleda traditions. The association of midwinter with wolves is shared across many northern European traditions (compare the Norse 'wolf-month,' the German Twelve Nights wolf legends, etc.). The Slavic Velja Noć tradition is one of the better-documented examples of an organized ritual response to the wolf at the threshold of the year.",
+  "license": "public_domain"
+}

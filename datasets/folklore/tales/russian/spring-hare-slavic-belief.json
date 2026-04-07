@@ -1,0 +1,35 @@
+{
+  "id": "russian-spring-hare-slavic-belief",
+  "tradition": "Slavic",
+  "title": "The Spring Hare in Slavic Folk Belief",
+  "type": "origin_myth",
+  "characters": [
+    {
+      "name": "The Hare (Zayats)",
+      "role": "Folk symbol of spring, fertility, swift renewal, and the return of life after winter in Slavic tradition"
+    },
+    {
+      "name": "The Spring Equinox / Maslenitsa",
+      "role": "The Slavic season of return, with which the hare is associated through its early-spring courtship and prolific birthing"
+    }
+  ],
+  "summary": "In Slavic folk tradition, the hare is associated with the return of spring — its early-season mating dances, its prolific litters, and its visible activity in the late winter fields all marked it as a creature of renewal. The hare appeared in Maslenitsa songs, in spring-fertility rituals, and in folk weather lore as a herald of the year's turning.",
+  "full_text": "In the long Slavic winter, the fields are silent. The deer have moved deep into the forest, the bears are sleeping, the small creatures are hidden under the snow. But in late February and early March, while the snow is still on the ground, something stirs: the hares begin to dance.\n\nThe European hare (Lepus europaeus) is famous for its early-spring courtship. Long before the trees have begun to bud, before the rivers have fully thawed, hares come out into the open fields and perform their mating displays — leaping into the air, boxing each other on their hind legs, racing in great looping circles across the still-white ground. To a peasant in a Slavic village, looking out across the fields in the gray light of late winter, the sight of the hares dancing was the first sure sign that spring was coming. Before the birds returned. Before the snow melted. The hares knew, and they danced.\n\nThis association made the hare, in Slavic folk belief, the herald of spring and the symbol of the swift return of life after the long winter. The hare appeared in Maslenitsa songs (Maslenitsa being the Slavic spring carnival, a week-long pre-Lenten celebration of butter and pancakes and the coming sun). It appeared in spring-fertility blessings on the fields. It appeared in folk weather lore: 'When the hares race in the snowfields, the spring is six weeks away.' It appeared in the folk Easter traditions, although the famous 'Easter Bunny' as a specific figure came to the Slavic world via German Christianization rather than from native Slavic religion.\n\nThe Slavic hare is not a deity in the way that the Egyptian Wenet is a hare goddess, and not a culture hero in the way that the Anishinaabe Nanabozho is the Great Hare. The Slavic hare is something quieter: a sign. A herald. The animal whose visible joy at the year's return tells the human watcher that the long darkness is ending. In a culture shaped by the long winters of the great northern forests and steppes, this was not a small thing. The hare's dance was the calendar.",
+  "themes": [
+    "spring",
+    "renewal",
+    "fertility",
+    "the herald of the year",
+    "Maslenitsa",
+    "calendar of the wild",
+    "the hare's dance"
+  ],
+  "moral": "The hare knows when the year turns. Watch the wild creatures, and you will know what no human calendar can tell you.",
+  "source": {
+    "citation": "Linda J. Ivanits, Russian Folk Belief (M.E. Sharpe, 1989); W.R.S. Ralston, The Songs of the Russian People (1872), public domain. Russian and broader Slavic ethnographic literature on Maslenitsa and spring folk customs is extensive.",
+    "indigenous_author": true,
+    "url": "https://en.wikipedia.org/wiki/Maslenitsa"
+  },
+  "cultural_notes": "The European hare's early-spring 'mad March hare' courtship behavior is a real biological phenomenon and is the source of similar hare-as-spring-herald traditions across all of Europe (the Germanic tradition behind the Easter Bunny, the British 'mad as a March hare' expression, etc.). The Slavic version emphasizes the hare as observed sign rather than as personified deity — a quieter and more practical version of the spring-hare archetype that nonetheless made the hare one of the most-noticed wild animals in the Slavic folk calendar.",
+  "license": "public_domain"
+}
