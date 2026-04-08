@@ -174,7 +174,7 @@ def load_openphish(csv_path: Path) -> Iterable[SecurityExample]:
             )
 
 
-def load_phishing_database(csv_path: Path) -> Iterable[SecurityExample]:
+def load_phishing_database(csv_path: Path, max_rows: int = 30000) -> Iterable[SecurityExample]:
     """Yield SecurityExamples from a Phishing.Database CSV.
 
     The Phishing-Database/Phishing.Database GitHub repo aggregates verified
@@ -182,38 +182,67 @@ def load_phishing_database(csv_path: Path) -> Iterable[SecurityExample]:
     Umbrella, etc.) and validates them with the PyFunceble testing tool.
     The 'active' list contains hundreds of thousands of currently-online
     phishing URLs. CSV has a single 'url' column.
+
+    The full active list is ~789K rows, which is far more than we need
+    after class balancing (~20K per class). Loading all 789K Pydantic
+    SecurityExample objects exhausted memory in v0.2. We now random-sample
+    `max_rows` rows from the file to keep memory bounded while maintaining
+    diversity (random sampling, not just the first N).
     """
     if not csv_path.exists():
         LOG.info("Phishing.Database source not found at %s (skipping)", csv_path)
         return
 
     fetched_at = now_iso()
+
+    # First pass: read all URL strings (text only, no Pydantic) and sample
+    # `max_rows` of them with reservoir sampling. ~789K strings is ~100 MB
+    # which is fine. Constructing 789K Pydantic objects is what blew up
+    # memory in v0.2.
+    rng = random.Random(20260408)
+    sampled_urls: list[str] = []
     with csv_path.open("r", encoding="utf-8", errors="replace") as f:
         reader = csv.DictReader(f)
+        n_seen = 0
         for row in reader:
             url = (row.get("url") or "").strip()
             if not url:
                 continue
-            domain = extract_domain(url)
-            if not domain:
-                continue
+            n_seen += 1
+            if len(sampled_urls) < max_rows:
+                sampled_urls.append(url)
+            else:
+                # Reservoir sampling: replace a random earlier sample
+                # with probability max_rows/n_seen
+                j = rng.randint(0, n_seen - 1)
+                if j < max_rows:
+                    sampled_urls[j] = url
 
-            yield SecurityExample(
-                id=stable_id("phishingdb", url),
-                source=Source.PHISHING_DATABASE,
-                source_id=None,
-                url=url,
-                domain=domain,
-                html_content=None,
-                html_truncated=False,
-                label=Label.PHISHING,
-                confidence=92,  # Aggregated from multiple verified sources
-                indicators=[],
-                target_brand=None,
-                threat_type=None,
-                fetched_at=fetched_at,
-                verified=True,  # PyFunceble-validated active URLs
-            )
+    LOG.info("Sampled %d phishing URLs from %d total in %s",
+             len(sampled_urls), n_seen, csv_path.name)
+
+    # Second pass: construct Pydantic objects for the sampled URLs only
+    for url in sampled_urls:
+        domain = extract_domain(url)
+        if not domain:
+            continue
+
+        yield SecurityExample(
+            id=stable_id("phishingdb", url),
+            source=Source.PHISHING_DATABASE,
+            source_id=None,
+            url=url,
+            domain=domain,
+            html_content=None,
+            html_truncated=False,
+            label=Label.PHISHING,
+            confidence=92,  # Aggregated from multiple verified sources
+            indicators=[],
+            target_brand=None,
+            threat_type=None,
+            fetched_at=fetched_at,
+            verified=True,  # PyFunceble-validated active URLs
+        )
 
 
 def load_urlhaus(csv_or_zip_path: Path) -> Iterable[SecurityExample]:
@@ -306,16 +335,83 @@ def load_urlhaus(csv_or_zip_path: Path) -> Iterable[SecurityExample]:
         )
 
 
+# Realistic synthetic paths for the safe (Tranco) URL class.
+#
+# CRITICAL: in v0.2 we synthesized safe URLs as "https://{domain}/" — bare
+# domains with just a trailing slash, no path. Phishing.Database and URLhaus
+# URLs all have paths. The model trained on this data learned a hard
+# shortcut: "URL has a path → not from Tranco → must be a threat". The v0.2
+# smoke test caught this — github.com/inviti8/lupus, wikipedia.org/wiki/Wolf,
+# stackoverflow.com/questions/12345 were all classified as phishing despite
+# being obviously legitimate.
+#
+# Fix: append a randomly-chosen realistic path to most safe URLs so the
+# safe class looks like real URLs, not just bare domains. The path
+# distribution mimics the variety of real legitimate web URLs (wiki articles,
+# forum posts, products, blog posts, API endpoints, etc.). A small fraction
+# are kept as bare domains since that's also a valid legitimate form.
+
+SAFE_URL_PATHS = [
+    # bare-ish landing pages
+    "/", "/index.html", "/home", "/about", "/about-us", "/contact",
+    # auth and account
+    "/login", "/signin", "/signup", "/register", "/account", "/profile",
+    "/settings", "/logout",
+    # wiki / encyclopedia
+    "/wiki/Main_Page", "/wiki/Article_Title", "/wiki/Category:Science",
+    "/wiki/History_of_the_Internet", "/wiki/Wolf", "/wiki/Astronomy",
+    # blog / articles / news
+    "/blog", "/blog/2024/12/post-title", "/blog/getting-started-with-foo",
+    "/article/12345", "/articles/2024-tech-trends", "/news/world",
+    "/news/2024/12/15/headline", "/post/abc-123", "/posts/12345",
+    # forums / Q&A / discussions
+    "/questions/12345/how-to-do-x", "/q/45678", "/thread/9876",
+    "/topic/general-discussion", "/discussion/12345", "/comments/abc-def",
+    "/r/programming", "/r/news/comments/abc/title",
+    # products / e-commerce
+    "/products/12345", "/products/category/electronics", "/p/abc-123",
+    "/item/9876543", "/shop/category/books", "/category/tech",
+    "/cart", "/checkout",
+    # documentation / help
+    "/docs", "/docs/getting-started", "/docs/api/reference",
+    "/help", "/help/faq", "/support", "/support/contact",
+    # APIs / technical
+    "/api/v1/users", "/api/v2/items/42", "/api/v1/search?q=test",
+    # search results
+    "/search?q=hello+world", "/search?q=python+tutorial",
+    "/find?query=climate+change", "/results?keywords=foo+bar",
+    # user profiles
+    "/user/john_smith", "/u/jane123", "/users/12345/profile",
+    "/@alice", "/profile/bob",
+    # static / file types
+    "/static/style.css", "/assets/img/logo.png", "/downloads/manual.pdf",
+    # categories / tags
+    "/tag/python", "/tag/machine-learning", "/category/sports",
+    "/topics/news",
+    # paginated lists
+    "/page/2", "/posts?page=3", "/articles?p=5&sort=date",
+    # specific deep paths (mimicking github/stackoverflow style)
+    "/inviti8/lupus", "/torvalds/linux", "/anthropics/claude-code",
+    "/questions/12345", "/q/abc-def", "/issues/123",
+]
+
+
 def load_tranco(csv_path: Path, html_index: dict[str, str], html_max_chars: int) -> Iterable[SecurityExample]:
     """Yield SecurityExamples from a Tranco CSV (rank, domain).
 
-    Tranco gives domains, not URLs — we synthesize https://{domain}/ as the URL.
-    If html_index has content for that URL, attach it.
+    Tranco gives domains, not URLs. We synthesize realistic full URLs by
+    appending a randomly-chosen path from SAFE_URL_PATHS. See the docstring
+    on SAFE_URL_PATHS for why this matters (v0.2 → v0.3 fix).
+
+    A small fraction (~10%) are kept as bare https://{domain}/ form to
+    preserve representation of that legitimate URL pattern too.
     """
     if not csv_path.exists():
         LOG.warning("Tranco source not found at %s", csv_path)
         return
 
+    # Deterministic per-domain path selection so rebuilds are reproducible
+    rng = random.Random(20260408)
     fetched_at = now_iso()
     with csv_path.open("r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -324,7 +420,13 @@ def load_tranco(csv_path: Path, html_index: dict[str, str], html_max_chars: int)
             if not domain:
                 continue
             rank = int(row.get("rank") or 0)
-            url = f"https://{domain}/"
+
+            # ~10% bare domains, ~90% with synthesized realistic paths
+            if rng.random() < 0.10:
+                url = f"https://{domain}/"
+            else:
+                path = rng.choice(SAFE_URL_PATHS)
+                url = f"https://{domain}{path}"
 
             html = html_index.get(url)
             html_truncated = False
