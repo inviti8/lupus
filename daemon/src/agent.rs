@@ -3,6 +3,8 @@
 //! Manages the search model lifecycle: load base weights, attach a LoRA
 //! adapter (search or content), run the agent loop with tool calling.
 
+pub mod prompt;
+
 use crate::config::ModelsConfig;
 use crate::error::LupusError;
 use crate::protocol::{

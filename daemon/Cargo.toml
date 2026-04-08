@@ -49,4 +49,9 @@ llama-cpp-2 = "0.1"
 # Uncomment when ready to integrate IPFS:
 # iroh = "0.28"
 
+[dev-dependencies]
+# SHA-256 for the prompt-snapshot test that pins the byte-equivalence
+# contract between the Python eval and the Rust planner prompt port.
+sha2 = "0.10"
+
 [workspace]
