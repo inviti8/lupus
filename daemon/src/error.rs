@@ -9,6 +9,9 @@ pub enum LupusError {
     #[error("model load failed: {0}")]
     ModelLoadFailed(String),
 
+    #[error("inference error: {0}")]
+    Inference(String),
+
     #[error("adapter not found: {0}")]
     AdapterNotFound(String),
 
@@ -49,6 +52,7 @@ impl LupusError {
         match self {
             Self::ModelNotLoaded(_) => "model_not_loaded",
             Self::ModelLoadFailed(_) => "model_load_failed",
+            Self::Inference(_) => "inference_error",
             Self::AdapterNotFound(_) => "adapter_not_found",
             Self::InvalidRequest(_) => "invalid_request",
             Self::UnknownMethod(_) => "unknown_method",

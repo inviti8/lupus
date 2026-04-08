@@ -4,6 +4,7 @@
 //! adapter (search or content), run the agent loop with tool calling.
 
 pub mod prompt;
+pub mod inference;
 
 use crate::config::ModelsConfig;
 use crate::error::LupusError;

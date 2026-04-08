@@ -11,27 +11,20 @@
 //   - Index: Local semantic search with embeddings
 //   - Tools: search_subnet, fetch_page, extract_content, scan_security
 
-mod agent;
-mod config;
-mod crawler;
-mod daemon;
-mod error;
-mod index;
-mod ipfs;
-mod protocol;
-mod security;
-mod server;
-mod tools;
+// All modules live in src/lib.rs (the lupus library crate). main.rs is
+// just the binary entry point — it imports types from `lupus::*` and
+// wires them up. This split lets examples, sibling binaries, and
+// integration tests reach the same modules.
 
 use std::sync::Arc;
 
-use crate::agent::Agent;
-use crate::config::Config;
-use crate::crawler::Crawler;
-use crate::daemon::Daemon;
-use crate::index::SearchIndex;
-use crate::ipfs::IpfsClient;
-use crate::security::SecurityScanner;
+use lupus::agent::Agent;
+use lupus::config::Config;
+use lupus::crawler::Crawler;
+use lupus::daemon::Daemon;
+use lupus::index::SearchIndex;
+use lupus::ipfs::IpfsClient;
+use lupus::security::SecurityScanner;
 
 #[tokio::main]
 async fn main() {
@@ -91,7 +84,7 @@ async fn main() {
     // 7. Assemble daemon and start serving
     let daemon = Arc::new(Daemon::new(agent, security, ipfs, crawler, index, config));
 
-    if let Err(e) = server::run(daemon).await {
+    if let Err(e) = lupus::server::run(daemon).await {
         tracing::error!("Server error: {}", e);
         std::process::exit(1);
     }
