@@ -75,7 +75,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_prompt = format!("Question: {query}");
     print!("Running planner inference... ");
     let infer_start = Instant::now();
-    let raw_output = engine.infer_blocking(system_prompt, &user_prompt, MAX_PLANNER_TOKENS)?;
+    let raw_output =
+        engine.infer_blocking(system_prompt, &user_prompt, MAX_PLANNER_TOKENS, /* use_lora */ true)?;
     let infer_elapsed = infer_start.elapsed();
     println!("done in {:.2}s", infer_elapsed.as_secs_f64());
     println!();

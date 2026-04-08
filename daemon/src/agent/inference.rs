@@ -51,6 +51,27 @@ pub const MAX_PLANNER_TOKENS: usize = 512;
 /// budget all fit comfortably.
 pub const DEFAULT_N_CTX: u32 = 4096;
 
+/// Send wrapper around `LlamaLoraAdapter`.
+///
+/// `llama-cpp-2` 0.1.143 declares `unsafe impl Send for LlamaModel` (and
+/// for `LlamaBackend`/`LlamaContextParams`) but is missing the same for
+/// `LlamaLoraAdapter`. The underlying llama.cpp adapter struct is
+/// loaded once via `llama_adapter_lora_init`, never modified after
+/// construction, and only attached to contexts (which is itself a
+/// thread-serialized operation in our usage). It IS safe to send across
+/// threads, but the Rust type system can't see that without an explicit
+/// declaration.
+///
+/// We serialize all access to the engine via the outer `Mutex<InferenceEngine>`
+/// in `Agent`, so the wrapper is sound: only one thread ever touches
+/// the adapter at a time.
+struct SendableLora(LlamaLoraAdapter);
+
+// SAFETY: see SendableLora doc comment. The wrapped LlamaLoraAdapter is
+// initialized once, never mutated after construction, and accessed only
+// through the engine's serialized methods. Sound for our usage.
+unsafe impl Send for SendableLora {}
+
 /// Inference engine that owns the loaded base model + LoRA adapter for
 /// the process lifetime. Constructed once at daemon startup via
 /// [`InferenceEngine::load`] and reused for every planner request via
@@ -67,9 +88,10 @@ pub struct InferenceEngine {
     /// The loaded base GGUF. Borrowed by the per-call `LlamaContext`.
     model: LlamaModel,
 
-    /// The trained search planner LoRA adapter. Held mutably so we can
-    /// attach it to a fresh context per inference call.
-    search_lora: LlamaLoraAdapter,
+    /// The trained search planner LoRA adapter, wrapped to be `Send`.
+    /// Held mutably so we can attach it to a fresh context per
+    /// inference call. See [`SendableLora`] for the safety argument.
+    search_lora: SendableLora,
 }
 
 impl InferenceEngine {
@@ -114,16 +136,27 @@ impl InferenceEngine {
         Ok(Self {
             backend,
             model,
-            search_lora,
+            search_lora: SendableLora(search_lora),
         })
     }
 
-    /// Run a single planner inference call. Builds a fresh `LlamaContext`,
-    /// attaches the search LoRA at scale [`LORA_SCALE`], formats the
-    /// `(system, user)` messages via the GGUF's embedded chat template,
-    /// runs greedy sampling token-by-token until a stop string suffix is
-    /// detected or `max_tokens` is reached, returns the accumulated string
-    /// with the stop suffix stripped.
+    /// Run a single inference call. Builds a fresh `LlamaContext`,
+    /// optionally attaches the search LoRA, formats the `(system, user)`
+    /// messages via the GGUF's embedded chat template, runs greedy
+    /// sampling token-by-token until a stop string suffix is detected
+    /// or `max_tokens` is reached, returns the accumulated string with
+    /// the stop suffix stripped.
+    ///
+    /// `use_lora`:
+    /// - `true` for **planner** calls — attaches the trained search LoRA
+    ///   at scale [`LORA_SCALE`]. The trained LoRA was fine-tuned on
+    ///   354 (query, plan) pairs and is what makes the planner pick the
+    ///   right Lupus tools 95.5% of the time.
+    /// - `false` for **joinner** calls — leaves the context's LoRA
+    ///   slot empty so the base TinyAgent model produces the
+    ///   `Action: Finish(...)` output format BAIR trained it to emit.
+    ///   Running the joinner with the planner LoRA attached risks the
+    ///   LoRA biasing the model toward LLMCompiler plans instead.
     ///
     /// This is a synchronous, CPU-blocking call. Wrap in
     /// `tokio::task::spawn_blocking` from async contexts.
@@ -137,6 +170,7 @@ impl InferenceEngine {
         system_prompt: &str,
         user_query: &str,
         max_tokens: usize,
+        use_lora: bool,
     ) -> Result<String, LupusError> {
         // Fresh context for this call. Cheap relative to inference itself.
         let ctx_params = LlamaContextParams::default()
@@ -146,10 +180,15 @@ impl InferenceEngine {
             LupusError::Inference(format!("context creation failed: {e}"))
         })?;
 
-        // Attach the trained planner LoRA.
-        context.lora_adapter_set(&mut self.search_lora, LORA_SCALE).map_err(|e| {
-            LupusError::Inference(format!("lora_adapter_set failed: {e}"))
-        })?;
+        if use_lora {
+            // Attach the trained planner LoRA. Joinner calls skip this so
+            // the base model handles the Finish output format.
+            context
+                .lora_adapter_set(&mut self.search_lora.0, LORA_SCALE)
+                .map_err(|e| {
+                    LupusError::Inference(format!("lora_adapter_set failed: {e}"))
+                })?;
+        }
 
         // Render the chat template manually. TinyAgent's GGUF embeds a
         // custom Jinja template (see training/train_planner.py::

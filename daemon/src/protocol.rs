@@ -79,6 +79,25 @@ pub struct SearchParams {
 
 #[derive(Debug, Serialize)]
 pub struct SearchResponse {
+    /// Natural-language answer from the joinner second pass. Present
+    /// when the agent loop completed successfully and the joinner
+    /// produced an `Action: Finish(<answer>)` payload. The browser UI
+    /// should render this as the primary user-facing reply.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text_answer: Option<String>,
+
+    /// Per-step record of what the planner emitted and what each tool
+    /// returned, in plan order. Present whenever the agent loop ran far
+    /// enough to produce a plan. The browser UI may render this as a
+    /// "chain of thought" view next to the text answer for transparency.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub plan: Option<Vec<PlanStepRecord>>,
+
+    /// Structured search hits harvested from the executed plan. Empty
+    /// when the plan didn't include search tools (e.g. abstention,
+    /// fetch-only, security scans). The fetch_page/extract_content
+    /// pipeline may also populate this from extract_content's keywords
+    /// in a future iteration.
     pub results: Vec<SearchResult>,
 }
 
@@ -89,6 +108,35 @@ pub struct SearchResult {
     pub summary: String,
     pub trust_score: u8,
     pub commitment: f64,
+}
+
+/// Wire-format mirror of `agent::executor::ExecutionRecord` for
+/// inclusion in `SearchResponse`. Doesn't expose the internal `PlanStep`
+/// type or the `Vec<PlanArg>`-typed args; uses the simpler `raw_args`
+/// string and a flat observation/error pair for browser-side rendering.
+#[derive(Debug, Serialize)]
+pub struct PlanStepRecord {
+    /// Step number as emitted by the planner (starts at 1).
+    pub idx: u32,
+    /// Tool name as emitted by the planner. May be a hallucinated tool
+    /// (e.g. `compose_email`) — the dispatcher's safety net would have
+    /// returned an error in that case, captured in `error`.
+    pub tool: String,
+    /// Original arg string from inside the parentheses, including any
+    /// `$N` references the planner emitted.
+    pub raw_args: String,
+    /// The tool's JSON output if execution succeeded. `None` for
+    /// `join()` terminators and for steps that errored.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub observation: Option<serde_json::Value>,
+    /// Human-readable error if the step failed during arg coercion or
+    /// tool dispatch. Mutually exclusive with `observation`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+    /// True if this step is a `join`/`join_finish`/`join_replan`
+    /// terminator. Useful for the browser to render plan terminators
+    /// distinctly from real tool calls.
+    pub is_join: bool,
 }
 
 // -- scan_page --------------------------------------------------------------
