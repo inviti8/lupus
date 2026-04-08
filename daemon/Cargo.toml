@@ -32,9 +32,18 @@ thiserror = "2"
 # Platform directories (~/.config, ~/.local/share, %APPDATA%, etc.)
 dirs = "5"
 
-# ML inference via llama.cpp bindings (requires cmake + C compiler)
-# Uncomment when ready to integrate model inference:
-# llama-cpp-2 = "0.1"
+# Regex matching — used by the LLMCompiler plan parser to extract numbered
+# tool calls from the planner LoRA's output. The regex is intricate enough
+# (anchors, optional sentinels, optional comments) that hand-rolling it
+# invites drift from the Python reference at tools/eval_tinyagent.py.
+regex = "1"
+
+# ML inference via llama.cpp bindings. Pulls llama.cpp source as a transitive
+# dep and builds it from source via cmake during the build script. Requires
+# the dev shell from daemon/scripts/devshell.ps1 (cmake + cl.exe + Windows
+# SDK on PATH). See docs/DAEMON_DEV_SETUP.md for setup; this is the only
+# crate in the daemon that needs C++ compilation.
+llama-cpp-2 = "0.1"
 
 # IPFS client via Iroh (pure Rust, lightweight)
 # Uncomment when ready to integrate IPFS:

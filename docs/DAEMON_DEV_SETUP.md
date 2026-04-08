@@ -23,6 +23,7 @@ Windows-specific.
 |---|---|---|
 | Windows | 10 or 11 (we test on 11 24H2) | base OS |
 | Visual Studio Build Tools 2022 | 17.x with the C++ workload | provides `cl.exe`, `link.exe`, `lib.exe`, `nmake.exe`, the Windows SDK headers/libs, and the bundled CMake at `Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe` |
+| LLVM | 18.x or later (we use 22.1.2) | provides `libclang.dll` for `bindgen`, which `llama-cpp-sys-2`'s build script uses to generate Rust FFI bindings from llama.cpp's C headers. Without this the daemon build fails at the first `cargo check` with `Unable to find libclang`. Install via `winget install -e --id LLVM.LLVM` |
 | Rust toolchain | 1.93.0 or later (any recent stable) | `rustup default stable` |
 | Git | any | repo clone |
 
@@ -238,6 +239,28 @@ Check the build log for the actual cmake error. Common causes:
   Run `Get-Command cmake` and confirm it points at the BuildTools path.
 - Antivirus interfering with the build. Add an exclusion for
   `target/debug/build/llama-cpp-sys-2-*/` if so.
+
+### `Unable to find libclang` during cargo check / build
+
+The LLVM Windows installer doesn't add `C:\Program Files\LLVM\bin` to
+system PATH by default, so bindgen can't find `libclang.dll` even after
+LLVM is installed. The dev shell wrapper (`daemon/scripts/devshell.ps1`)
+auto-detects the LLVM install at common paths and sets `LIBCLANG_PATH`
+explicitly — but only if you launched your shell via the wrapper.
+
+If you're running `cargo` outside the wrapper, set the env var manually:
+
+```powershell
+$env:LIBCLANG_PATH = 'C:\Program Files\LLVM\bin'
+```
+
+Or persist it for all future shells:
+
+```powershell
+[System.Environment]::SetEnvironmentVariable('LIBCLANG_PATH', 'C:\Program Files\LLVM\bin', 'User')
+```
+
+If LLVM isn't installed at all, install it: `winget install -e --id LLVM.LLVM`.
 
 ### `Launch-VsDevShell.ps1 : ... cannot be loaded because running scripts is disabled`
 

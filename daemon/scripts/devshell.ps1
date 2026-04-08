@@ -41,6 +41,21 @@ if (-not (Test-Path $BuildToolsLauncher)) {
 # because it's written directly to the console handle. We accept the noise.
 & $BuildToolsLauncher -Arch amd64 -SkipAutomaticLocation 2>&1 | Out-Null
 
+# bindgen (used by llama-cpp-sys-2 at build time) needs libclang.dll to
+# parse llama.cpp's C headers. The LLVM Windows installer doesn't add its
+# bin dir to PATH by default, so bindgen can't find it without help.
+# We set LIBCLANG_PATH explicitly to point at wherever libclang lives.
+$LibClangCandidates = @(
+    'C:\Program Files\LLVM\bin\libclang.dll',
+    'D:\Program Files\LLVM\bin\libclang.dll',
+    'D:\Tools\LLVM\bin\libclang.dll',
+    'C:\Program Files (x86)\LLVM\bin\libclang.dll'
+)
+$LibClang = $LibClangCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+if ($LibClang) {
+    $env:LIBCLANG_PATH = Split-Path -Parent $LibClang
+}
+
 # Position at the daemon dir, resolved relative to this script's own
 # location so the wrapper works regardless of the caller's CWD.
 $DaemonDir = Resolve-Path (Join-Path $PSScriptRoot '..')
@@ -68,10 +83,15 @@ $RustcVersion = if ($RustcBanner -match '(\d+\.\d+\.\S+)') { $Matches[1] } else 
 
 Write-Host ''
 Write-Host 'lupus-daemon dev shell ready' -ForegroundColor Green
-Write-Host "  cl.exe : $ClVersion"
-Write-Host "  cmake  : $CmakeVersion"
-Write-Host "  rustc  : $RustcVersion"
-Write-Host "  cwd    : $DaemonDir"
+Write-Host "  cl.exe   : $ClVersion"
+Write-Host "  cmake    : $CmakeVersion"
+Write-Host "  rustc    : $RustcVersion"
+if ($env:LIBCLANG_PATH) {
+    Write-Host "  libclang : $env:LIBCLANG_PATH"
+} else {
+    Write-Warning "libclang not found. bindgen will fail. See docs/DAEMON_DEV_SETUP.md"
+}
+Write-Host "  cwd      : $DaemonDir"
 Write-Host ''
 Write-Host 'Quick start:' -ForegroundColor Cyan
 Write-Host '  cargo check          # validate without compiling'
