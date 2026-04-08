@@ -41,3 +41,12 @@ datasets/security/examples/*.jsonl
 .idea/
 
 .env.env.us-il-1.bak
+
+# TinyAgent eval runs: ignore everything in eval/tinyagent_runs/ except
+# the two reference runs that the findings docs explicitly cite. Future
+# runs are reproducible via tools/eval_tinyagent.py and don't need to be
+# committed unless they're worth referencing in docs.
+eval/tinyagent_runs/*.jsonl
+eval/tinyagent_runs/*.log
+!eval/tinyagent_runs/20260407-225450-eval.jsonl
+!eval/tinyagent_runs/20260407-232422-eval.jsonl
