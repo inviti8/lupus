@@ -190,8 +190,12 @@ TEST_CASES: list[TestCase] = [
 
 # Allow optional leading punctuation/whitespace before the step number, since
 # the model sometimes emits a continuation token (e.g. ". 1. search_local_index(...)"
-# on the same line). Also allow optional trailing comment.
-ACTION_RE = re.compile(r"(?:^|[^\w\$])(\d+)\.\s*(\w+)\s*\((.*?)\)\s*(?:#.*)?\s*$")
+# on the same line). Also allow optional trailing <END_OF_PLAN> sentinel
+# (which the inference stop token usually cuts off but training data includes)
+# and optional trailing comment.
+ACTION_RE = re.compile(
+    r"(?:^|[^\w\$])(\d+)\.\s*(\w+)\s*\((.*?)\)\s*(?:<END_OF_PLAN>)?\s*(?:#.*)?\s*$"
+)
 ID_REF_RE = re.compile(r"\$\{?(\d+)\}?")
 
 
@@ -212,19 +216,28 @@ def _parse_args_string(raw: str) -> tuple[Any, ...]:
     """Parse the comma-separated arg string of a single tool call.
 
     Mirrors `_parse_llm_compiler_action_args` from upstream — uses
-    ast.literal_eval if possible, falls back to the raw string. We wrap
-    the args in a synthetic tuple `(...)` so single-arg calls don't lose
-    their tuple-ness."""
+    ast.literal_eval if possible, falls back to the raw string.
+
+    Strategy:
+    1. Try parsing as-is. The upstream BAIR format wraps $N references in
+       quotes (e.g. `["$1"]`), which is already valid Python literal syntax.
+    2. If that fails, substitute bare `$N` -> `"$N"` and try again. This
+       catches outputs where the model emitted `$1` as a raw identifier.
+    3. If both fail, return the raw arg string as a single-element tuple."""
     raw = raw.strip()
     if not raw:
         return ()
-    # Replace $N with literal "$N" strings so ast can parse them.
+    # Path 1: parse as-is.
+    try:
+        parsed = ast.literal_eval(f"({raw},)")
+        return parsed if isinstance(parsed, tuple) else (parsed,)
+    except (SyntaxError, ValueError):
+        pass
+    # Path 2: substitute bare $N then re-parse.
     safe = ID_REF_RE.sub(lambda m: f'"${m.group(1)}"', raw)
     try:
         parsed = ast.literal_eval(f"({safe},)")
-        if isinstance(parsed, tuple):
-            return parsed
-        return (parsed,)
+        return parsed if isinstance(parsed, tuple) else (parsed,)
     except (SyntaxError, ValueError):
         return (raw,)
 

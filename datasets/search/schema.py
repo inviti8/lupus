@@ -121,6 +121,51 @@ class SearchExample(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Planner LoRA training types — datasets/search/planner_train.jsonl
+#
+# Distinct from SearchExample because the format is different: planner LoRA
+# training uses HuggingFace chat-format messages with LLMCompiler plans in
+# the assistant turn, NOT the legacy `<|function_call|>` JSON markers.
+# ---------------------------------------------------------------------------
+
+
+class PlannerCategory(str, Enum):
+    SINGLE_TOOL = "single_tool"
+    MULTI_STEP = "multi_step"
+    ABSTENTION = "abstention"
+    KNOWLEDGE_AWARE = "knowledge_aware"
+
+
+class ChatMessage(BaseModel):
+    role: str = Field(..., pattern="^(system|user|assistant)$")
+    content: str
+
+
+class PlannerExample(BaseModel):
+    """A planner LoRA training example in HF chat format.
+
+    Messages contain the user turn and the assistant turn only. The trainer
+    prepends the canonical Lupus planner system prompt at training time
+    (the same one `tools/tinyagent_prompt_probe.py::build_planner_system_prompt`
+    builds at inference time), so changes to the system prompt automatically
+    propagate to training without rewriting the dataset.
+    """
+
+    id: str = Field(..., description="Unique identifier")
+    category: PlannerCategory
+    messages: list[ChatMessage] = Field(
+        ...,
+        min_length=2,
+        description="User + assistant turns. Assistant emits an LLMCompiler plan.",
+    )
+    expected_tools: list[str] = Field(
+        default_factory=list,
+        description="Tools the assistant plan calls (excluding join). Empty for abstention.",
+    )
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+# ---------------------------------------------------------------------------
 # Validation helpers
 # ---------------------------------------------------------------------------
 
