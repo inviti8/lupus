@@ -6,6 +6,7 @@
 pub mod prompt;
 pub mod inference;
 pub mod plan;
+pub mod executor;
 
 use crate::config::ModelsConfig;
 use crate::error::LupusError;
@@ -13,15 +14,17 @@ use crate::protocol::{
     ComponentState, SearchParams, SearchResponse,
     SummarizeParams, SummarizeResponse,
 };
-use crate::tools;
 
 /// Known LoRA adapters that can be hot‑swapped onto the base model.
 pub const ADAPTER_SEARCH: &str = "search";
 pub const ADAPTER_CONTENT: &str = "content";
 
-/// TinyAgent function‑call markers (parsed from model output).
-pub const FUNC_CALL_START: &str = "<|function_call|>";
-pub const FUNC_CALL_END: &str = "<|end_function_call|>";
+// FUNC_CALL_START / FUNC_CALL_END deleted in Phase 5. The pre-eval
+// daemon scaffold assumed TinyAgent emitted JSON-wrapped tool calls
+// inside `<|function_call|>...<|end_function_call|>` markers; Phase 1
+// of the eval (docs/TINYAGENT_PHASE1_FINDINGS.md) confirmed empirically
+// that TinyAgent emits LLMCompiler-format numbered plans instead. The
+// new parser is at `daemon/src/agent/plan.rs`.
 
 pub struct Agent {
     model_path: std::path::PathBuf,
@@ -83,32 +86,43 @@ impl Agent {
         Ok(())
     }
 
-    /// Process a search query through the TinyAgent tool‑calling loop.
+    /// Process a search query through the TinyAgent LLMCompiler agent loop.
     ///
-    /// 1. Build system prompt with available tool schemas
-    /// 2. Present query to model
-    /// 3. Parse tool calls from output
-    /// 4. Execute tools, feed results back
-    /// 5. Model generates final response
+    /// New shape after Phase 1-5 of the integration:
+    ///
+    /// 1. Build planner system prompt via `agent::prompt::planner_system_prompt`
+    ///    (cached after first call; SHA-256 byte-equivalent to the Python eval)
+    /// 2. Run a single planner inference call via `agent::inference`
+    ///    (loads base GGUF + trained LoRA, greedy decoding, stop on
+    ///    `<END_OF_PLAN>`)
+    /// 3. Parse the raw output into a `Vec<PlanStep>` via `agent::plan::parse_plan`
+    /// 4. Execute the plan sequentially via `agent::executor::execute_plan`,
+    ///    resolving `$N` references against prior step observations
+    /// 5. Run the joinner second pass to convert the executed plan into a
+    ///    natural-language `Action: Finish(...)` reply (Phase 6, not yet
+    ///    wired in)
+    /// 6. Return the joinner answer in the `SearchResponse`
+    ///
+    /// For now this stub returns an empty response — the actual wiring
+    /// of the InferenceEngine + plan + executor + joinner happens in
+    /// Phase 6 once the joinner module exists.
     pub async fn search(&self, params: SearchParams) -> Result<SearchResponse, LupusError> {
         self.require_loaded()?;
 
         tracing::debug!("Search query: {:?} scope: {:?}", params.query, params.scope);
 
-        // Build the system prompt with tool schemas
-        let _system_prompt = tools::system_prompt();
-
-        // TODO: Run inference loop
-        //   let prompt = format!("{}\n\nUser: {}", system_prompt, params.query);
-        //   loop {
-        //       let output = model.generate(&prompt, max_tokens)?;
-        //       if let Some(call) = parse_tool_call(&output) {
-        //           let result = tools::execute(&call.name, call.args, &tool_ctx).await?;
-        //           prompt.push_str(&format_tool_result(&result));
-        //       } else {
-        //           break parse_search_results(&output);
-        //       }
-        //   }
+        // TODO(phase 6): wire the full agent loop:
+        //   let raw = self.inference.infer(prompt::planner_system_prompt(),
+        //                                   &format!("Question: {}", params.query),
+        //                                   plan::MAX_PLANNER_TOKENS).await?;
+        //   let plan = plan::parse_plan(&raw)?;
+        //   let records = executor::execute_plan(&plan).await;
+        //   let joinner_out = joinner::run_joinner(&self.inference, &params.query, &records).await?;
+        //   Ok(SearchResponse {
+        //       text_answer: Some(joinner_out.answer),
+        //       plan: Some(records.iter().map(...).collect()),
+        //       results: harvest_results(&records),
+        //   })
 
         Ok(SearchResponse { results: vec![] })
     }

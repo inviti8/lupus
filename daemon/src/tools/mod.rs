@@ -1,6 +1,22 @@
-//! Tool registry — functions the TinyAgent model can call during the
-//! agent loop. Each tool has a schema (for the system prompt) and an
-//! execute function.
+//! Tool registry — the 6 functions the planner LoRA can call during the
+//! agent loop. Each tool has a schema (kept for OpenAPI export, even
+//! though the planner prompt no longer uses it — see decision G in the
+//! daemon integration plan) and an `execute` function.
+//!
+//! The dispatcher in [`execute`] is the **unconditional safety net**
+//! against hallucinated tool calls: any name not in the match arm
+//! returns `LupusError::ToolError { message: "unknown tool" }`. Even if
+//! the planner LoRA emits a fabricated tool name like `compose_email`,
+//! it cannot execute through this dispatcher. **Do not weaken this
+//! guarantee.**
+//!
+//! The pre-Phase 5 version of this file declared `parse_tool_calls`,
+//! `system_prompt`, and a `ToolCall` struct that assumed TinyAgent
+//! emitted JSON-wrapped function call markers (`<|function_call|>...`).
+//! That was the wrong format premise refuted in Phase 1 of the eval; it
+//! was deleted as part of Phase 5. The replacement parser is at
+//! `daemon/src/agent/plan.rs` and the replacement system prompt is at
+//! `daemon/src/agent/prompt.rs`.
 
 pub mod search_subnet;
 pub mod search_local;
@@ -9,12 +25,13 @@ pub mod extract_content;
 pub mod scan_security;
 pub mod crawl_index;
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 use crate::error::LupusError;
 
-/// Schema description for a single tool, included in the agent system prompt
-/// so the model knows what functions it can call.
+/// Schema description for a single tool. Kept for potential OpenAPI
+/// export; not used for prompt rendering anymore (the Phase 2 prompt
+/// port at `daemon/src/agent/prompt.rs` has its own constants).
 #[derive(Debug, Clone, Serialize)]
 pub struct ToolSchema {
     pub name: &'static str,
@@ -22,14 +39,9 @@ pub struct ToolSchema {
     pub parameters: serde_json::Value,
 }
 
-/// A parsed tool call from model output.
-#[derive(Debug, Deserialize)]
-pub struct ToolCall {
-    pub name: String,
-    pub arguments: serde_json::Value,
-}
-
-/// All registered tool schemas.
+/// All registered tool schemas. Currently only consumed by tests; the
+/// production prompt builder hardcodes the descriptions in
+/// `agent::prompt`.
 pub fn schemas() -> Vec<ToolSchema> {
     vec![
         search_subnet::schema(),
@@ -41,58 +53,34 @@ pub fn schemas() -> Vec<ToolSchema> {
     ]
 }
 
-/// Build the system prompt section describing available tools.
-pub fn system_prompt() -> String {
-    let mut prompt = String::from("You have access to the following tools:\n\n");
-    for schema in schemas() {
-        prompt.push_str(&format!(
-            "### {}\n{}\nParameters: {}\n\n",
-            schema.name,
-            schema.description,
-            serde_json::to_string_pretty(&schema.parameters).unwrap_or_default(),
-        ));
-    }
-    prompt.push_str(
-        "To call a tool, output:\n\
-         <|function_call|> {\"name\": \"tool_name\", \"arguments\": {...}} <|end_function_call|>\n\
-         Wait for the result before continuing.\n"
-    );
-    prompt
-}
-
-/// Dispatch a tool call by name. Returns the tool's JSON output.
-pub async fn execute(call: &ToolCall) -> Result<serde_json::Value, LupusError> {
-    match call.name.as_str() {
-        "search_subnet" => search_subnet::execute(call.arguments.clone()).await,
-        "search_local_index" => search_local::execute(call.arguments.clone()).await,
-        "fetch_page" => fetch_page::execute(call.arguments.clone()).await,
-        "extract_content" => extract_content::execute(call.arguments.clone()).await,
-        "scan_security" => scan_security::execute(call.arguments.clone()).await,
-        "crawl_index" => crawl_index::execute(call.arguments.clone()).await,
+/// Dispatch a tool call by name. Returns the tool's JSON output, or
+/// `LupusError::ToolError { message: "unknown tool" }` for any name
+/// that isn't in our 6-tool surface.
+///
+/// # Safety net
+///
+/// The `_ =>` arm is the daemon's hard floor against planner
+/// hallucinations. The trained LoRA's tool selection is at 95.5% on the
+/// 22-case eval but the failure mode for the remaining 4.5% is
+/// emitting a hallucinated tool name (e.g. `compose_email`,
+/// `send_email`). Without this validation, those calls would propagate
+/// through the executor and either crash or silently misbehave. With
+/// it, hallucinated names produce a clean error that the joinner can
+/// surface to the user. **Keep this arm.**
+pub async fn execute(
+    name: &str,
+    args: serde_json::Value,
+) -> Result<serde_json::Value, LupusError> {
+    match name {
+        "search_subnet" => search_subnet::execute(args).await,
+        "search_local_index" => search_local::execute(args).await,
+        "fetch_page" => fetch_page::execute(args).await,
+        "extract_content" => extract_content::execute(args).await,
+        "scan_security" => scan_security::execute(args).await,
+        "crawl_index" => crawl_index::execute(args).await,
         other => Err(LupusError::ToolError {
             tool: other.into(),
             message: "unknown tool".into(),
         }),
     }
-}
-
-/// Parse tool calls from raw model output. Returns all calls found.
-pub fn parse_tool_calls(output: &str) -> Vec<ToolCall> {
-    let mut calls = Vec::new();
-    let mut remaining = output;
-
-    while let Some(start) = remaining.find(crate::agent::FUNC_CALL_START) {
-        let after_marker = start + crate::agent::FUNC_CALL_START.len();
-        if let Some(end) = remaining[after_marker..].find(crate::agent::FUNC_CALL_END) {
-            let json_str = remaining[after_marker..after_marker + end].trim();
-            if let Ok(call) = serde_json::from_str::<ToolCall>(json_str) {
-                calls.push(call);
-            }
-            remaining = &remaining[after_marker + end + crate::agent::FUNC_CALL_END.len()..];
-        } else {
-            break;
-        }
-    }
-
-    calls
 }
