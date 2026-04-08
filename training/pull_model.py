@@ -27,6 +27,14 @@ MODEL_PREFIXES = {
     "security": "models/lupus-security/final",
     "search": "models/lupus-search/final",
     "content": "models/lupus-content/final",
+    "tinyagent": "models/lupus-tinyagent/final",
+}
+
+# Default local output directory per model. Falls back to dist/lupus-{model}
+# if a model isn't listed here. tinyagent uses a -search suffix because it's
+# the search-adapter LoRA; a future content adapter will be a separate dir.
+MODEL_DEFAULT_OUT = {
+    "tinyagent": "dist/lupus-tinyagent-search",
 }
 
 
@@ -56,7 +64,12 @@ def main() -> int:
     )
 
     s3_prefix = args.prefix or MODEL_PREFIXES[args.model]
-    out_dir = args.out or (REPO_ROOT / "dist" / f"lupus-{args.model}")
+    if args.out:
+        out_dir = args.out
+    elif args.model in MODEL_DEFAULT_OUT:
+        out_dir = REPO_ROOT / MODEL_DEFAULT_OUT[args.model]
+    else:
+        out_dir = REPO_ROOT / "dist" / f"lupus-{args.model}"
 
     # Verify there's something to download
     objs = list_objects(prefix=s3_prefix.rstrip("/") + "/")
