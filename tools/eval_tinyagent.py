@@ -47,6 +47,16 @@ TOOL_RAG_TOP_K = 3
 TOOL_RAG_PRIMARY_THRESHOLD = 0.10  # top match must clear this for non-abstention
 TOOL_RAG_SECONDARY_THRESHOLD = 0.04  # other tools in top_k must clear this
 
+# Step C planner LoRA — set to True to attach the trained LoRA adapter to the
+# base GGUF at inference time. The adapter is the converted output of
+# `dist/llama.cpp/convert_lora_to_gguf.py` from the trained safetensors at
+# `dist/lupus-tinyagent-search/adapter_model.safetensors`. Comparison
+# baselines:
+#   USE_LORA=False: 14/22 hard pass, selection 72.7% YELLOW (Step A baseline)
+#   USE_LORA=True:  TBD (Step C target: >= 80% selection GREEN)
+USE_LORA = True
+LORA_GGUF_PATH = REPO_ROOT / "dist" / "lupus-tinyagent-search" / "adapter.gguf"
+
 RUNS_DIR = REPO_ROOT / "eval" / "tinyagent_runs"
 
 # Tool names that terminate a plan. The model is supposed to emit `join()`
@@ -471,12 +481,20 @@ def main() -> int:
     t0 = time.time()
     from llama_cpp import Llama  # local import: avoids cost on errors
 
-    llm = Llama(
+    llama_kwargs = dict(
         model_path=str(MODEL_GGUF),
         n_ctx=4096,
         n_gpu_layers=0,
         verbose=False,
     )
+    if USE_LORA:
+        if not LORA_GGUF_PATH.exists():
+            print(f"ERROR: LORA enabled but adapter not found at {LORA_GGUF_PATH}", file=sys.stderr)
+            print("       Run training/pull_model.py + dist/llama.cpp/convert_lora_to_gguf.py first.", file=sys.stderr)
+            return 1
+        llama_kwargs["lora_path"] = str(LORA_GGUF_PATH)
+        print(f"  attaching LoRA adapter: {LORA_GGUF_PATH.name}")
+    llm = Llama(**llama_kwargs)
     print(f"  loaded in {time.time() - t0:.1f}s\n")
 
     tool_rag: LupusToolRAG | None = None
