@@ -2,22 +2,23 @@
 
 **Self-contained, step-by-step guide** for training the Lupus security classifier on RunPod. Follow this top-to-bottom on your local workstation and your RunPod GPU instance. You should not need to flip back to other documentation while following this.
 
+This runbook is for **v0.2** of the security model — the version with the balanced dataset (16K phishing + 16K malware + 16K safe), three classes (we dropped `suspicious`), capped class weights, gradient clipping, and the automated RunPod deploy tooling.
+
 ---
 
 ## What you're building
 
-A fine-tuned **Qwen2.5-Coder-0.5B** that classifies URLs into four classes:
+A fine-tuned **Qwen2.5-Coder-0.5B** that classifies URLs into three classes:
 
 - `safe` — legitimate site
 - `phishing` — credential-stealing or impersonation attack
 - `malware` — malware distribution URL
-- `suspicious` — possibly malicious, low confidence
 
-This is **Stage 1**: trained on URL features only (no HTML body fetching). It is the simpler, lower-risk first iteration. Stage 2 (URL + HTML) comes after this works.
+This is **Stage 1**: trained on URL features only (no HTML body fetching). Stage 2 (URL + HTML) comes after this works.
 
-**Expected duration:** 30 minutes to 2 hours of GPU time on an RTX 4090, depending on epochs and batch size. The actual training is fast — most of the time goes to environment setup and initial model download.
+**Expected duration:** ~30-60 minutes of GPU time on an RTX 4090. Most of the time goes to environment setup and the initial model download — actual training is fast on a 0.5B model with 48K balanced examples.
 
-**Expected cost:** ~$0.15 to $0.60 of GPU time at the $0.29/hr spot price.
+**Expected cost:** ~$0.20-0.40 of GPU time at the $0.20-0.30/hr spot price in `US-IL-1`.
 
 ---
 
@@ -25,50 +26,58 @@ This is **Stage 1**: trained on URL features only (no HTML body fetching). It is
 
 Before starting, confirm:
 
-- [ ] **`.env` file at the repo root** with valid credentials (see `.env.example`). The smoke test we ran earlier should have passed all four checks.
-- [ ] **Built dataset on disk** at `datasets/security/examples/train.jsonl` and `eval.jsonl`. Run `python datasets/security/build_dataset.py` if not.
-- [ ] **RunPod account with billing set up** and access to RTX 4090 or comparable GPU.
-- [ ] **Python 3.10+** on your local workstation with `boto3`, `python-dotenv`, and `wandb` installed.
-- [ ] **Git** access to push the lupus repo (optional but easier than uploading the code another way).
+- [ ] **`.env` file at the repo root** with all required credentials filled in (see `.env.example`):
+  - `S3_ENDPOINT_URL`, `S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION` (RunPod S3 storage)
+  - `HF_TOKEN` (HuggingFace, for downloading the base model)
+  - `WANDB_API_KEY`, `WANDB_PROJECT`, `WANDB_ENTITY` (Weights & Biases, for live training metrics)
+  - `RUNPOD_API_KEY` (RunPod, full-access — used by `tools/runpod_deploy.py` to provision and manage pods)
+- [ ] **Built dataset on disk** at `datasets/security/examples/train.jsonl` and `eval.jsonl`. If missing: `python datasets/security/build_dataset.py --balance --max-per-class 20000`
+- [ ] **A RunPod network volume** in `US-IL-1`. The default volume id `7oqdtnkk5f` is wired into `tools/runpod_deploy.py`. If you have a different one, pass `--volume YOUR_VOLUME_ID`.
+- [ ] **Python 3.10+** locally with deps: `pip install boto3 python-dotenv wandb requests huggingface_hub`
 
 ---
 
 ## Phase 1 — Local: push the dataset to S3
 
-This runs **once** from your local Windows machine. You're uploading the built train/eval JSONL files to your RunPod S3 bucket so the pod can pull them later.
+This runs **once** from your local Windows machine. Uploads the built train/eval JSONL files to your RunPod S3 bucket so the pod can pull them later.
 
 ### Step 1.1 — Verify the dataset exists locally
 
 ```bash
 cd D:/repos/lupus
-ls -la datasets/security/examples/
+python datasets/security/schema.py
 ```
 
-You should see at least `train.jsonl` and `eval.jsonl`. They should total ~25 MB.
+Expected output: `60000 examples validated  All entries valid.`
 
-If not, build them first:
+If the dataset doesn't exist or you want to rebuild from updated source data:
 
 ```bash
-python datasets/security/build_dataset.py --verbose
+python datasets/security/fetch/openphish.py --force         # ~300 phishing URLs (no auth)
+python datasets/security/fetch/phishing_database.py --force # ~789K phishing URLs (no auth, GitHub)
+python datasets/security/fetch/urlhaus.py --force           # ~21K malware URLs
+python datasets/security/fetch/tranco.py --top 50000 --force # 50K safe URLs
+
+python datasets/security/build_dataset.py --balance --max-per-class 20000 --verbose
+python datasets/security/schema.py
 ```
 
 ### Step 1.2 — Push to S3
 
 ```bash
-python training/push_dataset.py --verbose
+python training/push_dataset.py
 ```
+
+If files are already in S3 (which they probably are after the first run), it'll skip them. Use `--force` to overwrite.
 
 **Expected output:**
 ```
-INFO Uploading datasets/security/examples/train.jsonl (~19000 KB) → s3://7oqdtnkk5f/datasets/security/train.jsonl
-INFO Uploading datasets/security/examples/eval.jsonl (~4800 KB) → s3://7oqdtnkk5f/datasets/security/eval.jsonl
-INFO Uploading datasets/security/schema.py (~5 KB) → s3://7oqdtnkk5f/datasets/security/schema.py
-INFO ---
+INFO Uploading datasets/security/examples/train.jsonl (~17 MB) → s3://7oqdtnkk5f/datasets/security/train.jsonl
+INFO Uploading datasets/security/examples/eval.jsonl (~5 MB) → s3://7oqdtnkk5f/datasets/security/eval.jsonl
+INFO Uploading datasets/security/schema.py → s3://7oqdtnkk5f/datasets/security/schema.py
 INFO Pushed: 3  Skipped: 0  Missing: 0
-INFO Total uploaded: 23.50 MB
+INFO Total uploaded: ~22 MB
 ```
-
-If you re-run without `--force`, it skips already-uploaded files.
 
 ### Step 1.3 — Verify
 
@@ -76,76 +85,152 @@ If you re-run without `--force`, it skips already-uploaded files.
 python training/s3_utils.py
 ```
 
-You should see:
+You should see roughly:
 ```
 Connected to s3://7oqdtnkk5f/
-  3 object(s) total
-  - datasets/security/eval.jsonl (4800.0 KB)
-  - datasets/security/schema.py (5.0 KB)
-  - datasets/security/train.jsonl (19000.0 KB)
+  3+ object(s) total
+  - datasets/security/eval.jsonl
+  - datasets/security/schema.py
+  - datasets/security/train.jsonl
 ```
 
 ✓ **Phase 1 complete.** The dataset is in S3 and ready to be pulled by the pod.
 
 ---
 
-## Phase 2 — Provision the RunPod instance
+## Phase 2 — Provision the RunPod instance (automated)
 
-This is a manual step in the RunPod web console. There is no button literally labeled "Provision" — the deploy button lives in the Pods section.
+**Big change from earlier versions of this runbook:** instead of clicking through the RunPod web console (which is painful when capacity is tight), we use `tools/runpod_deploy.py` which polls the RunPod REST API and grabs an instance the moment one becomes available.
 
-### Step 2.0 — A note on network volumes (read this first)
+### Step 2.1 — Check current account state and GPU availability
 
-If you've already created a **network volume** in RunPod (recommended for spot training), the workflow is significantly nicer:
+```bash
+python tools/runpod_status.py
+```
 
-- The same network volume that exposes the S3 API at `s3api-us-il-1.runpod.io` (which our `.env` credentials talk to) **also mounts as a regular filesystem on any pod that attaches it**, typically at `/workspace`.
-- This means: data we pushed to S3 is **already on the pod's disk** the moment the pod starts. No re-download needed.
-- It also means: the HuggingFace base model cache (~1 GB), Python deps, training checkpoints, and the cloned repo can all live on the volume and **persist across pod terminations**. When a spot pod gets killed and replaced, the next pod starts where the last one left off in seconds, not minutes.
+This is read-only and free. It prints:
+- Your account email and current spend rate
+- Any active pods (should be 0 — terminate any leftovers first)
+- Your network volumes
+- Live GPU stock status in `US-IL-1`
 
-**Critical constraint:** **Network volumes are region-locked.** You can only attach a network volume to a pod that lives in the **same datacenter**. Your volume is in `us-il-1` (Israel), so you must filter for pods in that region. If `us-il-1` has no RTX 4090s available right now, options are:
-1. Wait for capacity in `us-il-1`
-2. Try a different GPU type that's available in `us-il-1` (RTX A5000, A4000)
-3. Create a new network volume in another region (`us-east`, `eu-central`, etc.) and re-push the dataset to that volume's S3 endpoint by updating `.env`
+Example output when nothing's available right now:
+```
+======================================================================
+  Account
+======================================================================
+  Email:        you@example.com
+  Spend rate:   $0.0010/hr
+  Machine quota: 0
 
-### Step 2.1 — Find the deploy button (no "Provision" label exists)
+======================================================================
+  Active pods
+======================================================================
+  No active pods.
 
-1. Log in to https://www.runpod.io/console
-2. In the **left sidebar**, click **Pods** (or **GPU Cloud** in some UI versions). NOT "Storage" — that's where your volume lives.
-3. On the Pods page, look for one of these buttons (label varies by current UI version):
-   - **`+ Deploy`** ← most common label
-   - **`Deploy`**
-   - **`+ GPU Pod`**
-   - **`+ New Pod`**
-   
-   It's typically near the top of the page. If you can't find it, the alternative URL is https://www.runpod.io/console/deploy
+======================================================================
+  Network volumes
+======================================================================
+  - 7oqdtnkk5f
+      name:        related_fuchsia_coyote
+      size:        10 GB
+      region:      US-IL-1
 
-### Step 2.2 — Configure the pod
+======================================================================
+  GPU availability in US-IL-1
+======================================================================
+  NVIDIA GeForce RTX 4090                    Low             $0.200/hr  $0.340/hr
+  ⚠ No GPUs currently available in US-IL-1
+```
 
-On the deploy page:
+The "Low" stock value is normal in `US-IL-1`. Even at "Low" the deploy script can usually grab one within a few minutes of polling.
 
-| Setting | What to choose | Why |
-|---|---|---|
-| **GPU Type** | RTX 4090 (24 GB) | Plenty of VRAM for Qwen2.5-Coder-0.5B at batch size 32+ |
-| **Pod Type** | Spot / Community Cloud / Interruptable (≈$0.29/hr) | Cheapest tier; spot interruption is recoverable thanks to S3 checkpointing |
-| **Datacenter / Region** | **MUST match your network volume's region** (e.g. `us-il-1`) | Network volumes are region-locked |
-| **Template / Image** | `runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04` | PyTorch + CUDA pre-installed; saves ~5 min on bootstrap |
-| **Container Disk** | 20 GB | Pod-local ephemeral scratch space |
-| **Volume Mount Path** | `/workspace` (default) | Where the network volume gets mounted inside the pod |
-| **Network Volume** | **← attach your existing volume** (dropdown on the deploy page) | Persistence across pod restarts |
+### Step 2.2 — Deploy the pod (with auto-retry)
 
-Then click **Deploy On-Demand** or **Deploy Spot** at the bottom.
+**Dry run first** to verify the request body:
 
-Wait for the pod to come up (usually 30-60 seconds). The status in the Pods list will go from `Provisioning` → `Running`.
+```bash
+python tools/runpod_deploy.py --dry-run
+```
 
-### Step 2.3 — Connect to the pod
+Expected output:
+```json
+Deploy request:
+{
+  "name": "lupus-training-20260407-180000",
+  "computeType": "GPU",
+  "gpuTypeIds": ["NVIDIA GeForce RTX 4090"],
+  "gpuCount": 1,
+  "gpuTypePriority": "availability",
+  "dataCenterIds": ["US-IL-1"],
+  "dataCenterPriority": "availability",
+  "interruptible": true,
+  "imageName": "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
+  "containerDiskInGb": 20,
+  "minVCPUPerGPU": 4,
+  "minRAMPerGPU": 16,
+  "ports": ["22/tcp", "8888/http"],
+  "networkVolumeId": "7oqdtnkk5f",
+  "volumeMountPath": "/workspace",
+  "cloudType": "SECURE"
+}
+```
 
-Click the running pod in the Pods list. Then either:
+**If that looks right, deploy for real:**
 
-- **Web terminal** (fastest): "Connect" button → "Start Web Terminal". Works in your browser, no SSH setup needed.
-- **SSH** (better for long sessions): "Connect" → "SSH Terminal", copy the displayed `ssh root@<host> -p <port>` command and run it locally.
+```bash
+python tools/runpod_deploy.py
+```
 
-Once connected, you should be in a shell on the pod. The current working directory will probably be `/` or `/root` — that's fine, we'll `cd` into the volume next.
+The script will:
+1. Submit the deploy request to RunPod's REST API
+2. If RunPod responds with "no capacity available", wait 30 seconds and retry
+3. Continue retrying for up to 30 minutes (60 attempts × 30s)
+4. As soon as RunPod accepts the request and provisions a pod, print the pod ID and connection info
 
-✓ **Phase 2 complete** when you have a shell prompt on the pod.
+Expected success output:
+```
+[18:00:01] Attempt 1/60: deploying...
+[18:00:02]   no capacity right now: HTTP 400: ...
+[18:00:02]   waiting 30s before retry...
+[18:00:32] Attempt 2/60: deploying...
+[18:00:33] ✓ DEPLOYED: pod abc123def456
+
+======================================================================
+  Pod is up
+======================================================================
+  ID:           abc123def456
+  Name:         lupus-training-20260407-180000
+  Status:       RUNNING
+  GPU:          NVIDIA GeForce RTX 4090
+  Datacenter:   US-IL-1
+  Cost/hr:      $0.200
+
+  Web console:  https://www.runpod.io/console/pods
+
+  Connect via web terminal:
+    1. Open https://www.runpod.io/console/pods/abc123def456
+    2. Click 'Connect' → 'Start Web Terminal'
+```
+
+### Step 2.3 — Common deploy options
+
+```bash
+# Override defaults
+python tools/runpod_deploy.py --max-bid 0.40              # higher max bid
+python tools/runpod_deploy.py --on-demand                 # use on-demand instead of spot ($0.34/hr in US-IL-1)
+python tools/runpod_deploy.py --no-retry                  # one attempt only, fail fast
+python tools/runpod_deploy.py --max-attempts 240          # poll for 2 hours instead of 30 min
+python tools/runpod_deploy.py --gpu "NVIDIA RTX A6000" --gpu "NVIDIA GeForce RTX 4090"   # multiple acceptable GPUs
+```
+
+### Step 2.4 — Connect to the pod
+
+The script prints the URL. Open it in your browser, click "Connect" → "Start Web Terminal".
+
+You should see a shell prompt like `root@abc123def456:/#`. The current working directory will probably be `/` or `/root`.
+
+✓ **Phase 2 complete** when you have a shell prompt on the new pod.
 
 ---
 
@@ -153,33 +238,42 @@ Once connected, you should be in a shell on the pod. The current working directo
 
 Everything from here happens **on the RunPod pod**, not your local machine.
 
-### Step 3.1 — Clone the repo (into the network volume!)
+### Step 3.1 — Install minimal tools you'll actually need
 
-If you attached a network volume in Phase 2, **clone the repo into the volume mount**, not the pod's ephemeral filesystem. That way the cloned working tree, your `.env` file, and any installed Python deps survive pod termination.
+The RunPod PyTorch base image is minimal — no `nano`, no `tmux`, no `less`. Install these first; they'll save you pain later:
 
 ```bash
-cd /workspace                                  # ← the network volume mount
-git clone https://github.com/inviti8/lupus.git
-cd lupus
+apt-get update && apt-get install -y nano tmux less
 ```
 
-If `/workspace/lupus` already exists from a previous pod, just `cd` into it and pull:
+You're root in the container, so no `sudo` needed.
+
+### Step 3.2 — Clone the repo into the network volume
+
+The volume is mounted at `/workspace` and persists across pod terminations. Always clone the repo into it.
+
+If `/workspace/lupus` already exists from a previous pod (and isn't damaged from earlier cleanup operations):
 
 ```bash
 cd /workspace/lupus
 git pull
 ```
 
-If the repo is private and `git clone` fails: use a personal access token (`https://<user>:<token>@github.com/inviti8/lupus.git`), or push your local working copy to a temporary remote, or use `runpodctl send` to copy the working directory from your local machine.
-
-### Step 3.2 — Copy your `.env` file to the pod
-
-The `.env` file is gitignored, so it's not in the cloned repo. You need to get it onto the pod.
-
-**Easiest method — paste it via the web terminal:**
+Otherwise — and this is the safer default after any cleanup — start fresh:
 
 ```bash
-cat > .env  <<'EOF'
+cd /workspace
+rm -rf lupus
+git clone https://github.com/inviti8/lupus.git
+cd lupus
+```
+
+### Step 3.3 — Paste your `.env` file (no editor needed)
+
+The `.env` file is gitignored, so it's not in the cloned repo. Paste it via heredoc — no editor required:
+
+```bash
+cat > .env <<'EOF'
 S3_ENDPOINT_URL=https://s3api-us-il-1.runpod.io
 S3_BUCKET=7oqdtnkk5f
 AWS_ACCESS_KEY_ID=<your access key>
@@ -192,53 +286,55 @@ WANDB_ENTITY=heavymeta
 EOF
 ```
 
-Replace each `<...>` with the actual value from your local `.env`. Then verify:
+Replace each `<...>` with the actual value from your local `.env`. The single quotes around `'EOF'` prevent the shell from interpreting `$` characters in the values.
+
+Verify (without printing the secrets):
 
 ```bash
-ls -la .env
-cat .env | grep -v SECRET | grep -v KEY  # show non-secret values
+sed 's/=.*/=<set>/' .env
 ```
 
-**Alternative — use `runpodctl send`** (from your local machine):
+You should see all the keys with `<set>` after each `=`.
+
+### Step 3.4 — Run the bootstrap script inside tmux
+
+**Always run inside tmux** so a closed browser tab doesn't kill your work:
 
 ```bash
-# On local: install runpodctl first if needed: https://github.com/runpod/runpodctl
-runpodctl send .env
-# It will print a code. On the pod, run:
-# runpodctl receive <code>
+tmux new -s lupus
 ```
 
-### Step 3.3 — Run the bootstrap script
+You're now inside tmux (look for the green status bar at the bottom). Then:
 
 ```bash
 bash training/setup_pod.sh
 ```
 
-This installs Python deps, downloads the dataset from S3, and verifies GPU access. Expected output:
+This installs Python deps, downloads the dataset from S3 (or uses existing volume copy), verifies GPU, and confirms wandb login.
 
+**Expected output:**
 ```
 ============================================
   Lupus RunPod bootstrap
 ============================================
 Repo root: /workspace/lupus
+Network volume detected at /workspace (deps and HF cache will persist)
 .env found
-Installing system packages (apt-get)...
-Installing Python dependencies (this may take a few minutes)...
+HuggingFace cache: /workspace/.cache/huggingface (persists on volume)
+System packages already present (skipping apt-get)
+Installing Python dependencies (this may take a few minutes the first time)...
 Python deps installed
 
 Checking GPU availability...
   PyTorch version:  2.4.0+cu124
   CUDA available:   True
   CUDA version:     12.4
-  Device count:     1
   Device 0:         NVIDIA GeForce RTX 4090 (23 GB)
 
 Pulling training dataset from S3...
-INFO Downloading s3://7oqdtnkk5f/datasets/security/train.jsonl → datasets/security/examples/train.jsonl
-INFO Downloading s3://7oqdtnkk5f/datasets/security/eval.jsonl → datasets/security/examples/eval.jsonl
 Dataset downloaded
-  train.jsonl: 57372 lines, 19.4 MB
-  eval.jsonl: 14342 lines, 4.9 MB
+  train.jsonl: 48000 lines, 17.4 MB
+  eval.jsonl: 12000 lines, 4.4 MB
 
 Verifying Weights & Biases login...
   W&B login OK
@@ -246,14 +342,18 @@ Verifying Weights & Biases login...
 ============================================
   Pod is ready. To start training:
     python training/train_security.py
+============================================
 ```
 
-**Common issues at this step:**
+### Common issues at this step
 
-- `pip install` is slow → that's normal, the deps total ~5 GB downloaded. Be patient (3-10 min).
-- `CUDA available: False` → wrong base image. Recreate the pod with a CUDA-enabled PyTorch image.
-- `Dataset downloaded` but the file sizes are 0 → S3 credentials are wrong on the pod. Re-paste the `.env`.
-- `wandb.errors.AuthenticationError` → WANDB_API_KEY is wrong or missing in `.env`. The training script can run without wandb if you pass `--no-wandb`.
+| Symptom | Fix |
+|---|---|
+| `pip install` is slow | Normal. PyTorch is already in the base image; only the lighter deps need to install. ~30s-2min. |
+| `CUDA available: False` | Wrong base image. Re-deploy with `runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04`. |
+| `Dataset downloaded` shows 0 bytes | S3 credentials are wrong on the pod. Re-paste `.env`. |
+| `wandb.AuthenticationError` | `WANDB_API_KEY` is wrong/missing. The training script can run without wandb if you pass `--no-wandb`. |
+| `setup_pod.sh: Permission denied` | Use `bash training/setup_pod.sh` (the runbook command) instead of `./setup_pod.sh`. The committed file should have the executable bit set, but `bash` always works. |
 
 ✓ **Phase 3 complete.** The pod is fully provisioned.
 
@@ -261,20 +361,25 @@ Verifying Weights & Biases login...
 
 ## Phase 4 — Start training
 
+Still inside your tmux session:
+
 ```bash
 python training/train_security.py
 ```
 
-**Default hyperparameters** (suitable for the first run):
+**Default hyperparameters (v0.2):**
 
-- 3 epochs
-- Batch size 32
-- Learning rate 5e-5
-- Save checkpoint every 200 steps (~30 sec on RTX 4090)
-- Eval every 100 steps
-- Per-step logging every 20 steps
-- bf16 mixed precision (faster on Ada Lovelace GPUs)
-- Class-weighted CrossEntropy loss (compensates for the 300:21K:50K imbalance)
+| Setting | Value | Why |
+|---|---|---|
+| Epochs | 3 | Plenty for a 0.5B model on 48K balanced examples |
+| Batch size | 32 | Comfortable on 24 GB VRAM |
+| Learning rate | 2e-5 | Lower than v0.1's 5e-5 — much more stable |
+| Warmup ratio | 0.1 | Gentler initial ramp |
+| Max gradient norm | 1.0 | Gradient clipping prevents the v0.1 explosions |
+| Class weights | Capped at 10x | v0.1 used uncapped 60x weights and exploded |
+| Mixed precision | bf16 | Fast on Ada Lovelace |
+| Save every | 200 steps | ~30s on RTX 4090; checkpoints upload to S3 immediately |
+| Eval every | 100 steps | Per-class metrics on 12K eval set |
 
 **Expected output (early):**
 
@@ -282,60 +387,69 @@ python training/train_security.py
 INFO CUDA device: NVIDIA GeForce RTX 4090 (23 GB)
 INFO Loading tokenizer: Qwen/Qwen2.5-Coder-0.5B
 INFO Loading model with classification head: Qwen/Qwen2.5-Coder-0.5B
-INFO Loaded 57372 examples from datasets/security/examples/train.jsonl
-INFO Loaded 14342 examples from datasets/security/examples/eval.jsonl
+INFO Loaded 48000 examples from datasets/security/examples/train.jsonl
+INFO Loaded 12000 examples from datasets/security/examples/eval.jsonl
 INFO Training class distribution:
-INFO   safe          40000  (69.72%)
-INFO   phishing        240  ( 0.42%)
-INFO   malware       17132  (29.86%)
-INFO   suspicious        0  ( 0.00%)
-INFO Loss class weights: {'safe': 0.36, 'phishing': 59.76, 'malware': 0.84, 'suspicious': 0.0}
+INFO   safe          16000  (33.33%)
+INFO   phishing      16000  (33.33%)
+INFO   malware       16000  (33.33%)
+INFO Loss class weights: {'safe': 1.0, 'phishing': 1.0, 'malware': 1.0}
 INFO Starting training...
-{'loss': 1.234, 'learning_rate': 4.9e-05, 'epoch': 0.01}
-{'loss': 0.987, 'learning_rate': 4.8e-05, 'epoch': 0.02}
-...
+{'loss': 1.084, 'learning_rate': 2.0e-06, 'epoch': 0.01}
+{'loss': 0.823, 'learning_rate': 4.0e-06, 'epoch': 0.02}
+{'loss': 0.567, ...}
 ```
 
 **Watch for:**
-
-- Loss decreasing from initial value (~1.2) toward 0.1-0.3
-- `f1_macro` rising in eval steps (target: > 0.85 by end of training)
-- `false_positive_rate` staying low (target: < 0.05)
-- Per-class `f1_phishing` rising — this is the hardest class because of small sample count
+- Loss decreasing **smoothly** (not oscillating wildly like v0.1)
+- All three per-class F1 scores rising **together** (not just safe and malware)
+- `f1_macro` climbing past 0.85 by mid-training
+- `false_positive_rate` staying below 0.05
 
 ### Step 4.1 — Open the wandb dashboard
 
-In a separate browser tab, go to:
+In a separate browser tab: https://wandb.ai/heavymeta/lupus
 
-```
-https://wandb.ai/heavymeta/lupus
-```
+You should see a new run named `lupus-security-stage2`. Click into it. Watch the live metrics:
 
-You should see a new run named `lupus-security-stage1`. Click into it. Watch the live metrics:
-
-- **train/loss** — should drop steadily
-- **eval/f1_macro** — should rise steadily
-- **eval/precision_phishing**, **eval/recall_phishing** — the most important per-class metrics
+- **train/loss** — should drop steadily, not oscillate
+- **eval/f1_macro** — should rise steadily, target > 0.85
+- **eval/precision_phishing** + **eval/recall_phishing** — the most important per-class metrics
 - **eval/false_positive_rate** — should stay near zero (target < 5%)
+- **train/grad_norm** — should stay in 0.1-2.0 range (gradient clipping caps it at 1.0 anyway)
 
 If wandb is showing nothing after a minute, training hasn't started yet — the model is still loading. Be patient.
 
-✓ **Phase 4 complete** when you see the first eval step (~step 100) with metrics in wandb.
+✓ **Phase 4 complete** when you see the first eval step (~step 100) with sane metrics in wandb.
+
+### Step 4.2 — Detach from tmux
+
+Once training is going and metrics look good, detach from tmux so you can close the browser tab without killing the run:
+
+Press **`Ctrl-B`** then **`D`** (release Ctrl-B first, then press D).
+
+You'll see `[detached (from session lupus)]`. The training keeps running. The browser tab can now close safely.
+
+To reattach later from any new web terminal:
+```bash
+tmux attach -t lupus
+```
 
 ---
 
 ## Phase 5 — Monitor training
 
-The training run will take 30 minutes to 2 hours depending on hyperparameters. **You can do other work while it runs.**
+The training run will take ~30-60 minutes. **You can do other work while it runs.**
 
 ### What to check periodically
 
-Every 5-10 minutes, glance at the wandb dashboard or `tail` the pod's terminal output:
+Every 5-10 minutes, glance at the wandb dashboard or `tmux attach -t lupus` to see live output:
 
-- **Loss is going down** — if it plateaus immediately or oscillates wildly, something is wrong (probably learning rate too high)
-- **F1 macro is going up** — should reach > 0.7 within the first epoch, > 0.85 by end
-- **False positive rate is low** — < 5%, ideally < 2%
-- **Phishing recall is improving** — this is the hardest metric because phishing is the smallest class. If it stays at 0, the class weighting isn't working
+- **Loss is going down** smoothly
+- **F1 macro is climbing** — should reach > 0.7 within the first epoch, > 0.85 by end
+- **All three per-class F1s are rising** — especially phishing
+- **False positive rate is below 5%**
+- **Gradient norms are bounded** (≤ 1.0 due to clipping)
 
 ### Checkpointing
 
@@ -344,10 +458,9 @@ The script saves a checkpoint every 200 steps and **immediately uploads it to S3
 ```
 INFO Uploaded checkpoint-200 to S3
 INFO Uploaded checkpoint-400 to S3
-...
 ```
 
-You can verify in another shell:
+Verify in another shell on the pod (or on your local Windows):
 
 ```bash
 python training/s3_utils.py | grep checkpoint
@@ -355,25 +468,53 @@ python training/s3_utils.py | grep checkpoint
 
 This means **even if the spot pod gets killed mid-training**, you only lose at most ~30 seconds of progress between checkpoints.
 
+### Volume space concern
+
+Your network volume is 10 GB. Each checkpoint is ~1 GB and we keep up to 3 (`save_total_limit=3` in the training script). Plus the HF model cache is ~1 GB. Total worst case: ~5 GB used, ~5 GB free. Should be fine but if you see "no space left on device" errors, free up space:
+
+```bash
+# On the pod, check usage:
+df -h /workspace
+
+# Manually trim old checkpoints if needed:
+ls -la training/output/lupus-security/
+rm -rf training/output/lupus-security/checkpoint-200  # keep newest only
+```
+
 ✓ **Phase 5 ongoing** — training continues to completion.
 
 ---
 
 ## Phase 6 — Recover from interruption (if it happens)
 
-Spot instances can be killed at any moment. If your pod disappears mid-training, here's how to resume:
+Spot pods can be killed at any moment. If your pod disappears mid-training:
 
-### Step 6.1 — Provision a new pod (same as Phase 2)
+### Step 6.1 — Provision a new pod via runpod_deploy.py
 
-Same GPU type, same image, same disk size.
+```bash
+# On your local Windows machine:
+cd D:/repos/lupus
+python tools/runpod_deploy.py
+```
+
+Same script, same network volume — when the new pod comes up, your repo, dataset, HF cache, and even local checkpoints are still on the volume (assuming the volume wasn't damaged by a cleanup script earlier).
 
 ### Step 6.2 — Bootstrap and resume
 
+On the new pod:
+
 ```bash
 cd /workspace
-git clone https://github.com/inviti8/lupus.git
+# If lupus/ is intact from before:
 cd lupus
-# Re-paste .env (Phase 3.2)
+git pull
+# Otherwise:
+# rm -rf lupus && git clone https://github.com/inviti8/lupus.git && cd lupus
+
+# .env may also need re-pasting if the volume was wiped — see Phase 3.3
+
+apt-get update && apt-get install -y tmux nano less   # quick to re-install
+tmux new -s lupus
 bash training/setup_pod.sh
 python training/train_security.py --resume
 ```
@@ -384,16 +525,7 @@ The `--resume` flag tells the training script to:
 2. Download it to local disk
 3. Resume training from exactly where the previous pod left off (same step count, same optimizer state, same scheduler state)
 
-**Expected output:**
-
-```
-INFO Pulling checkpoint from s3://.../models/lupus-security/checkpoints/checkpoint-1400
-INFO Resuming from /workspace/lupus/training/output/lupus-security/checkpoint-1400
-INFO Starting training...
-{'loss': 0.234, 'learning_rate': 1.5e-05, 'epoch': 1.45}
-```
-
-The wandb run will also resume in place — the same run will continue receiving metrics, so your loss curves stay continuous.
+The wandb run will also resume in place — same run continues receiving metrics, so loss curves stay continuous.
 
 ✓ **Phase 6 complete** when training resumes successfully.
 
@@ -407,14 +539,14 @@ When training finishes, you'll see:
 INFO Running final evaluation...
 INFO Final metrics:
 INFO   accuracy                       0.9650
-INFO   eval_loss                      0.1234
-INFO   f1_macro                       0.8920
-INFO   f1_phishing                    0.7800
-INFO   f1_malware                     0.9700
-INFO   f1_safe                        0.9810
-INFO   false_positive_rate            0.0190
-INFO   precision_phishing             0.7500
-INFO   recall_phishing                0.8120
+INFO   eval_loss                      0.123
+INFO   f1_macro                       0.940
+INFO   f1_phishing                    0.920
+INFO   f1_malware                     0.965
+INFO   f1_safe                        0.935
+INFO   false_positive_rate            0.019
+INFO   precision_phishing             0.910
+INFO   recall_phishing                0.930
 INFO   ...
 INFO Saving final model to /workspace/lupus/dist/lupus-security
 INFO Uploading final model to S3...
@@ -435,7 +567,7 @@ python training/pull_model.py --model security
 
 **Expected output:**
 ```
-INFO Found 8 files to download (1024.0 MB total)
+INFO Found 8 files to download (~1 GB total)
 INFO Downloading s3://7oqdtnkk5f/models/lupus-security/final/config.json → ...
 INFO Downloading s3://7oqdtnkk5f/models/lupus-security/final/model.safetensors → ...
 INFO Done. Model is at: D:/repos/lupus/dist/lupus-security
@@ -461,6 +593,7 @@ test_urls = [
     "https://faceb00k-login.evil.com/verify",
     "http://221.15.91.18:49869/i",
     "https://github.com/inviti8/lupus",
+    "https://roblox.com.ge/users/1654861376/profile",
 ]
 
 for url in test_urls:
@@ -480,11 +613,13 @@ You should see something like:
   https://google.com/
     → safe (98% confident)
   https://faceb00k-login.evil.com/verify
-    → phishing (87% confident)
+    → phishing (92% confident)
   http://221.15.91.18:49869/i
-    → malware (95% confident)
+    → malware (96% confident)
   https://github.com/inviti8/lupus
-    → safe (96% confident)
+    → safe (97% confident)
+  https://roblox.com.ge/users/1654861376/profile
+    → phishing (88% confident)   ← TLD lookalike attack
 ```
 
 ✓ **Phase 7 complete.** You have a trained model that classifies URLs.
@@ -493,57 +628,97 @@ You should see something like:
 
 ## Phase 8 — Shut down the pod
 
-Don't forget to **terminate the pod** in the RunPod console once training is done. Spot instances bill by the second, but they keep billing as long as the pod exists, even idle.
+**Don't forget to terminate the pod** when training is done. Spot instances bill by the second, but they keep billing as long as the pod exists, even idle.
 
+### Option A — Use the RunPod console
 ```
-RunPod console → your pod → ⋮ → Terminate
+https://www.runpod.io/console/pods → your pod → ⋮ → Terminate
+```
+**Important:** "Terminate" (destructive, stops billing) NOT "Stop" (preserves disk, still partially billed).
+
+### Option B — Use the API
+You can also terminate via the REST API. Quick one-liner:
+```bash
+python -c "
+import os, requests
+from dotenv import load_dotenv
+load_dotenv()
+pod_id = 'YOUR_POD_ID'
+r = requests.delete(
+    f'https://rest.runpod.io/v1/pods/{pod_id}',
+    headers={'Authorization': f'Bearer {os.environ[\"RUNPOD_API_KEY\"]}'},
+)
+print(r.status_code, r.text)
+"
 ```
 
-(Or use `runpodctl stop` if you installed the CLI.)
+### Verify the pod is gone
+```bash
+python tools/runpod_status.py
+```
+Should show "No active pods."
+
+The network volume **stays** — that's intentional, it's where your dataset, base model cache, and final model live for the next session.
 
 ---
 
 ## Troubleshooting
 
 ### "CUDA out of memory"
-Reduce `--batch-size` to 16 or 8. Qwen2.5-Coder-0.5B should easily fit in 24 GB at batch size 32, but if it doesn't:
+Reduce `--batch-size`:
 ```bash
 python training/train_security.py --batch-size 16
 ```
+Qwen2.5-Coder-0.5B should easily fit in 24 GB at batch size 32, but if you somehow got a smaller GPU, halve the batch size.
 
 ### Loss is NaN
 Lower the learning rate:
 ```bash
-python training/train_security.py --learning-rate 2e-5
+python training/train_security.py --learning-rate 1e-5
 ```
 
-### F1 phishing stays at 0
-The class weights aren't strong enough or the model is collapsing to "always safe." Try lowering batch size (smaller batches mean phishing examples are over-represented per batch via the inverse-frequency weighting):
+### F1 phishing stays low
+With v0.2's balanced dataset this shouldn't happen. If it does:
+1. Verify the dataset has equal classes: `python datasets/security/schema.py` plus a manual count
+2. Check the loss curve — if it's oscillating, lower the learning rate
+3. Try more epochs: `python training/train_security.py --epochs 5`
+
+### Pod can't be deployed (no capacity for hours)
+Try escalating in this order:
+1. Increase max bid: `python tools/runpod_deploy.py --max-bid 0.40`
+2. Switch to on-demand: `python tools/runpod_deploy.py --on-demand` (~$0.34/hr in US-IL-1)
+3. Move to a different region: create a new network volume in `us-east` or `eu-central`, update `.env` with the new endpoint, re-push the dataset, and re-run deploy with `--region US-EAST-1` (or whichever)
+
+### "No space left on device" during training
+Your network volume is full. Free space:
 ```bash
-python training/train_security.py --batch-size 16 --learning-rate 2e-5
+# Delete old checkpoints, keeping only the latest
+ls training/output/lupus-security/
+rm -rf training/output/lupus-security/checkpoint-200 training/output/lupus-security/checkpoint-400
+# Or trim the HF cache (will re-download next run):
+rm -rf /workspace/.cache/huggingface
 ```
-
-If this persists, you may need more phishing data — register for a free PhishTank API key and re-run the dataset build with `--api-key`, then re-push and re-train.
-
-### Pod gets killed immediately every time
-Spot capacity in your region is exhausted. Either:
-1. Try a different region (RunPod has many)
-2. Use Secure Cloud (on-demand) for ~50% more
-3. Try a different GPU type (A4000, A5000)
+For a longer-term fix, resize the volume in the RunPod console (Storage → your volume → Edit → Increase size).
 
 ### `Dataset files not found` on the pod
 The `setup_pod.sh` script didn't complete the S3 download. Check S3 credentials in `.env` and re-run `bash training/setup_pod.sh`.
 
-### Training is much slower than expected
-- Verify GPU is being used: in another shell on the pod, run `nvidia-smi` and check that GPU utilization is > 50% during training.
-- If GPU util is low, increase `--batch-size` or `--dataloader-num-workers`.
-- If GPU util is high but it's still slow, you may be on a slower GPU than expected (3090 vs 4090) — check `nvidia-smi` for the actual model name.
-
 ### `pip install` hangs
-RunPod's network is occasionally slow. Cancel with Ctrl-C and retry. If consistently failing, try `pip install -r training/requirements.txt --index-url https://pypi.org/simple` to bypass any mirror issues.
+RunPod's network is occasionally slow. Cancel with Ctrl-C and retry. If consistently failing:
+```bash
+pip install -r training/requirements.txt --index-url https://pypi.org/simple
+```
+
+### Browser terminal closes mid-training
+You forgot to use tmux. The training is dead. Re-deploy a new pod (`python tools/runpod_deploy.py`) and `--resume` from the latest S3 checkpoint.
+
+**Always run training inside tmux.** Phase 3.4 and Phase 4.2 both emphasize this.
 
 ### The wandb dashboard shows nothing
-The first metrics appear at step `--logging-steps` (default 20). If you see nothing after several minutes, training hasn't actually started — the model is still loading. Watch the pod's terminal for `Starting training...`.
+The first metrics appear at step `--logging-steps` (default 20). If you see nothing after several minutes, training hasn't actually started — the model is still loading. Watch the pod's tmux output for `Starting training...`.
+
+### Volume cleanup damaged the cloned repo
+If a cleanup operation deleted files from `/workspace/lupus`, just `rm -rf lupus && git clone` again. The volume's persistent state is the dataset (S3) and HF model cache — both of which auto-recover. The repo itself comes from GitHub.
 
 ---
 
@@ -552,11 +727,21 @@ The first metrics appear at step `--logging-steps` (default 20). If you see noth
 ```bash
 # === LOCAL (your Windows workstation) ===
 
-# Build dataset (only if not already built)
-python datasets/security/build_dataset.py
+# Check RunPod state and GPU availability
+python tools/runpod_status.py
+
+# Deploy a pod (auto-retries until capacity available)
+python tools/runpod_deploy.py
+python tools/runpod_deploy.py --dry-run             # preview without deploying
+python tools/runpod_deploy.py --on-demand           # use on-demand instead of spot
+python tools/runpod_deploy.py --max-attempts 240    # poll for 2 hours
+
+# Build dataset (only if rebuilding from updated source data)
+python datasets/security/build_dataset.py --balance --max-per-class 20000
 
 # Push dataset to S3
 python training/push_dataset.py
+python training/push_dataset.py --force             # overwrite existing
 
 # Verify S3 contents
 python training/s3_utils.py
@@ -564,27 +749,35 @@ python training/s3_utils.py
 # Pull trained model after training
 python training/pull_model.py --model security
 
+
 # === POD (RunPod GPU instance) ===
 
-# Bootstrap fresh pod
+# First-time bootstrap
+apt-get update && apt-get install -y nano tmux less
+cd /workspace
+rm -rf lupus
 git clone https://github.com/inviti8/lupus.git
 cd lupus
-# (paste .env)
+# (paste .env via heredoc)
+tmux new -s lupus
 bash training/setup_pod.sh
 
 # Start training
 python training/train_security.py
 
+# Detach: Ctrl-B then D
+
+# Reattach later
+tmux attach -t lupus
+
 # Resume after interruption
 python training/train_security.py --resume
 
 # Custom hyperparameters
-python training/train_security.py --epochs 5 --batch-size 64 --learning-rate 3e-5
+python training/train_security.py --epochs 5 --batch-size 64 --learning-rate 1e-5
 
-# Run without wandb
+# Run without wandb / S3 (debugging)
 python training/train_security.py --no-wandb
-
-# Run without S3 (purely local, for debugging)
 python training/train_security.py --no-s3
 ```
 
@@ -592,10 +785,10 @@ python training/train_security.py --no-s3
 
 ## What's next after this works
 
-- **Iterate**: based on the eval metrics, adjust hyperparameters and re-run. The setup is fast enough that you can do 5-10 runs in an afternoon.
-- **Stage 2**: add HTML body content to the training (requires running `html_fetcher.py` on Tranco URLs first).
+- **Iterate**: based on the eval metrics, adjust hyperparameters and re-run. With `tools/runpod_deploy.py` automating provisioning, the iteration loop is fast.
+- **Stage 2**: add HTML body content to the training (requires running `html_fetcher.py` on Tranco URLs first). The model becomes much more capable when it can read page structure.
 - **Search adapter**: similar pipeline but with TinyAgent-1.1B base, LoRA adapters, and the `knowledge_aware.jsonl` we built from the folklore compendium.
 - **Export to GGUF**: convert the final model to the format the daemon's llama.cpp integration expects.
 - **Integration test**: wire the trained model into `daemon/src/security.rs` and test against the daemon's heuristic baseline.
 
-These are separate next sessions. For now, focus on getting one training run end-to-end.
+These are separate next sessions. For now, focus on getting one v0.2 training run end-to-end.
