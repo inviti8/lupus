@@ -68,8 +68,10 @@ REST_HEADERS = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "applicati
 DEFAULTS = {
     "name_prefix": "lupus-training",
     "gpu_type_ids": ["NVIDIA GeForce RTX 4090"],
-    "data_center_ids": ["US-IL-1"],
-    "network_volume_id": "7oqdtnkk5f",
+    # EU-RO-1 has Medium stock for RTX 4090 (vs US-IL-1 which has Low).
+    # Switched after the original US-IL-1 volume kept failing to deploy.
+    "data_center_ids": ["EU-RO-1"],
+    "network_volume_id": "b51y8tev3v",  # 10 GB volume in EU-RO-1
     "image_name": "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
     "container_disk_in_gb": 20,
     "volume_mount_path": "/workspace",
