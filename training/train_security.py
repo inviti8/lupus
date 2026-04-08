@@ -424,16 +424,14 @@ def main() -> int:
     trainer_cls = make_trainer_class(class_weights)
 
     # In transformers >= 4.46, the Trainer's tokenizer kwarg was renamed
-    # to processing_class. Pick whichever the installed version accepts so
-    # this code works across versions.
-    import inspect
-    trainer_init_params = inspect.signature(trainer_cls.__init__).parameters
-    if "processing_class" in trainer_init_params:
-        tokenizer_kwarg = {"processing_class": tokenizer}
-    else:
-        tokenizer_kwarg = {"tokenizer": tokenizer}
-
-    trainer = trainer_cls(
+    # to processing_class, and in 5.x the old name was removed entirely.
+    # The previous version of this code tried to detect which to use via
+    # inspect.signature(trainer_cls.__init__) — but trainer_cls is our
+    # WeightedTrainer subclass whose signature is (*args, **kwargs), so
+    # the check always failed and it always picked the (now-removed)
+    # tokenizer kwarg. Fix: try processing_class first, fall back to
+    # tokenizer only if the installed transformers explicitly rejects it.
+    trainer_kwargs = dict(
         model=model,
         args=training_args,
         train_dataset=train_ds,
@@ -441,8 +439,15 @@ def main() -> int:
         data_collator=data_collator,
         compute_metrics=compute_metrics,
         callbacks=callbacks,
-        **tokenizer_kwarg,
     )
+    try:
+        trainer = trainer_cls(**trainer_kwargs, processing_class=tokenizer)
+    except TypeError as e:
+        if "processing_class" in str(e):
+            # Old transformers (< 4.46): use tokenizer kwarg
+            trainer = trainer_cls(**trainer_kwargs, tokenizer=tokenizer)
+        else:
+            raise
 
     # ------------------------------------------------------------------
     # Resume from S3 if requested
