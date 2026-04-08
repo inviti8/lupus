@@ -391,6 +391,19 @@ def main() -> int:
     if args.no_wandb or os.environ.get("WANDB_DISABLED", "").lower() == "true":
         report_to = "none"
 
+    # HF Trainer requires save_steps to be a round multiple of eval_steps
+    # when load_best_model_at_end=True. Auto-round up if needed so users
+    # can pass arbitrary values like --save-steps 99999 to disable mid-
+    # training saves without hitting a validation error.
+    save_steps = args.save_steps
+    if save_steps % args.eval_steps != 0:
+        rounded = ((save_steps // args.eval_steps) + 1) * args.eval_steps
+        LOG.info(
+            "Auto-rounding save_steps from %d to %d (multiple of eval_steps=%d)",
+            save_steps, rounded, args.eval_steps,
+        )
+        save_steps = rounded
+
     training_args = TrainingArguments(
         output_dir=str(LOCAL_OUTPUT_DIR),
         num_train_epochs=args.epochs,
@@ -403,7 +416,7 @@ def main() -> int:
         eval_strategy="steps",
         eval_steps=args.eval_steps,
         save_strategy="steps",
-        save_steps=args.save_steps,
+        save_steps=save_steps,
         save_total_limit=3,
         load_best_model_at_end=True,
         metric_for_best_model="f1_macro",
