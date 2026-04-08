@@ -5,6 +5,7 @@
 
 pub mod prompt;
 pub mod inference;
+pub mod plan;
 
 use crate::config::ModelsConfig;
 use crate::error::LupusError;
