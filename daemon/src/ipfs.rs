@@ -10,6 +10,12 @@ use crate::protocol::ComponentState;
 pub struct IpfsClient {
     gateway: String,
     cache_dir: PathBuf,
+    /// Maximum cache size in bytes. Currently unused — the cache eviction
+    /// loop is part of the Iroh integration that's still a stub. Kept on
+    /// the struct so the config plumbing works end-to-end and the field
+    /// is ready when we wire the real client. Marked allow(dead_code)
+    /// rather than removed to keep the IpfsConfig contract intact.
+    #[allow(dead_code)]
     max_cache_bytes: u64,
     enabled: bool,
     state: IpfsState,
