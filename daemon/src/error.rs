@@ -1,5 +1,7 @@
 use std::io;
 
+use crate::protocol_codes::*;
+
 /// Errors produced by the Lupus daemon.
 #[derive(Debug, thiserror::Error)]
 pub enum LupusError {
@@ -33,6 +35,12 @@ pub enum LupusError {
     #[error("ipfs error: {0}")]
     Ipfs(String),
 
+    #[error("host fetch failed: {0}")]
+    HostFetch(String),
+
+    #[error("host disconnected: {0}")]
+    HostDisconnected(String),
+
     #[error("websocket error: {0}")]
     WebSocket(String),
 
@@ -48,25 +56,28 @@ pub enum LupusError {
 
 impl LupusError {
     /// Return a short error code suitable for the IPC error response.
-    pub fn code(&self) -> &str {
+    /// All codes come from `crate::protocol_codes` — that module is the
+    /// single source of truth for the v0.1 wire vocabulary.
+    pub fn code(&self) -> &'static str {
         match self {
-            Self::ModelNotLoaded(_) => "model_not_loaded",
-            Self::ModelLoadFailed(_) => "model_load_failed",
-            Self::Inference(_) => "inference_error",
-            Self::AdapterNotFound(_) => "adapter_not_found",
-            Self::InvalidRequest(_) => "invalid_request",
-            Self::UnknownMethod(_) => "unknown_method",
-            Self::ToolError { .. } => "tool_error",
-            Self::Config(_) => "config_error",
-            // Wire-level error code stays "index_error" — "index" here is the
-            // verb (an error during the indexing operation), not the noun (the
-            // storage layer is the den). See docs/LUPUS_TOOLS.md §7.
-            Self::Den(_) => "index_error",
-            Self::Ipfs(_) => "ipfs_error",
-            Self::WebSocket(_) => "websocket_error",
-            Self::Io(_) => "io_error",
-            Self::Json(_) => "json_error",
-            Self::Yaml(_) => "yaml_error",
+            Self::ModelNotLoaded(_) => ERR_MODEL_NOT_LOADED,
+            Self::ModelLoadFailed(_) => ERR_MODEL_LOAD_FAILED,
+            Self::Inference(_) => ERR_INFERENCE,
+            Self::AdapterNotFound(_) => ERR_ADAPTER_NOT_FOUND,
+            Self::InvalidRequest(_) => ERR_INVALID_REQUEST,
+            Self::UnknownMethod(_) => ERR_UNKNOWN_METHOD,
+            Self::ToolError { .. } => ERR_TOOL,
+            Self::Config(_) => ERR_CONFIG,
+            // Wire-level "index_error" — "index" here is the verb (an error
+            // during indexing), not the noun (the storage layer is the den).
+            Self::Den(_) => ERR_INDEX,
+            Self::Ipfs(_) => ERR_IPFS,
+            Self::HostFetch(_) => ERR_FETCH_FAILED,
+            Self::HostDisconnected(_) => ERR_HOST_DISCONNECTED,
+            Self::WebSocket(_) => ERR_WEBSOCKET,
+            Self::Io(_) => ERR_IO,
+            Self::Json(_) => ERR_JSON,
+            Self::Yaml(_) => ERR_YAML,
         }
     }
 }

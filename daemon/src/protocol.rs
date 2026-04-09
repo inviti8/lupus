@@ -1,8 +1,33 @@
 //! IPC protocol types for the Lupus ↔ Lepus WebSocket connection.
 //!
 //! All messages are JSON over `ws://localhost:9549`.
+//!
+//! ## v0.1 alpha contract
+//!
+//! This module is the **canonical wire-format source of truth**. If
+//! anything else (docs, the Lepus-side `LupusClient.sys.mjs`, the mock
+//! peers) drifts from the types here, the Rust file wins. See
+//! `docs/LUPUS_TOOLS.md` §7 for the full hardening contract and
+//! `crate::protocol_codes` for the error code vocabulary.
+//!
+//! ### Versioning rule
+//!
+//! New fields are additive only. Both halves silently ignore unknown
+//! fields. Removing or renaming a field requires bumping
+//! [`PROTOCOL_VERSION`].
 
 use serde::{Deserialize, Serialize};
+
+/// The IPC protocol version this daemon speaks. Returned in
+/// [`StatusResponse::protocol_version`] so the browser-side
+/// `LupusClient` can refuse to connect against an incompatible daemon
+/// rather than silently misinterpreting messages.
+///
+/// Bump this string ONLY for breaking wire-format changes (renamed or
+/// removed fields, removed methods, semantic shifts). Additive
+/// changes (new fields, new methods, new error codes) keep the same
+/// version.
+pub const PROTOCOL_VERSION: &str = "0.1";
 
 // ---------------------------------------------------------------------------
 // Request / Response envelope
@@ -35,7 +60,7 @@ pub enum Status {
     Error,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ErrorPayload {
     pub code: String,
     pub message: String,
@@ -190,6 +215,12 @@ pub struct IndexPageParams {
 
 #[derive(Debug, Serialize)]
 pub struct StatusResponse {
+    /// IPC protocol version the daemon is speaking. The Lepus-side
+    /// `LupusClient` checks this immediately on connect and refuses to
+    /// proceed if it doesn't match its known version. See
+    /// [`PROTOCOL_VERSION`] and `docs/LUPUS_TOOLS.md` §7.
+    pub protocol_version: String,
+    /// Daemon binary version (`CARGO_PKG_VERSION`).
     pub version: String,
     pub models: ModelStatus,
     pub ipfs: ComponentState,
@@ -240,4 +271,82 @@ pub struct IndexStatsResponse {
     pub entries: usize,
     pub last_sync: Option<String>,
     pub contribution_mode: String,
+}
+
+// ---------------------------------------------------------------------------
+// Daemon → Browser direction (host RPC) — see crate::host_rpc
+// ---------------------------------------------------------------------------
+//
+// The daemon can originate requests TO the browser (e.g. "fetch this URL on
+// my behalf"). These use the same envelope shape as browser-originated
+// messages — only the direction differs. Daemon-originated request ids are
+// prefixed `daemon-req-N` to keep them in a separate namespace from the
+// browser's `req-N` ids.
+//
+// See `docs/LUPUS_TOOLS.md` §3 for the architecture decision (Option B,
+// delegate fetching to the browser) and `docs/LEPUS_CONNECTORS.md` for the
+// browser-side handler that this talks to.
+
+/// Envelope for a daemon-originated request. Identical shape to
+/// [`Request`] above — the type exists so the daemon can `serde::Serialize`
+/// outbound requests with the right field set, mirroring how browser
+/// requests are deserialized via [`Request`].
+#[derive(Debug, Serialize)]
+pub struct DaemonRequest<P: Serialize> {
+    pub id: String,
+    pub method: String,
+    pub params: P,
+}
+
+// -- host_fetch -------------------------------------------------------------
+
+/// Parameters sent FROM the daemon TO the browser to ask for a URL fetch.
+/// The browser handles `https://`, `http://`, AND `hvym://` (the
+/// HvymProtocolHandler in `browser/components/hvym/HvymProtocolHandler.sys.mjs`
+/// makes hvym a real Necko scheme, so the browser-side handler can use a
+/// single Web `fetch()` call regardless of scheme).
+#[derive(Debug, Serialize)]
+pub struct HostFetchParams {
+    pub url: String,
+    /// HTTP method. Defaults to `"GET"`. Reserved field — the daemon
+    /// only ever sends GET today.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub method: Option<String>,
+    /// Extra request headers. Empty by default. Cookies are NOT set by
+    /// the daemon — the browser uses its own cookie store via fetch()'s
+    /// default `credentials: "include"` behavior.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub headers: Option<serde_json::Value>,
+    /// Reserved for POST/PUT bodies. None today.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body: Option<String>,
+}
+
+/// The result the browser sends back for a `host_fetch` request.
+///
+/// `http_status` is the HTTP status code (200, 404, 500, ...) — NOT the
+/// daemon-RPC status. A 404 from the server is `status: "ok"` at the RPC
+/// layer (the fetch attempt completed without infrastructure error) with
+/// `http_status: 404` in the result.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HostFetchResult {
+    /// Echoes the requested URL verbatim.
+    pub url: String,
+    /// URL after redirects. May differ from `url`.
+    pub final_url: String,
+    /// HTTP status code (200, 404, ...).
+    pub http_status: u16,
+    /// Verbatim from the response Content-Type header.
+    pub content_type: String,
+    /// Response body as a UTF-8 string. Binary bodies are returned as
+    /// `body: ""` for v0.1 — see `docs/LEPUS_CONNECTORS.md` open
+    /// question 1.
+    pub body: String,
+    /// `true` if the body was cut at the 8 MB cap. The daemon logs a
+    /// warning when this fires so we can spot pages that consistently
+    /// hit the limit.
+    #[serde(default)]
+    pub truncated: bool,
+    /// Unix timestamp (seconds) when the fetch completed.
+    pub fetched_at: u64,
 }

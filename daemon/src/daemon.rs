@@ -104,6 +104,7 @@ impl Daemon {
         let agent = self.agent.read().await;
         let den = self.den.read().await;
         let result = StatusResponse {
+            protocol_version: PROTOCOL_VERSION.into(),
             version: env!("CARGO_PKG_VERSION").into(),
             models: ModelStatus {
                 search: agent.component_state(),
