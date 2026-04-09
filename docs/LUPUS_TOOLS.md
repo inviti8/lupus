@@ -1,9 +1,11 @@
 # Lupus Tools — Implementation Plan
 
-**Status:** Planning — needs review before implementation
-**Date:** 2026-04-09
-**Scope:** Wire `fetch_page`, `search_subnet`, `crawl_index`, and the IPFS layer so the agent loop can actually fetch web/HVYM content and contribute to the cooperative index.
-**Out of scope (this round):** `search_local_index` (needs an embedding model + vector store, separate work).
+**Status:** Reviewed — answers locked in below, ready to start Phase 1
+**Date:** 2026-04-09 (reviewed 2026-04-09)
+**Scope:** Wire `fetch_page`, `crawl_index`, and the IPFS layer so the agent loop can actually fetch web/HVYM content and contribute to the cooperative index.
+**Out of scope (this round):**
+- `search_local_index` — needs an embedding model + vector store, separate work
+- `search_subnet` — the cooperative search surface doesn't exist yet (see §6, question 3); this tool stays as a structured "not yet built" sentinel until the cooperative ships either a `heavymeta.art` search API or an off-chain indexer over `hvym-roster` JOIN events
 
 ---
 
@@ -51,7 +53,7 @@ The agent's `fetch_page` tool can be implemented three ways:
 
 Daemon adds `reqwest` for HTTPS, delegates HVYM to the browser. Cleanest-sounding compromise but ends up with **two code paths to maintain**, two sets of failure modes, and you still don't get cookie/session/proxy consistency for HTTPS — which is the part the agent uses 95% of the time.
 
-### Recommendation: **Option B (delegate everything)**
+### Decision: **Option B (delegate everything to the browser) — LOCKED IN**
 
 Rationale:
 1. **HVYM resolver is heavy** — reimplementing Soroban + tunnel in the daemon is weeks of work that adds zero user-visible value, since Lepus already has it.
@@ -59,10 +61,11 @@ Rationale:
 3. **Cookie / auth reuse** — if the user is logged into a site, the agent should be able to fetch authenticated pages. Only the browser has those cookies.
 4. **Smaller daemon binary** — drops `reqwest` (and its TLS stack) + any Stellar SDK + tunnel client from the build.
 5. **One canonical fetch path** — fewer divergence bugs.
+6. **No auth complexity for HVYM fetches** — to *serve* content over an HVYM tunnel you must be a cooperative member (the JWT/Stellar auth flow in `hvym_tunnler` is for content publishers, not consumers). To *fetch* HVYM content is public — anyone can connect to the relay and ask for `alice@gallery`. So delegating fetch to the browser doesn't drag in any new authentication surface; the browser just opens the WSS tunnel and reads the bytes.
 
 **Trade-off accepted:** the daemon's `fetch_page` only works while the browser is connected. That's already the operational model — the agent loop only runs in response to a browser request anyway, so the browser is always there when fetches happen.
 
-**One exception:** the cooperative registry query (`search_subnet`). It's a simple GET to `https://registry.heavymeta.art/search?q=...`. We could either delegate it (consistent with the rule above) or do it directly with `reqwest` (simpler, no protocol change). **Recommendation: also delegate** — gives us one rule, no exceptions.
+**`search_subnet` — separate question, separate answer:** see §4.2 below. The short version is that the cooperative search surface doesn't exist yet, so this tool stays a structured "not yet built" sentinel for this round.
 
 **One genuine exception that stays in the daemon:** the Iroh IPFS client for **background indexing/sync** (`crawl_index`, opt-in cooperative contribution). This is daemon-initiated background work that has nothing to do with browser-driven fetches, and Iroh is the right tool for peer-to-peer content distribution. The browser does not have an IPFS client.
 
@@ -86,19 +89,19 @@ The envelope shape stays identical to the existing browser→daemon protocol —
 | Method | Purpose | Params | Result |
 |---|---|---|---|
 | `host_fetch` | Browser fetches a URL on behalf of the daemon. Handles `https://`, `http://`, AND `hvym://` (browser routes to its existing resolvers). | `{ url, headers?, method?, body? }` | `{ url, final_url, status, content_type, body, fetched_at }` |
-| `host_search_registry` | Browser queries the cooperative registry. | `{ query, scope?, top_k? }` | `{ matches: [{ title, url, description, commitment }] }` |
 
-`host_fetch` is the primary new surface. `host_search_registry` could alternatively be expressed as `host_fetch` with a registry URL — keep it as a separate method only if the registry API needs auth headers or a specific schema the browser knows about.
+`host_fetch` is the only new surface needed this round. `host_search_registry` was originally proposed but has been dropped — see §4.2 (the cooperative search surface doesn't exist yet, so there's nothing for the browser to query).
+
+**Body-size cap:** `host_fetch` responses are capped at **8 MB** by default. Covers ~99% of real pages (big Wikipedia articles, e-commerce category pages with embedded thumbnails, long PDFs). The browser side enforces the cap by truncating the body and setting a `truncated: true` flag in the response. The daemon-side handler logs a warning when truncation occurs so we can spot pages that hit the limit. The cap is configurable via the daemon config so it can be raised for unusual workflows.
 
 ### Lepus-side work (`browser/components/lupus/LupusClient.sys.mjs`)
 
 The current client (read at `browser/components/lupus/LupusClient.sys.mjs`) only handles incoming responses to outgoing requests. It needs:
 
 1. **Inbound request dispatch** — when an incoming WebSocket message has `method` set instead of `status`, treat it as a daemon-initiated request and route to a handler.
-2. **`host_fetch` handler** — wraps `fetch()` (Web API) for HTTPS, routes `hvym://` URLs through the existing `HvymProtocolHandler.sys.mjs` / `HvymResolver.sys.mjs` path.
-3. **`host_search_registry` handler** — calls the registry API (which lives where? — see open questions).
-4. **Response encoder** — sends `{id, status: "ok", result}` or `{id, status: "error", error}` back over the same WebSocket.
-5. **Error mapping** — network errors, CSP failures, certificate errors all need to be translated into stable daemon-side error codes.
+2. **`host_fetch` handler** — wraps `fetch()` (Web API) for HTTPS, routes `hvym://` URLs through the existing `HvymProtocolHandler.sys.mjs` / `HvymResolver.sys.mjs` path. Enforces the 8 MB body cap and sets `truncated: true` if exceeded. No auth handling — fetching HVYM tunnels is public.
+3. **Response encoder** — sends `{id, status: "ok", result}` or `{id, status: "error", error}` back over the same WebSocket.
+4. **Error mapping** — network errors, CSP failures, certificate errors all need to be translated into stable daemon-side error codes.
 
 This is a non-trivial Lepus-side change. It belongs in a separate Lepus PR after the daemon side is wired and tested with a mock browser client.
 
@@ -122,16 +125,30 @@ This is a non-trivial Lepus-side change. It belongs in a separate Lepus PR after
 - An async `host_rpc::fetch(url) -> Result<HostFetchResponse, LupusError>` helper
 - Threaded into `Daemon` so tool dispatch can reach it (same global pattern as `security::CLASSIFIER`, or via tool context — see open question 1)
 
-### 4.2 `search_subnet` (`daemon/src/tools/search_subnet.rs`)
+### 4.2 `search_subnet` (`daemon/src/tools/search_subnet.rs`) — DEFERRED
 
 **Current:** Returns `[]`.
 
-**Target behavior:**
-1. Send a `host_search_registry` request via `host_rpc`
-2. Map the response into the existing `DatapodMatch` shape (`title`, `url`, `description`, `commitment`)
-3. Return to the agent loop
+**Investigation result (2026-04-09):** The cooperative search surface does not exist yet anywhere in the Heavymeta stack. Verified across:
 
-**Open question:** does `https://registry.heavymeta.art` exist yet? Schema? — see open questions.
+- **`pintheon_contracts`** — no `hvym-search` contract; `hvym-roster` has no `list_members`/`query_content` method (members are stored per-key by Address with no on-chain enumeration); `hvym-registry` is a contract-name → contract-address directory, not a content registry.
+- **`hvym_tunnler`** (Warren) — pure connection broker. Endpoints are `/health`, `/info`, `/api/tunnels`, `/api/tunnel/{address}`, `/api/stats`, `/proxy/{path}`. No search, no tag/content discovery. Mirrors `hvym-roster` JOIN events into a local SQLite via `roster_sync.py` but doesn't expose the table over HTTP.
+- **`heavymeta_collective`** (heavymeta.art portal) — NiceGUI website with public profile pages and a token-gated bot API for *exact-identifier* member lookup (`/api/bot/member/{identifier}`). No `/search`, no `/datapods`, no content metadata schema beyond per-user IPNS linktree entries (`label`, `url`, `icon_cid`, `qr_cid`).
+
+So there is currently nothing the browser can query on the daemon's behalf. The cooperative would need to first build either:
+- a search index on `heavymeta.art` over linktree/profile data, or
+- an off-chain indexer over `hvym-roster` JOIN events that fetches each member's IPNS linktree and indexes the contents
+
+**Decision for this round:** keep `search_subnet` in the dispatch table (the trained planner LoRA expects it in the toolset — removing it would invalidate ~21/22 of the eval), but have it return a structured "not built yet" sentinel instead of an empty result. The joinner can read the sentinel and produce a graceful "I can't search the cooperative directly yet" message instead of "no results found".
+
+**Sentinel shape:**
+```json
+{ "matches": [], "status": "not_implemented", "reason": "cooperative search surface not yet built — see docs/LUPUS_TOOLS.md §4.2" }
+```
+
+The trained planner picks `search_subnet` for ~5/22 eval cases. With this sentinel, those cases will route through the joinner and produce an honest answer rather than fabricating results from an empty list.
+
+**Re-enable when:** the cooperative ships either of the two indexer paths above. At that point this section gets a follow-up PR adding `host_search_cooperative` (or similar) to the daemon→browser RPC surface and pointing the tool at it.
 
 ### 4.3 `crawl_index` (`daemon/src/tools/crawl_index.rs`)
 
@@ -168,70 +185,62 @@ For this round: implement steps 1, 2, 4. Defer 3 (embedding) and 5 (cooperative 
 
 **Phase 1 — Daemon-side host RPC plumbing** (no Lepus changes yet)
 
-1. Add `crate::host_rpc` module with the daemon→browser correlation table
+1. Add `crate::host_rpc` module with the daemon→browser correlation table (lazy global pattern, same as `security::CLASSIFIER` — `OnceLock<Mutex<HostRpcState>>`)
 2. Extend `daemon/src/server.rs` to dispatch incoming messages by shape: `method` set → response from a daemon-initiated request; `status` set → reply to a browser-initiated request
 3. Add a mock `host_rpc` test harness (an in-process WebSocket peer that responds to `host_fetch` with canned data)
-4. Add `host_fetch` and `host_search_registry` types to `daemon/src/protocol.rs`
+4. Add `host_fetch` types to `daemon/src/protocol.rs`. Use `daemon-req-N` id prefix to keep daemon-originated and browser-originated id namespaces partitioned.
 
-**Phase 2 — Wire `fetch_page` and `search_subnet` to host RPC**
+**Phase 2 — Wire `fetch_page` to host RPC + `search_subnet` sentinel**
 
-1. `fetch_page::execute` → `host_rpc::fetch`
-2. `search_subnet::execute` → `host_rpc::search_registry`
-3. Integration test: spin up the mock browser peer + the daemon, run a 22-case eval that exercises `fetch_page` and confirm the agent loop produces non-empty observations
+1. `fetch_page::execute` → `host_rpc::fetch` (handles `https://`, `http://`, `hvym://`, and bare `name@service` form)
+2. `search_subnet::execute` → return the structured "not built yet" sentinel from §4.2 (no host RPC call)
+3. Integration test: spin up the mock browser peer + the daemon, run a subset of the 22-case eval that exercises `fetch_page` and confirm the agent loop produces non-empty observations
+4. Confirm the joinner gracefully handles the `search_subnet` sentinel on the eval cases that pick it
 
 **Phase 3 — Wire `crawl_index` (without IPFS publish)**
 
 1. `crawl_index::execute` → `host_rpc::fetch` + `extract_content` + `SearchIndex::add`
-2. Defer embedding generation
+2. Defer embedding generation (depends on the deferred `search_local_index` work)
 3. Defer `IpfsClient::publish` until phase 5
 
 **Phase 4 — Lepus-side `LupusClient` extension**
 
 1. Inbound request dispatch in `LupusClient.sys.mjs`
-2. `host_fetch` handler (HTTPS via `fetch()`, HVYM via existing protocol handler)
-3. `host_search_registry` handler
-4. Mochitests for both
-5. End-to-end test: real browser + real daemon + a fixture page → agent loop completes with real data
+2. `host_fetch` handler — HTTPS via `fetch()`, HVYM via existing `HvymProtocolHandler.sys.mjs` / `HvymResolver.sys.mjs`. Enforces 8 MB body cap with `truncated: true` flag.
+3. Mochitests for both code paths
+4. End-to-end test: real browser + real daemon + a fixture page → agent loop completes with real data
 
 **Phase 5 — Iroh / IPFS integration**
 
-1. Choose Iroh version + API surface (blobs only, or blobs+docs?)
-2. `IpfsClient::connect` → real Iroh node startup
-3. `IpfsClient::fetch` → real blob get with cache
-4. `IpfsClient::publish` → real blob put
+1. Choose latest stable Iroh version + API surface (blobs at minimum; docs if we need them for sync)
+2. `IpfsClient::connect` → real Iroh node startup, **gossip-layer discovery** (no dedicated gateway peer yet — confirmed)
+3. `IpfsClient::fetch` → real blob get with the existing local cache hit-check
+4. `IpfsClient::publish` → real blob put + gossip announce
 5. `crawl_index` opt-in cooperative publish path
 
 Each phase ends in a green build + a runnable test that proves the phase works in isolation. Phases 1-3 land in Lupus only. Phase 4 is Lepus-side and lands in a separate PR. Phase 5 lands in Lupus.
 
 ---
 
-## 6. Open questions for review
+## 6. Resolved decisions (was: open questions)
 
-I need answers to these before starting any implementation. They're listed in the order they block work.
+All eight original questions have been answered. Locked in below — these are the contracts subsequent phases will rely on.
 
-1. **Architecture decision:** Confirm Option B (delegate fetching to the browser, daemon keeps Iroh for background indexing only). This is the load-bearing decision for everything else.
+1. **Architecture:** ✅ **Option B — delegate fetching to the browser.** Daemon keeps Iroh for background indexing only.
 
-2. **Tool dispatch context:** Tools are currently stateless free functions in `daemon/src/tools/*.rs`. To call `host_rpc` they need access to either a global (`OnceLock<HostRpcClient>`, like the security classifier) or a context parameter threaded through `tools::execute`. Preference?
+2. **Tool dispatch context:** ✅ **Lazy global, same pattern as the security classifier.** `OnceLock<Mutex<HostRpcState>>`. Reuses the existing pattern, no refactor of `tools::execute` signature needed.
 
-3. **Cooperative registry API (`registry.heavymeta.art`):**
-   - Does the service exist yet?
-   - What's the search endpoint shape (path, query params, response JSON)?
-   - Auth — public, or does it need a Stellar JWT?
-   - If it doesn't exist yet, do we ship `search_subnet` returning empty for this round and add it in the next?
+3. **Cooperative registry API:** ✅ **Doesn't exist yet** (verified across `pintheon_contracts`, `hvym_tunnler`, `heavymeta_collective` — see §4.2 for the full investigation). `search_subnet` returns a structured "not built yet" sentinel this round and gets re-wired when the cooperative ships an indexer. Auth note: HVYM *fetching* is public — the JWT/Stellar auth in `hvym_tunnler` is for content publishers (cooperative members serving tunnels), not consumers. The browser doesn't need any auth to fetch `alice@gallery`.
 
-4. **Iroh version + API surface:**
-   - Latest stable Iroh as of 2026 (exact version)
-   - Blobs only, or blobs + docs (for index entry sync)?
-   - Connect to `gateway.heavymeta.art` as a known peer, or run a fully autonomous node and discover via the gossip layer?
-   - Is there an existing cooperative Iroh node I should peer with for testing?
+4. **Iroh:** ✅ **Use latest stable, gossip-layer discovery.** No dedicated cooperative gateway peer to bootstrap from yet — the daemon's Iroh node will discover peers via the gossip layer. Specific version + blobs-vs-docs decision happens at the start of Phase 5.
 
-5. **Daemon → browser request id namespace:** Use prefix (`daemon-req-N` vs `req-N`) or UUIDs to avoid collisions? UUIDs are safer but bulkier in the JSON.
+5. **Daemon → browser request id namespace:** ✅ **`daemon-req-N` prefix.** Simple, debuggable, avoids id collisions with the browser's `req-N` namespace.
 
-6. **`host_fetch` body size limit:** Some pages are huge. Cap the body the browser sends back at, say, 2 MB? Let the daemon specify in the request? Truncate silently or error?
+6. **`host_fetch` body size limit:** ✅ **8 MB default cap, configurable.** Covers ~99% of real pages including big Wikipedia articles and e-commerce pages with embedded thumbnails. Browser truncates and sets a `truncated: true` flag in the response. Daemon logs a warning when this fires so we can spot pages that hit the limit. Configurable via the daemon config for unusual workflows. IPC is local so the bottleneck isn't the wire — it's the agent's text processing on huge bodies.
 
-7. **Timeout policy:** Daemon-side timeout for a `host_fetch` request? The agent loop already has its own outer timeout — this would be a per-fetch inner timeout. Default 30s?
+7. **Timeout policy:** ✅ **30 s per-fetch inner timeout.** The agent loop's outer timeout still applies on top.
 
-8. **Per-tool feature flag:** Should the new daemon→browser RPC plumbing be gated behind a feature flag (`features = ["host_rpc"]`) so the daemon can still build standalone for testing without the browser? Or always-on?
+8. **Per-tool feature flag:** ✅ **Always on, no feature flag.** The new RPC plumbing ships as part of the standard daemon build. The mock browser peer in Phase 1 is enough to test the daemon standalone.
 
 ---
 
@@ -261,10 +270,13 @@ To keep the scope honest:
 
 ## 9. Sign-off checklist
 
-Before I start coding I need:
+- [x] Option B (delegated fetching) — confirmed
+- [x] Tool dispatch context (lazy global) — confirmed
+- [x] Daemon → browser id namespace (`daemon-req-N`) — confirmed
+- [x] `host_fetch` body cap (8 MB) — confirmed
+- [x] Timeout (30 s) — confirmed
+- [x] No feature flag — confirmed
+- [x] `search_subnet` deferred to sentinel — investigated and locked in
+- [x] Iroh: gossip-layer discovery, version TBD at Phase 5 start
 
-- [ ] Confirm Option B (delegated fetching)
-- [ ] Answers to open questions 2, 5, 6, 7 (daemon-side decisions — needed for Phase 1)
-- [ ] Status of registry API (open question 3) — needed before Phase 2's `search_subnet` work
-- [ ] Iroh decisions (open question 4) — needed before Phase 5
-- [ ] Confirm phasing — happy to merge phases or split further
+**Ready to start Phase 1.**
