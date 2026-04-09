@@ -13,13 +13,14 @@
 
 | Module | File | Status |
 |---|---|---|
-| Agent loop (planner → executor → joinner) | `daemon/src/agent/*` | ✅ real |
+| The hunt — agent loop (planner → executor → joinner), entry point `Agent::hunt` | `daemon/src/agent.rs` + `daemon/src/agent/*` | ✅ real |
 | `scan_security` (heuristics + Qwen v0.3) | `daemon/src/tools/scan_security.rs` + `daemon/src/security.rs` | ✅ real |
 | `extract_content` (title + strip-tags + classify) | `daemon/src/tools/extract_content.rs` | ✅ basic but real |
 | `search_subnet` | `daemon/src/tools/search_subnet.rs:55` | ❌ returns `[]` |
 | `search_local_index` | `daemon/src/tools/search_local.rs:57` | ❌ returns `[]` (out of scope this round) |
 | `fetch_page` | `daemon/src/tools/fetch_page.rs` | ❌ returns `"not_implemented"` |
 | `crawl_index` | `daemon/src/tools/crawl_index.rs` | ❌ returns `indexed: false` (Phase 3 target — see §4.3, §4.6) |
+| The Den — local content store + search index | `daemon/src/den.rs` | ❌ scaffolding only — keyword search works, embedding/Iroh-blob layer lands Phase 3 |
 | `IpfsClient` (Iroh) | `daemon/src/ipfs.rs` | ❌ state-machine only — local blob store lands Phase 3 (see §4.4), gossip layer lands Phase 5 |
 | `Crawler` | `daemon/src/crawler.rs` | ❌ scaffolding (out of scope this round) |
 
@@ -157,9 +158,9 @@ The trained planner picks `search_subnet` for ~5/22 eval cases. With this sentin
 **Target behavior (revised — see §4.6):**
 1. Resolve the source: if it's a CID, fetch via `IpfsClient::get_blob`; if it's a URL, fetch via `host_rpc::fetch`
 2. Run `extract_content` against the body to get title + clean text + content_type
-3. **Store the raw HTML body in the local Iroh blob store via `IpfsClient::add_blob` → get back a `content_cid`** (NEW — this is what makes the SearchIndex entries time-stable and cooperative-shareable later)
+3. **Store the raw HTML body in the local Iroh blob store via `IpfsClient::add_blob` → get back a `content_cid`** (NEW — this is what makes the Den entries time-stable and cooperative-shareable later)
 4. (Optional) Generate an embedding — **not in this round** (depends on `search_local_index` work)
-5. Add an entry to the local `SearchIndex` with `{url, title, summary, content_type, content_cid, fetched_at}`
+5. Add an entry to the local `Den` with `{url, title, summary, content_type, content_cid, fetched_at}`
 6. If `index.contribution_mode != "off"`, gossip-publish the index entry via `IpfsClient::publish` (opt-in cooperative sync — Phase 5 only)
 
 For this round: implement steps 1, 2, 3, 5. Defer 4 (embedding — needs model) and 6 (cooperative gossip publish — needs Iroh discovery layer in Phase 5).
@@ -199,10 +200,10 @@ This subsection captures an architectural decision that touches §4.3, §4.4, an
 
 #### The big idea
 
-When `crawl_index` (or any future `index_page`-driven crawl) fetches a page, it stores the **raw HTML body in the local Iroh blob store**, getting back a content-addressed CID. The `SearchIndex` entry stores BOTH the original URL AND the CID. This makes every entry a **pointer-with-cache**:
+When `crawl_index` (or any future `index_page`-driven crawl) fetches a page, it stores the **raw HTML body in the local Iroh blob store**, getting back a content-addressed CID. The `Den` entry stores BOTH the original URL AND the CID. This makes every entry a **pointer-with-cache**:
 
 ```
-SearchIndex entry {
+Den entry {
   url:           "https://en.wikipedia.org/wiki/Wolf",
   title:         "Wolf - Wikipedia",
   summary:       "...",
@@ -245,10 +246,10 @@ The Phase 3 daemon has a working content-addressed cache from day 1, even with z
 
 #### The data model commitment (locked in for v0.1)
 
-The `SearchIndex` entry struct is part of the wire contract — the daemon's `index_stats` IPC method exposes counts, and any future tool that searches the index returns entries in this shape. Lock in the field set now so we don't have to migrate later:
+The `Den` entry struct is part of the wire contract — the daemon's `index_stats` IPC method exposes counts, and any future tool that searches the index returns entries in this shape. Lock in the field set now so we don't have to migrate later:
 
 ```rust
-pub struct IndexEntry {
+pub struct DenEntry {
     pub url:          String,
     pub title:        String,
     pub summary:      String,
@@ -287,7 +288,7 @@ Reserved fields are documented in the struct comment but not added until they're
 1. Add `iroh` to `daemon/Cargo.toml`. Pick latest stable, blobs API. Networking disabled in node config.
 2. Implement `IpfsClient::add_blob`, `get_blob`, `connect` (local-only mode)
 3. Configure Iroh's blob GC against `IpfsConfig::max_cache_gb` (default 5 GB)
-4. `crawl_index::execute` → `host_rpc::fetch` + `IpfsClient::add_blob` + `extract_content` + `SearchIndex::add` (with `content_cid` populated)
+4. `crawl_index::execute` → `host_rpc::fetch` + `IpfsClient::add_blob` + `extract_content` + `Den::add` (with `content_cid` populated)
 5. Defer embedding generation (depends on the deferred `search_local_index` work)
 6. Defer `IpfsClient::publish` (gossip layer) until Phase 5
 
@@ -296,7 +297,7 @@ Reserved fields are documented in the struct comment but not added until they're
 1. Inbound request dispatch in `LupusClient.sys.mjs`
 2. `host_fetch` handler — HTTPS via `fetch()`, HVYM via existing `HvymProtocolHandler.sys.mjs` / `HvymResolver.sys.mjs`. Enforces 8 MB body cap with `truncated: true` flag.
 3. Mochitests for both code paths
-4. End-to-end test: real browser + real daemon + a fixture page → agent loop completes with real data, `crawl_index` produces a real `SearchIndex` entry with a real `content_cid` for the cached HTML
+4. End-to-end test: real browser + real daemon + a fixture page → agent loop completes with real data, `crawl_index` produces a real `Den` entry with a real `content_cid` for the cached HTML
 
 **Phase 5 — Iroh gossip / cooperative publish**
 
@@ -347,7 +348,7 @@ These are wire-format / namespace / vocabulary decisions. Once Lepus ships again
 | **Tool result sentinel convention** | The pattern established for `search_subnet` (`{matches: [], status: "not_implemented", reason: "..."}`) is THE way any tool says "I exist but I'm not real yet". Documented as a contract. The joinner is taught to handle `status: "not_implemented"` gracefully. |
 | **Tool name strings** | The 6 tool names `search_subnet`, `search_local_index`, `fetch_page`, `extract_content`, `scan_security`, `crawl_index` are part of the wire contract. The trained planner LoRA was trained on these names — renaming any of them invalidates ~21/22 of the eval. They are now locked. |
 | **`daemon-req-N` / `req-N` id namespaces** | Already in §6 question 5. Locked. |
-| **`IndexEntry` field set** | See §4.6. The struct fields are part of the wire contract. Reserved fields are documented but not added until needed. |
+| **`DenEntry` field set** | See §4.6. The struct fields are part of the wire contract. Reserved fields are documented but not added until needed. |
 | **Envelope additive-only rule** | New fields are additive only. Both daemon and browser sides silently ignore unknown fields they receive. Removed fields require a `PROTOCOL_VERSION` bump. This single rule does ~80% of the work of forward compatibility. |
 
 ### 7.2 The error code vocabulary (initial set)
@@ -408,7 +409,7 @@ Everything else stays free to change without protocol pain:
 - **Tool implementation strategies** — each tool's `execute` body can be rewritten freely as long as the input/output JSON shape stays compatible
 - **Latency / performance** — we'll discover what's slow only by running real Lepus against real Lupus
 - **Body cap value** — 8 MB is a default, can be tuned in config without breaking anything
-- **Embedding model choice** — when this lands, it's a new field in `IndexEntry`, not a new shape
+- **Embedding model choice** — when this lands, it's a new field in `DenEntry`, not a new shape
 - **Cooperative gossip layer details** — entirely Phase 5
 - **Daemon → browser timeout** — 30 s default, tunable
 - **Cache eviction policy** — Iroh's GC, not our code
@@ -459,7 +460,7 @@ Architecture & contracts:
 - [x] Index entries store both URL and `content_cid`
 - [x] Iroh blob ops (`add_blob`/`get_blob`) move to Phase 3, gossip stays Phase 5
 - [x] Iroh's built-in GC handles storage budget — no custom eviction code
-- [x] `IndexEntry` field set locked as part of v0.1 contract
+- [x] `DenEntry` field set locked as part of v0.1 contract
 
 §7 (v0.1 alpha contract) — confirmed:
 - [x] `PROTOCOL_VERSION = "0.1"` in `protocol.rs`, exposed via `get_status`

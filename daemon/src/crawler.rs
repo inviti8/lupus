@@ -3,8 +3,8 @@
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::den::{Den, DenEntry};
 use crate::error::LupusError;
-use crate::index::{IndexEntry, SearchIndex};
 
 pub struct Crawler {
     /// Number of pages indexed this session.
@@ -17,10 +17,10 @@ impl Crawler {
     }
 
     /// Index a page that the user just visited. Called by the browser via
-    /// `index_page`. Extracts metadata and adds an entry to the local index.
+    /// `index_page`. Extracts metadata and adds an entry to the den.
     pub fn index_page(
         &mut self,
-        index: &mut SearchIndex,
+        den: &mut Den,
         url: &str,
         html: &str,
         title: Option<&str>,
@@ -37,7 +37,7 @@ impl Crawler {
             .unwrap_or_default()
             .as_secs();
 
-        let entry = IndexEntry {
+        let entry = DenEntry {
             url: url.to_string(),
             title,
             summary,
@@ -46,7 +46,7 @@ impl Crawler {
             indexed_at: now,
         };
 
-        index.add(entry)?;
+        den.add(entry)?;
         self.pages_indexed += 1;
         tracing::debug!("Indexed page: {} (total this session: {})", url, self.pages_indexed);
         Ok(())

@@ -5,8 +5,8 @@ use tokio::sync::RwLock;
 use crate::agent::Agent;
 use crate::config::Config;
 use crate::crawler::Crawler;
+use crate::den::Den;
 use crate::error::LupusError;
-use crate::index::SearchIndex;
 use crate::ipfs::IpfsClient;
 use crate::protocol::*;
 use crate::security::SecurityScanner;
@@ -17,7 +17,7 @@ pub struct Daemon {
     pub security: SecurityScanner,
     pub ipfs: IpfsClient,
     pub crawler: RwLock<Crawler>,
-    pub index: RwLock<SearchIndex>,
+    pub den: RwLock<Den>,
     pub config: Config,
 }
 
@@ -27,7 +27,7 @@ impl Daemon {
         security: SecurityScanner,
         ipfs: IpfsClient,
         crawler: Crawler,
-        index: SearchIndex,
+        den: Den,
         config: Config,
     ) -> Self {
         Self {
@@ -35,7 +35,7 @@ impl Daemon {
             security,
             ipfs,
             crawler: RwLock::new(crawler),
-            index: RwLock::new(index),
+            den: RwLock::new(den),
             config,
         }
     }
@@ -75,7 +75,7 @@ impl Daemon {
     async fn handle_search(&self, req: Request) -> Result<Response, LupusError> {
         let params: SearchParams = serde_json::from_value(req.params)?;
         let agent = self.agent.read().await;
-        let result = agent.search(params).await?;
+        let result = agent.hunt(params).await?;
         Ok(Response::ok(req.id, result))
     }
 
@@ -95,14 +95,14 @@ impl Daemon {
     async fn handle_index_page(&self, req: Request) -> Result<Response, LupusError> {
         let params: IndexPageParams = serde_json::from_value(req.params)?;
         let mut crawler = self.crawler.write().await;
-        let mut index = self.index.write().await;
-        crawler.index_page(&mut index, &params.url, &params.html, params.title.as_deref())?;
+        let mut den = self.den.write().await;
+        crawler.index_page(&mut den, &params.url, &params.html, params.title.as_deref())?;
         Ok(Response::ok(req.id, serde_json::json!({"indexed": true})))
     }
 
     async fn handle_status(&self, req: Request) -> Result<Response, LupusError> {
         let agent = self.agent.read().await;
-        let index = self.index.read().await;
+        let den = self.den.read().await;
         let result = StatusResponse {
             version: env!("CARGO_PKG_VERSION").into(),
             models: ModelStatus {
@@ -111,17 +111,17 @@ impl Daemon {
                 security: self.security.component_state(),
             },
             ipfs: self.ipfs.component_state(),
-            index: index.info(),
+            index: den.info(),
         };
         Ok(Response::ok(req.id, result))
     }
 
     async fn handle_index_stats(&self, req: Request) -> Result<Response, LupusError> {
-        let index = self.index.read().await;
+        let den = self.den.read().await;
         let result = IndexStatsResponse {
-            entries: index.entry_count(),
+            entries: den.entry_count(),
             last_sync: None,
-            contribution_mode: index.contribution_mode().into(),
+            contribution_mode: den.contribution_mode().into(),
         };
         Ok(Response::ok(req.id, result))
     }
@@ -139,10 +139,10 @@ impl Daemon {
     async fn handle_shutdown(&self, req: Request) -> Result<Response, LupusError> {
         tracing::info!("Shutdown requested");
 
-        // Save index state
-        let index = self.index.read().await;
-        if let Err(e) = index.save() {
-            tracing::error!("Failed to save index on shutdown: {}", e);
+        // Save den state
+        let den = self.den.read().await;
+        if let Err(e) = den.save() {
+            tracing::error!("Failed to save den on shutdown: {}", e);
         }
 
         // TODO: Close IPFS connections

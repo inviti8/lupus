@@ -16,7 +16,7 @@ pub struct Config {
     pub daemon: DaemonConfig,
     pub models: ModelsConfig,
     pub ipfs: IpfsConfig,
-    pub index: IndexConfig,
+    pub den: DenConfig,
     pub cooperative: CooperativeConfig,
 }
 
@@ -26,7 +26,7 @@ impl Default for Config {
             daemon: DaemonConfig::default(),
             models: ModelsConfig::default(),
             ipfs: IpfsConfig::default(),
-            index: IndexConfig::default(),
+            den: DenConfig::default(),
             cooperative: CooperativeConfig::default(),
         }
     }
@@ -97,18 +97,20 @@ impl Default for IpfsConfig {
     }
 }
 
+/// Configuration for the den — Lupus's local content store + search index.
+/// See `daemon/src/den.rs` and `docs/LUPUS_TOOLS.md` §4.6 for the model.
 #[derive(Debug, Deserialize)]
 #[serde(default)]
-pub struct IndexConfig {
+pub struct DenConfig {
     pub path: PathBuf,
     pub max_entries: usize,
     pub contribution_mode: String,
 }
 
-impl Default for IndexConfig {
+impl Default for DenConfig {
     fn default() -> Self {
         Self {
-            path: data_dir().join("search-index"),
+            path: data_dir().join("den"),
             max_entries: 100_000,
             contribution_mode: "off".into(),
         }

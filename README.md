@@ -44,7 +44,7 @@ lupus/
       security.rs      ← Security model for HTML/JS scanning
       ipfs.rs          ← Iroh IPFS client
       crawler.rs       ← Distributed crawl + index
-      index.rs         ← Local semantic search index
+      den.rs           ← The Den — local content store + semantic search index
       tools/           ← Tool implementations the agent can call
   docs/
     TRAINING_STRATEGY.md   ← Full training plan and cost estimates

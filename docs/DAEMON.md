@@ -28,7 +28,8 @@ Lupus runs as a standalone daemon process alongside the Lepus browser. The brows
 │  Trust indicator ◄──────│    {"score":92}     │  Security Model              │
 │  Result display ◄───────│    {"results":[]}   │  IPFS Client (Iroh)          │
 │  Pelt system            │                     │  Crawler / Indexer           │
-│  Subnet selector        │                     │  Local Search Index          │
+│  Subnet selector        │                     │  The Den (local content +    │
+│                         │                     │           semantic index)    │
 │                         │                     │  Tool Implementations        │
 └─────────────────────────┘                     └──────────────────────────────┘
 ```
@@ -156,19 +157,28 @@ Lightweight IPFS via Iroh:
 
 ### Crawler / Indexer (crawler.rs)
 
-Builds and maintains the local search index:
+Builds and maintains the den (the local content store + search index):
 - Indexes pages as user browses (via `index_page` calls from browser)
 - Generates embeddings for semantic search
-- Syncs index entries with cooperative (opt-in)
+- Syncs den entries with cooperative (opt-in)
 - Background periodic sync with cooperative index channel
 
-### Local Search Index (index.rs)
+### The Den (den.rs)
 
-Embedding-based semantic search:
-- Stores document embeddings + metadata
-- Nearest-neighbor search for queries
+Lupus's local content store + semantic search index — named after the
+wolf's den, where the pack stores what it brings home. See
+`docs/LUPUS_TOOLS.md` §4.6 for the full data model.
+
+- Stores document embeddings + metadata in `DenEntry` records
+- Holds the local Iroh blob store backing each entry's `content_cid`
+- Nearest-neighbor search for queries (semantic + keyword)
 - Ranks by semantic similarity + CWP commitment signals
 - Persisted to disk between sessions
+
+Naming convention: "index" is the verb (the action of adding a page to
+the den), "den" is the noun (the storage). IPC method names like
+`index_page` and `index_stats` keep the verb form; internal Rust types
+use the noun form (`Den`, `DenEntry`, `DenConfig`).
 
 ### Tools (tools/)
 
@@ -206,8 +216,8 @@ ipfs:
   cache_dir: "~/.local/share/lupus/ipfs-cache/"
   max_cache_gb: 5
 
-index:
-  path: "~/.local/share/lupus/search-index/"
+den:
+  path: "~/.local/share/lupus/den/"
   max_entries: 100000
   contribution_mode: "off"  # off | anonymous | signed
 

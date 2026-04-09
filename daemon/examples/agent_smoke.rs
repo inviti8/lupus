@@ -1,4 +1,4 @@
-//! Full agent smoke test — `Agent::load` + `Agent::search` end-to-end.
+//! Full agent smoke test — `Agent::load` + `Agent::hunt` end-to-end.
 //!
 //! This is the daemon-side equivalent of `python tools/eval_tinyagent.py`
 //! for a single query. It exercises the entire LLMCompiler agent loop:
@@ -74,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     print!("Running full agent pipeline (planner + execute + joinner)... ");
     let infer_start = Instant::now();
-    let response = agent.search(params).await?;
+    let response = agent.hunt(params).await?;
     let infer_elapsed = infer_start.elapsed();
     println!("done in {:.2}s", infer_elapsed.as_secs_f64());
     println!();

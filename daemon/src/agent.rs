@@ -124,8 +124,12 @@ impl Agent {
         Ok(())
     }
 
-    /// Process a search query through the full LLMCompiler agent loop.
+    /// Run a hunt — process a search query through the full LLMCompiler
+    /// agent loop. The "hunt" is what the agent does when given a query;
+    /// the IPC method is still named `search` because that's the user's
+    /// verb (the user asks for a search; under the hood the wolf hunts).
     ///
+    /// Steps:
     /// 1. Build the cached planner system prompt
     ///    ([`prompt::planner_system_prompt`])
     /// 2. Run the planner inference call WITH the trained LoRA attached
@@ -143,11 +147,11 @@ impl Agent {
     /// All inference is wrapped in `tokio::task::spawn_blocking` because
     /// llama.cpp inference is multi-second CPU work that must not
     /// block the tokio reactor.
-    pub async fn search(&self, params: SearchParams) -> Result<SearchResponse, LupusError> {
+    pub async fn hunt(&self, params: SearchParams) -> Result<SearchResponse, LupusError> {
         self.require_loaded()?;
 
         tracing::debug!(
-            "Search query: {:?} scope: {:?}",
+            "Hunt query: {:?} scope: {:?}",
             params.query,
             params.scope
         );

@@ -193,7 +193,9 @@ pub struct StatusResponse {
     pub version: String,
     pub models: ModelStatus,
     pub ipfs: ComponentState,
-    pub index: IndexInfo,
+    // Field name stays "index" on the wire (it's still an "index" of pages
+    // from the user's POV); the Rust type name follows internal naming.
+    pub index: DenInfo,
 }
 
 #[derive(Debug, Serialize)]
@@ -213,7 +215,7 @@ pub enum ComponentState {
 }
 
 #[derive(Debug, Serialize)]
-pub struct IndexInfo {
+pub struct DenInfo {
     pub entries: usize,
     pub last_sync: Option<String>,
     pub status: ComponentState,

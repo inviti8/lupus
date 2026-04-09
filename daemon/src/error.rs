@@ -27,8 +27,8 @@ pub enum LupusError {
     #[error("config error: {0}")]
     Config(String),
 
-    #[error("index error: {0}")]
-    Index(String),
+    #[error("den error: {0}")]
+    Den(String),
 
     #[error("ipfs error: {0}")]
     Ipfs(String),
@@ -58,7 +58,10 @@ impl LupusError {
             Self::UnknownMethod(_) => "unknown_method",
             Self::ToolError { .. } => "tool_error",
             Self::Config(_) => "config_error",
-            Self::Index(_) => "index_error",
+            // Wire-level error code stays "index_error" — "index" here is the
+            // verb (an error during the indexing operation), not the noun (the
+            // storage layer is the den). See docs/LUPUS_TOOLS.md §7.
+            Self::Den(_) => "index_error",
             Self::Ipfs(_) => "ipfs_error",
             Self::WebSocket(_) => "websocket_error",
             Self::Io(_) => "io_error",

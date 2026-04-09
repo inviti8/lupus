@@ -4,11 +4,11 @@
 // WebSocket on localhost:9549.
 //
 // Components:
-//   - Agent: TinyAgent-based search with LoRA adapter hot-swapping
+//   - Agent: TinyAgent-based search (the "hunt" — LLMCompiler agent loop)
 //   - Security: Code-trained model for HTML/JS threat analysis
 //   - IPFS: Lightweight client (Iroh) for content fetching and indexing
 //   - Crawler: Distributed index builder
-//   - Index: Local semantic search with embeddings
+//   - Den: Local content store + semantic search index (the wolf's den)
 //   - Tools: search_subnet, fetch_page, extract_content, scan_security
 
 // All modules live in src/lib.rs (the lupus library crate). main.rs is
@@ -22,7 +22,7 @@ use lupus::agent::Agent;
 use lupus::config::Config;
 use lupus::crawler::Crawler;
 use lupus::daemon::Daemon;
-use lupus::index::SearchIndex;
+use lupus::den::Den;
 use lupus::ipfs::IpfsClient;
 use lupus::security::SecurityScanner;
 
@@ -72,17 +72,17 @@ async fn main() {
         }
     }
 
-    // 6. Load or create search index
-    let index = match SearchIndex::load_or_create(&config.index) {
-        Ok(idx) => idx,
+    // 6. Load or create the den (local content store + search index)
+    let den = match Den::load_or_create(&config.den) {
+        Ok(d) => d,
         Err(e) => {
-            tracing::error!("Failed to initialize search index: {}", e);
+            tracing::error!("Failed to initialize den: {}", e);
             std::process::exit(1);
         }
     };
 
     // 7. Assemble daemon and start serving
-    let daemon = Arc::new(Daemon::new(agent, security, ipfs, crawler, index, config));
+    let daemon = Arc::new(Daemon::new(agent, security, ipfs, crawler, den, config));
 
     if let Err(e) = lupus::server::run(daemon).await {
         tracing::error!("Server error: {}", e);
