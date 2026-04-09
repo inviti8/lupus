@@ -69,9 +69,22 @@ candle-transformers = "0.10.2"
 # enabled because the BPE pre-tokenizer regex relies on it.
 tokenizers = { version = "0.22", default-features = false, features = ["onig"] }
 
-# IPFS client via Iroh (pure Rust, lightweight)
-# Uncomment when ready to integrate IPFS:
-# iroh = "0.28"
+# Local content-addressed blob store via iroh-blobs. Phase 3 uses ONLY
+# the FsStore (local-only, no networking, no peers, no gossip layer).
+# The default features include `rpc` which would pull in iroh's QUIC +
+# TLS stack — we drop it to keep the daemon network-free until Phase 5,
+# avoid pulling in aws-lc-sys (NASM dependency on Windows MSVC), and
+# keep the build small.
+#
+# README warning: iroh-blobs 0.99 is not yet considered production
+# quality (the team recommends 0.35 for production). For Lupus alpha
+# this is acceptable — we use only the FsStore (which has been stable
+# since iroh-blobs 0.1) and our networking layer doesn't come online
+# until Phase 5. See docs/LUPUS_TOOLS.md §4.4.
+iroh-blobs = { version = "0.99", default-features = false, features = ["fs-store"] }
+
+# Bytes type — used by the iroh-blobs API for blob payloads.
+bytes = "1"
 
 [dev-dependencies]
 # SHA-256 for the prompt-snapshot test that pins the byte-equivalence

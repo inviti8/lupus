@@ -73,6 +73,8 @@ async fn main() {
     }
 
     // 6. Load or create the den (local content store + search index)
+    //    and install it into the process-wide global so the agent's
+    //    free-function tools can reach it via `crate::den::add_page`.
     let den = match Den::load_or_create(&config.den) {
         Ok(d) => d,
         Err(e) => {
@@ -80,9 +82,10 @@ async fn main() {
             std::process::exit(1);
         }
     };
+    lupus::den::install(den).await;
 
     // 7. Assemble daemon and start serving
-    let daemon = Arc::new(Daemon::new(agent, security, ipfs, crawler, den, config));
+    let daemon = Arc::new(Daemon::new(agent, security, ipfs, crawler, config));
 
     if let Err(e) = lupus::server::run(daemon).await {
         tracing::error!("Server error: {}", e);

@@ -548,4 +548,176 @@ mod tests {
 
         handle.shutdown().await;
     }
+
+    // -- crawl_index tool integration tests ---------------------------------
+    //
+    // These exercise the full Phase 3 pipeline:
+    //   crawl_index -> host_rpc::fetch (mocked) -> ipfs::add_blob -> den::add_page
+    //
+    // They install both the mock browser peer AND a temporary blob store
+    // AND a temporary den, all serialized via TEST_MUTEX so they don't
+    // interleave with the other host_rpc tests.
+
+    use crate::config::{DenConfig, IpfsConfig};
+    use crate::den::{self, Den};
+    use crate::ipfs::{self as ipfs_mod, IpfsClient};
+    use std::path::PathBuf;
+
+    fn temp_dir(prefix: &str, tag: &str) -> PathBuf {
+        let pid = std::process::id();
+        let path = std::env::temp_dir().join(format!("lupus-{prefix}-{pid}-{tag}"));
+        let _ = std::fs::remove_dir_all(&path);
+        path
+    }
+
+    /// Spin up a clean den + blob store for a test, returning both the
+    /// IpfsClient (which the test holds to keep the FsStore alive) and
+    /// the temp paths so the test can clean them up.
+    async fn install_full_environment(tag: &str) -> IpfsClient {
+        // Reset all globals
+        ipfs_mod::reset_for_test().await;
+        den::reset_for_test().await;
+
+        // Blob store
+        let cache_dir = temp_dir("crawl-blobs", tag);
+        let ipfs_cfg = IpfsConfig {
+            enabled: true,
+            gateway: String::new(),
+            cache_dir,
+            max_cache_gb: 5,
+        };
+        let mut client = IpfsClient::new(&ipfs_cfg);
+        client.connect().await.expect("blob store should open");
+
+        // Den
+        let den_path = temp_dir("crawl-den", tag);
+        let den_cfg = DenConfig {
+            path: den_path,
+            max_entries: 100,
+            contribution_mode: "off".into(),
+        };
+        let den = Den::load_or_create(&den_cfg).expect("den should load");
+        den::install(den).await;
+
+        client
+    }
+
+    #[tokio::test]
+    async fn crawl_index_full_pipeline() {
+        let _guard = TEST_MUTEX.lock().await;
+        reset_for_test().await;
+        let _client = install_full_environment("full_pipeline").await;
+
+        let peer = MockHostPeer::install().await;
+        peer.add_fixture(
+            "https://en.wikipedia.org/wiki/Wolf",
+            HostFetchResult {
+                url: "https://en.wikipedia.org/wiki/Wolf".into(),
+                final_url: "https://en.wikipedia.org/wiki/Wolf".into(),
+                http_status: 200,
+                content_type: "text/html; charset=utf-8".into(),
+                body: r#"<!doctype html><html><head><title>Wolf - Wikipedia</title>
+<meta name="keywords" content="wolf, canis lupus, mammal"></head>
+<body><p>The wolf is a large canine native to Eurasia and North America.</p></body></html>"#
+                    .into(),
+                truncated: false,
+                fetched_at: 1_744_200_000,
+            },
+        );
+        let handle = peer.spawn();
+
+        let args = serde_json::json!({"source": "https://en.wikipedia.org/wiki/Wolf"});
+        let result = crate::tools::crawl_index::execute(args)
+            .await
+            .expect("crawl_index should succeed");
+
+        // Verify the tool result shape
+        assert_eq!(result["indexed"], serde_json::json!(true));
+        assert_eq!(result["url"], serde_json::json!("https://en.wikipedia.org/wiki/Wolf"));
+        assert_eq!(result["title"], serde_json::json!("Wolf - Wikipedia"));
+        assert_eq!(
+            result["content_type"],
+            serde_json::json!("text/html; charset=utf-8")
+        );
+        let cid = result["content_cid"].as_str().expect("content_cid string");
+        assert_eq!(cid.len(), 64, "expected 64-char hex CID, got {cid:?}");
+
+        // Verify the blob is actually retrievable from the store
+        let body_bytes = ipfs_mod::get_blob(cid)
+            .await
+            .expect("get_blob ok")
+            .expect("blob should be present after crawl");
+        let body_str = std::str::from_utf8(&body_bytes).expect("utf8");
+        assert!(body_str.contains("Wolf - Wikipedia"));
+
+        // Verify the den has the entry
+        assert_eq!(den::entry_count().await, 1);
+
+        handle.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn crawl_index_rejects_cid_source() {
+        let _guard = TEST_MUTEX.lock().await;
+        reset_for_test().await;
+        let _client = install_full_environment("rejects_cid").await;
+
+        // 64 hex chars = looks like a CID, currently unsupported.
+        let fake_cid = "0".repeat(64);
+        let args = serde_json::json!({"source": fake_cid});
+        let err = crate::tools::crawl_index::execute(args)
+            .await
+            .unwrap_err();
+        assert_eq!(err.code(), crate::protocol_codes::ERR_TOOL);
+        let msg = format!("{err}");
+        assert!(
+            msg.contains("CID sources are not supported"),
+            "expected CID-deferral message, got: {msg}"
+        );
+    }
+
+    #[tokio::test]
+    async fn crawl_index_handles_blob_store_unavailable() {
+        let _guard = TEST_MUTEX.lock().await;
+        reset_for_test().await;
+        // NOTE: only reset/install den, NOT the blob store. Blob store
+        // is unloaded for this test.
+        ipfs_mod::reset_for_test().await;
+        den::reset_for_test().await;
+        let den_path = temp_dir("crawl-blob-down", "den");
+        let den_cfg = DenConfig {
+            path: den_path,
+            max_entries: 100,
+            contribution_mode: "off".into(),
+        };
+        let den = Den::load_or_create(&den_cfg).expect("den should load");
+        den::install(den).await;
+
+        let peer = MockHostPeer::install().await;
+        peer.add_fixture(
+            "https://example.com/no-blob-store",
+            HostFetchResult {
+                url: "https://example.com/no-blob-store".into(),
+                final_url: "https://example.com/no-blob-store".into(),
+                http_status: 200,
+                content_type: "text/html".into(),
+                body: "<title>No blob store</title>".into(),
+                truncated: false,
+                fetched_at: 1_744_200_000,
+            },
+        );
+        let handle = peer.spawn();
+
+        let args = serde_json::json!({"source": "https://example.com/no-blob-store"});
+        let result = crate::tools::crawl_index::execute(args)
+            .await
+            .expect("crawl_index should still succeed without blob store");
+
+        // The entry was indexed, but content_cid is empty (degraded path)
+        assert_eq!(result["indexed"], serde_json::json!(true));
+        assert_eq!(result["content_cid"], serde_json::json!(""));
+        assert_eq!(den::entry_count().await, 1);
+
+        handle.shutdown().await;
+    }
 }

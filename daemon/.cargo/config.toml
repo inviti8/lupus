@@ -1,0 +1,22 @@
+# Lupus daemon build config — Windows MSVC + iroh-blobs interaction.
+#
+# When iroh-blobs 0.99 is in the dep tree, parallel rustc invocations on
+# Windows MSVC trigger LLVM out-of-memory failures during the codegen
+# phase of the test binary (rustc-LLVM ERROR: out of memory + secondary
+# STATUS_STACK_BUFFER_OVERRUN). The lib alone compiles fine; only the
+# combined test/example link step monomorphizes enough generic code
+# from iroh + quinn + rustls + hickory-dns to overflow LLVM's memory
+# pool when multiple jobs run in parallel.
+#
+# Setting jobs = 1 forces serial codegen — slower (1m30s vs 50s for a
+# warm rebuild) but reliable. The lib + lib-tests compile cleanly.
+#
+# This is a pragmatic Phase 3 workaround. Long-term options:
+#   - Move to iroh-blobs 0.35 (smaller dep tree, "production" branch)
+#   - Wait for iroh-blobs to stabilize and the dep tree to shrink
+#   - Throw more RAM at the build host
+#
+# See docs/LUPUS_TOOLS.md §4.4 and the Phase 3 commit for context.
+
+[build]
+jobs = 1

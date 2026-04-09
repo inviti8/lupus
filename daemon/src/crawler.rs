@@ -1,10 +1,17 @@
 //! Distributed crawler / indexer — builds the local search index from
 //! pages the user visits. Opt‑in sync with the cooperative index channel.
+//!
+//! As of Phase 3, `index_page` stores the raw HTML body in the local
+//! Iroh blob store via `crate::ipfs::add_blob` (getting back a content
+//! CID) before adding the entry to the den. The CID is recorded on the
+//! `DenEntry` so future lookups can pull the cached body even if the
+//! original URL goes away. See `docs/LUPUS_TOOLS.md` §4.6.
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::den::{Den, DenEntry};
+use crate::den::{self, DenEntry};
 use crate::error::LupusError;
+use crate::ipfs;
 
 pub struct Crawler {
     /// Number of pages indexed this session.
@@ -16,11 +23,19 @@ impl Crawler {
         Self { pages_indexed: 0 }
     }
 
-    /// Index a page that the user just visited. Called by the browser via
-    /// `index_page`. Extracts metadata and adds an entry to the den.
-    pub fn index_page(
+    /// Index a page that the user just visited. Called by the browser
+    /// via `index_page` and (in the agent loop) by `crawl_index`.
+    /// Stores the body in the local Iroh blob store, extracts metadata,
+    /// and adds an entry to the den.
+    ///
+    /// If the blob store isn't loaded (the daemon was started with
+    /// `ipfs.enabled = false` or the FsStore failed to open), the
+    /// page is still indexed — `content_cid` is left empty. This
+    /// matches the v0.1 contract from `docs/LUPUS_TOOLS.md` §4.6
+    /// where the field is documented as "empty string if not yet
+    /// stored in Iroh".
+    pub async fn index_page(
         &mut self,
-        den: &mut Den,
         url: &str,
         html: &str,
         title: Option<&str>,
@@ -31,6 +46,18 @@ impl Crawler {
 
         let summary = extract_summary(html);
         let keywords = extract_keywords(html);
+        let content_type = "text/html".to_string();
+
+        // Best-effort blob store: if it isn't loaded, log and continue
+        // with an empty content_cid. We don't fail the index_page call
+        // just because the cache is unavailable.
+        let content_cid = match ipfs::add_blob(html.as_bytes()).await {
+            Ok(cid) => cid,
+            Err(e) => {
+                tracing::warn!("blob store unavailable, indexing without content_cid: {}", e);
+                String::new()
+            }
+        };
 
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -42,11 +69,13 @@ impl Crawler {
             title,
             summary,
             keywords,
+            content_type,
+            content_cid,
             embedding: Vec::new(), // TODO: generate embedding via model
-            indexed_at: now,
+            fetched_at: now,
         };
 
-        den.add(entry)?;
+        den::add_page(entry).await?;
         self.pages_indexed += 1;
         tracing::debug!("Indexed page: {} (total this session: {})", url, self.pages_indexed);
         Ok(())
@@ -58,7 +87,7 @@ impl Crawler {
 }
 
 /// Best‑effort title extraction from raw HTML.
-fn extract_title(html: &str) -> String {
+pub(crate) fn extract_title(html: &str) -> String {
     // Look for <title>...</title>
     if let Some(start) = html.find("<title") {
         if let Some(tag_end) = html[start..].find('>') {
@@ -72,7 +101,7 @@ fn extract_title(html: &str) -> String {
 }
 
 /// Extract first meaningful paragraph as summary.
-fn extract_summary(html: &str) -> String {
+pub(crate) fn extract_summary(html: &str) -> String {
     // Simple: find first <p> content
     if let Some(start) = html.find("<p") {
         if let Some(tag_end) = html[start..].find('>') {
@@ -92,7 +121,7 @@ fn extract_summary(html: &str) -> String {
 }
 
 /// Extract keywords from meta tags.
-fn extract_keywords(html: &str) -> Vec<String> {
+pub(crate) fn extract_keywords(html: &str) -> Vec<String> {
     // Look for <meta name="keywords" content="...">
     let lower = html.to_lowercase();
     if let Some(pos) = lower.find("name=\"keywords\"") {

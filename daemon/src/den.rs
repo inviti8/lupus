@@ -3,9 +3,19 @@
 //! Named after the wolf's den: where the pack stores what it brings home and
 //! returns to look things up. Concretely it holds [`DenEntry`] records for
 //! every page Lupus has crawled or been asked to remember (via the
-//! `index_page` IPC handler or the `crawl_index` agent tool), and (in
-//! Phase 3 onward) also owns the local Iroh blob store that backs each
-//! entry's `content_cid`.
+//! `index_page` IPC handler or the `crawl_index` agent tool). Each entry
+//! carries a `content_cid` pointing into the local Iroh blob store
+//! (`crate::ipfs::add_blob`/`get_blob`), making the den a pointer-with-cache
+//! over a content-addressed backing store.
+//!
+//! ## Architecture
+//!
+//! The `Den` lives in a process-wide lazy global ([`DEN_STATE`]) — same
+//! `OnceLock<Mutex<Option<…>>>` pattern as `crate::security::CLASSIFIER`,
+//! `crate::host_rpc::HOST_RPC_STATE`, and `crate::ipfs::BLOB_STORE`. Tools,
+//! the IPC handlers in `crate::daemon::Daemon`, and the agent's free-function
+//! tools all reach the den through the [`add_page`] / [`info`] / etc. free
+//! functions without threading state through their signatures.
 //!
 //! ## Naming convention
 //!
@@ -17,12 +27,18 @@
 //! error of the den itself).
 
 use std::path::PathBuf;
+use std::sync::OnceLock;
 
 use serde::{Deserialize, Serialize};
+use tokio::sync::Mutex;
 
 use crate::config::DenConfig;
 use crate::error::LupusError;
 use crate::protocol::{ComponentState, DenInfo};
+
+// ---------------------------------------------------------------------------
+// DenEntry — the wire-level record shape
+// ---------------------------------------------------------------------------
 
 /// A single document stored in the den.
 ///
@@ -35,12 +51,112 @@ pub struct DenEntry {
     pub title: String,
     pub summary: String,
     pub keywords: Vec<String>,
+    /// Verbatim from the response Content-Type header. Empty when the
+    /// entry came from a path that didn't capture content type
+    /// (legacy crawler entries from before Phase 3).
+    #[serde(default)]
+    pub content_type: String,
+    /// Hex-encoded BLAKE3 CID for the cached HTML body in the local
+    /// Iroh blob store. Empty string when the entry was indexed
+    /// without storing the body (the legacy `index_page` IPC path
+    /// before Phase 3 wired the blob store, or for entries received
+    /// over the cooperative gossip layer where we don't yet have the
+    /// content locally).
+    #[serde(default)]
+    pub content_cid: String,
     /// Embedding vector (dimension depends on model). Empty until the
     /// embedding model lands — see `docs/LUPUS_TOOLS.md` §4.5.
+    #[serde(default)]
     pub embedding: Vec<f32>,
-    /// Unix timestamp when this entry was indexed.
-    pub indexed_at: u64,
+    /// Unix timestamp (seconds) when the page was fetched.
+    pub fetched_at: u64,
 }
+
+// ---------------------------------------------------------------------------
+// Global state
+// ---------------------------------------------------------------------------
+
+/// Process-wide den. Initialized lazily by [`install`] at daemon
+/// startup. Tools and IPC handlers access it via the free functions
+/// below.
+static DEN_STATE: OnceLock<Mutex<Option<Den>>> = OnceLock::new();
+
+fn slot() -> &'static Mutex<Option<Den>> {
+    DEN_STATE.get_or_init(|| Mutex::new(None))
+}
+
+/// Install a loaded `Den` into the global slot. Called once at daemon
+/// startup from `main.rs` after `Den::load_or_create`.
+pub async fn install(den: Den) {
+    let mut guard = slot().lock().await;
+    if guard.is_some() {
+        tracing::warn!("den already installed — replacing existing instance");
+    }
+    *guard = Some(den);
+    tracing::debug!("den installed in global slot");
+}
+
+/// Add an entry to the den. Returns an error if the den isn't loaded.
+pub async fn add_page(entry: DenEntry) -> Result<(), LupusError> {
+    let mut guard = slot().lock().await;
+    let den = guard
+        .as_mut()
+        .ok_or_else(|| LupusError::Den("den not loaded".into()))?;
+    den.add(entry)
+}
+
+/// Total entry count. Returns 0 if the den isn't loaded yet (caller
+/// shouldn't observe anything other than 0 in that state).
+pub async fn entry_count() -> usize {
+    let guard = slot().lock().await;
+    guard.as_ref().map(|d| d.entry_count()).unwrap_or(0)
+}
+
+/// Contribution mode setting (from config). Returns `"off"` if the
+/// den isn't loaded.
+pub async fn contribution_mode() -> String {
+    let guard = slot().lock().await;
+    guard
+        .as_ref()
+        .map(|d| d.contribution_mode().to_string())
+        .unwrap_or_else(|| "off".into())
+}
+
+/// Component state for the `get_status` IPC handler. Returns `Loading`
+/// when the den isn't yet installed (during the brief startup window
+/// before `install` runs).
+pub async fn info() -> DenInfo {
+    let guard = slot().lock().await;
+    match guard.as_ref() {
+        Some(den) => den.info(),
+        None => DenInfo {
+            entries: 0,
+            last_sync: None,
+            status: ComponentState::Loading,
+        },
+    }
+}
+
+/// Persist the den to disk. Called from the shutdown handler. Safe to
+/// call when the den isn't loaded (no-op).
+pub async fn save() -> Result<(), LupusError> {
+    let guard = slot().lock().await;
+    if let Some(den) = guard.as_ref() {
+        den.save()?;
+    }
+    Ok(())
+}
+
+/// Test-only: clear the global den slot.
+#[cfg(test)]
+pub async fn reset_for_test() {
+    let mut guard = slot().lock().await;
+    *guard = None;
+}
+
+// ---------------------------------------------------------------------------
+// Den — the storage struct, owned by the global slot
+// ---------------------------------------------------------------------------
 
 pub struct Den {
     den_path: PathBuf,
@@ -81,14 +197,15 @@ impl Den {
         })
     }
 
-    /// Add a document to the den.
+    /// Add a document to the den. Replaces any existing entry with the
+    /// same URL. Evicts the oldest entry when at capacity.
     pub fn add(&mut self, entry: DenEntry) -> Result<(), LupusError> {
         // Replace existing entry with same URL
         self.entries.retain(|e| e.url != entry.url);
 
         // Evict oldest if at capacity
         if self.entries.len() >= self.max_entries {
-            self.entries.sort_by_key(|e| e.indexed_at);
+            self.entries.sort_by_key(|e| e.fetched_at);
             self.entries.remove(0);
         }
 
