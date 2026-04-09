@@ -278,23 +278,125 @@ The daemon's outer agent loop will receive a `LupusError::ToolError { tool: "fet
 
 ---
 
-## 6. Files to touch (Lepus side)
+## 6. v0.1 alpha contract — what the browser side commits to
+
+Mirror of `lupus/docs/LUPUS_TOOLS.md` §7. The principle is that **the few wire-format / vocabulary decisions get locked in NOW so both sides can iterate independently** without coordinated re-releases. Everything else (latency, body cap value, error code additions, internal implementation) stays free.
+
+`daemon/src/protocol.rs` is the canonical source of truth. The browser side mirrors it. If they drift, the Rust file wins.
+
+### 6.1 Protocol version check on connect
+
+The daemon's `get_status` response includes a `protocol_version: String` field. The Lepus-side `LupusClient.connect()` calls `get_status` immediately after the WebSocket opens and refuses to use the daemon if the version doesn't match what it knows.
+
+```js
+// In LupusClient.sys.mjs
+const KNOWN_PROTOCOL_VERSION = "0.1";
+
+async connect() {
+  // ... open WebSocket ...
+  const status = await this._request("get_status", {});
+  if (status?.result?.protocol_version !== KNOWN_PROTOCOL_VERSION) {
+    console.warn(
+      `LEPUS: Lupus protocol version mismatch — expected ${KNOWN_PROTOCOL_VERSION}, ` +
+      `got ${status?.result?.protocol_version || "unknown"}. Disabling daemon features.`
+    );
+    this.disconnect();
+    return false;
+  }
+  this._connected = true;
+  return true;
+}
+```
+
+A version mismatch is **not** a fatal error for the browser — it disables Lupus-dependent features (search, scan_page, summarize, indexPage) and falls back gracefully (URL bar pass-through, hidden trust indicator). This matches the existing "daemon not running" behavior.
+
+### 6.2 Mirror error code constants
+
+The Lepus side defines a constants file matching the daemon's `daemon/src/protocol_codes.rs`:
+
+```js
+// browser/components/lupus/LupusErrorCodes.sys.mjs (NEW)
+export const LupusErrorCodes = Object.freeze({
+  // Model lifecycle
+  MODEL_NOT_LOADED:   "model_not_loaded",
+  MODEL_LOAD_FAILED:  "model_load_failed",
+  INFERENCE:          "inference_error",
+  ADAPTER_NOT_FOUND:  "adapter_not_found",
+
+  // Request / dispatch
+  PARSE:              "parse_error",
+  INVALID_REQUEST:    "invalid_request",
+  UNKNOWN_METHOD:     "unknown_method",
+
+  // Tools
+  TOOL:               "tool_error",
+  NOT_IMPLEMENTED:    "not_implemented",
+
+  // Host fetch (browser-emitted, daemon-consumed)
+  FETCH_FAILED:       "fetch_failed",
+  FETCH_TIMEOUT:      "fetch_timeout",
+  FETCH_TOO_LARGE:    "fetch_too_large",
+  HVYM_UNRESOLVED:    "hvym_unresolved",
+
+  // Index / IPFS
+  INDEX:              "index_error",
+  IPFS:               "ipfs_error",
+
+  // Plumbing
+  CONFIG:             "config_error",
+  IO:                 "io_error",
+  JSON:               "json_error",
+  YAML:               "yaml_error",
+  WEBSOCKET:          "websocket_error",
+});
+```
+
+The browser uses these constants when **emitting** error codes (in the `host_fetch` handler) and **matching** error codes (when handling daemon responses). Hardcoded strings are forbidden — drift between this file and the Rust side becomes grep-detectable.
+
+### 6.3 The locked-in surface
+
+| Item | Browser-side commitment |
+|---|---|
+| **Tool name strings** | Never inspected directly by the browser today, but if a future browser feature reads them out of `SearchResponse.plan[].tool`, the strings `search_subnet`, `search_local_index`, `fetch_page`, `extract_content`, `scan_security`, `crawl_index` are stable for v0.1 and changes require a `PROTOCOL_VERSION` bump. |
+| **`daemon-req-N` / `req-N` id namespaces** | Browser emits `req-N` ids, accepts `daemon-req-N` ids from daemon-initiated requests. No collision. |
+| **Tool sentinel convention** | A tool result with `status: "not_implemented"` is a recognized sentinel — the browser doesn't need to handle it specially today (the daemon's joinner does), but future browser code must not interpret it as a hard error. |
+| **Envelope additive-only rule** | The browser silently ignores unknown fields it receives in any envelope. The browser never adds non-standard fields to messages it sends. New fields land via coordinated daemon+browser PRs but don't bump the version. |
+
+### 6.4 Mock daemon for tests
+
+For `LupusClient` mochitests to run without a real Rust binary, the test infrastructure stands up a mock daemon as a JS WebSocket server inside the test process. The mock implements the v0.1 contract surface enough to satisfy the tests:
+
+- Responds to `get_status` with `{ status: "ok", result: { protocol_version: "0.1", models: { search: "ready", security: "ready" }, ... } }`
+- Responds to `search`, `scan_page`, `summarize`, `index_page` with canned data
+- Originates `host_fetch` requests with prefix `daemon-req-N` to verify the inbound dispatch path
+- Verifies the browser's reply envelope shape (status, result/error, id matching)
+
+The mock lives at `browser/components/lupus/tests/MockLupusDaemon.sys.mjs` (or similar; final path TBD with the moz.build update). It does NOT need to be feature-complete — it's a test fixture, not a daemon replacement.
+
+The companion daemon-side mock (`daemon/src/host_rpc/mock.rs`) plays the opposite role for daemon-side tests — it pretends to be the browser. The two mocks let both halves develop independently and only meet for end-to-end smoke tests.
+
+---
+
+## 7. Files to touch (Lepus side)
 
 | File | Change | Lines (rough) |
 |---|---|---|
-| `browser/components/lupus/LupusClient.sys.mjs` | Add inbound request dispatch + `host_fetch` handler | +150 |
-| `browser/components/lupus/moz.build` | Add `BROWSER_CHROME_MANIFESTS` for the new test directory | +3 |
-| `browser/components/lupus/tests/browser/browser.toml` | New file — test manifest | +5 |
-| `browser/components/lupus/tests/browser/browser_lupus_host_fetch.js` | New file — mochitests for `host_fetch` | +200 |
-| `browser/components/lupus/tests/browser/browser_lupus_host_fetch_hvym.js` | New file — HVYM-specific mochitest | +120 |
+| `browser/components/lupus/LupusClient.sys.mjs` | Add inbound request dispatch + `host_fetch` handler + `protocol_version` check on connect | +180 |
+| `browser/components/lupus/LupusErrorCodes.sys.mjs` | NEW file — mirror of the Rust `protocol_codes.rs` constants | +30 |
+| `browser/components/lupus/moz.build` | Add `LupusErrorCodes.sys.mjs` to `EXTRA_JS_MODULES` and add `BROWSER_CHROME_MANIFESTS` for the new test directory | +5 |
+| `browser/components/lupus/tests/MockLupusDaemon.sys.mjs` | NEW file — mock daemon for test isolation | +180 |
+| `browser/components/lupus/tests/browser/browser.toml` | NEW file — test manifest | +5 |
+| `browser/components/lupus/tests/browser/browser_lupus_host_fetch.js` | NEW file — mochitests for `host_fetch` | +200 |
+| `browser/components/lupus/tests/browser/browser_lupus_host_fetch_hvym.js` | NEW file — HVYM-specific mochitest | +120 |
+| `browser/components/lupus/tests/browser/browser_lupus_protocol_version.js` | NEW file — mochitest for the version mismatch fallback | +60 |
 
 No changes needed in `browser/components/hvym/` — the HVYM layer is consumed unchanged.
 
 ---
 
-## 7. Tests
+## 8. Tests
 
-### 7.1 `browser_lupus_host_fetch.js` (HTTPS path)
+### 8.1 `browser_lupus_host_fetch.js` (HTTPS path)
 
 Set up a fixture HTTP server (Mozilla's `httpd.js` test server pattern), then:
 
@@ -306,7 +408,7 @@ Set up a fixture HTTP server (Mozilla's `httpd.js` test server pattern), then:
 6. **Timeout** — Fixture sleeps 31 s before responding. Browser fires its 30 s timeout, replies with `error.code: "fetch_timeout"`.
 7. **Cookie reuse** — Fixture sets a cookie on first request, asserts the cookie is sent on second request. Confirms `credentials: "include"` is honored.
 
-### 7.2 `browser_lupus_host_fetch_hvym.js` (HVYM path)
+### 8.2 `browser_lupus_host_fetch_hvym.js` (HVYM path)
 
 1. **Happy path** — Mock Soroban resolver returns a tunnel record pointing at a fixture HTTP server. `host_fetch` for `hvym://alice@gallery` resolves and fetches.
 2. **Unresolved name** — Mock resolver returns null. `host_fetch` for `hvym://nobody@anywhere` returns `error.code: "hvym_unresolved"`.
@@ -314,7 +416,7 @@ Set up a fixture HTTP server (Mozilla's `httpd.js` test server pattern), then:
 
 These tests need the existing `HvymResolver` mock infrastructure from `browser/components/hvym/tests/browser/browser_hvym_resolver.js` — refactor it into a shared helper if needed.
 
-### 7.3 Manual end-to-end smoke
+### 8.3 Manual end-to-end smoke
 
 Once both daemon (Phase 4 of `LUPUS_TOOLS.md`) and browser are wired:
 
@@ -325,7 +427,7 @@ Once both daemon (Phase 4 of `LUPUS_TOOLS.md`) and browser are wired:
 
 ---
 
-## 8. Sequence diagram — full agent fetch
+## 9. Sequence diagram — full agent fetch
 
 ```
 User                 Lepus URL bar          LupusClient            Daemon
@@ -353,7 +455,7 @@ The new arrow is the `daemon-req-1` callback in the middle. Everything else is u
 
 ---
 
-## 9. Open questions
+## 10. Open questions
 
 1. **Binary bodies.** When `host_fetch` is called against a PDF, image, or any non-text content, the current sketch decodes it as lossy UTF-8 — that produces garbage. Three options:
    - (a) Return `body: ""` for any non-text content type, expose a `content_type` so the daemon can route around it. The daemon's agent loop never tries to read PDFs as text, so this is fine for now.
@@ -373,7 +475,7 @@ The new arrow is the `daemon-req-1` callback in the middle. Everything else is u
 
 ---
 
-## 10. Phasing (Lepus-side)
+## 11. Phasing (Lepus-side)
 
 This work lands as a **single Lepus PR** after the daemon-side Phase 1-3 are merged in `lupus/`. The dependency chain:
 
@@ -400,7 +502,7 @@ The daemon's mock browser peer (Phase 1) lets the lupus side land Phases 1-3 wit
 
 ---
 
-## 11. What this doc does NOT cover
+## 12. What this doc does NOT cover
 
 - **The HVYM resolver itself.** Already shipped, see `browser/components/hvym/HvymResolver.sys.mjs`.
 - **The `LupusClient.search()` browser→daemon side.** Already exists, only needs an unrelated update for the new `SearchResponse` shape (text_answer + plan + results) per `lepus/docs/LUPUS.md` §IPC Protocol — that's a separate fix and not blocking this work.
@@ -410,14 +512,22 @@ The daemon's mock browser peer (Phase 1) lets the lupus side land Phases 1-3 wit
 
 ---
 
-## 12. Sign-off checklist
+## 13. Sign-off checklist
 
 Before this lands as a Lepus PR:
 
+**Wire-format / contract:**
 - [ ] Confirm message-shape disambiguation rule (`method` vs `status`) is OK with Lepus reviewers
 - [ ] Confirm `daemon-req-N` id namespace doesn't conflict with anything else in `LupusClient`
-- [ ] Pick an answer for open question 1 (binary body handling)
-- [ ] Pick an answer for open question 2 (final_url for HVYM)
+- [ ] Confirm `LupusErrorCodes.sys.mjs` mirror approach is acceptable (one source of truth in Rust, manually mirrored on browser side, drift detected by grep / future CI check)
+- [ ] Confirm `protocol_version` mismatch behavior — disconnect + degrade gracefully (matches existing "daemon not running" fallback)
+
+**Open questions to resolve:**
+- [ ] Pick an answer for open question 1 (binary body handling — recommendation: return `body: ""` for non-text content this round)
+- [ ] Pick an answer for open question 2 (`final_url` for HVYM fetches — preserve `hvym://` or expose tunnel URL?)
 - [ ] Confirm open question 5 (origin / CSP behavior of system-principal `fetch()`)
+
+**Dependencies:**
 - [ ] Daemon-side Phase 1-3 must be merged in `lupus/` first
+- [ ] Daemon-side mock browser peer (`daemon/src/host_rpc/mock.rs`) must exist for parity testing
 - [ ] Mochitests passing locally before pushing
