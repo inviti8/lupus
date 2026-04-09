@@ -1,4 +1,9 @@
-//! `scan_security` — wrapper calling the security scanner model.
+//! `scan_security` — agent loop tool that scans a URL+HTML for threats.
+//!
+//! Delegates to [`crate::security::run_full_scan`] so this tool path and
+//! the IPC `scan_page` handler stay in lockstep on heuristics + the
+//! Qwen2 model classifier. Both surfaces produce the same trust score
+//! and the same threat list for a given input.
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -46,10 +51,9 @@ pub async fn execute(args: serde_json::Value) -> std::result::Result<serde_json:
 
     tracing::debug!("scan_security: url={}", params.url);
 
-    // Run heuristic pre-check (available without model)
-    let heuristic_threats = crate::security::SecurityScanner::heuristic_scan(&params.url, &params.html);
+    let (score, indicators) = crate::security::run_full_scan(&params.url, &params.html).await;
 
-    let threats: Vec<Threat> = heuristic_threats
+    let threats: Vec<Threat> = indicators
         .into_iter()
         .map(|t| Threat {
             kind: t.kind,
@@ -57,20 +61,6 @@ pub async fn execute(args: serde_json::Value) -> std::result::Result<serde_json:
             severity: t.severity,
         })
         .collect();
-
-    // Calculate score: start at 100, deduct per threat
-    let deductions: u8 = threats.iter().map(|t| match t.severity.as_str() {
-        "critical" => 40,
-        "high" => 25,
-        "medium" => 10,
-        "low" => 5,
-        _ => 5,
-    }).sum();
-    let score = 100u8.saturating_sub(deductions);
-
-    // TODO: Also run the security model for deeper analysis
-    //   let model_result = security_scanner.scan(params).await?;
-    //   merge heuristic + model results
 
     let result = Result { score, threats };
     serde_json::to_value(result).map_err(|e| LupusError::Json(e))

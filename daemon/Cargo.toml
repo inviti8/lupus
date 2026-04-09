@@ -45,6 +45,30 @@ regex = "1"
 # crate in the daemon that needs C++ compilation.
 llama-cpp-2 = "0.1"
 
+# Pure-Rust ML for the security classifier. The Qwen v0.3 security model is
+# trained as `Qwen2ForSequenceClassification` (3-class: safe/phishing/malware)
+# and llama-cpp-2's GGUF path can't load classification heads — only causal
+# LMs. Candle loads the safetensors directly and gives us hidden states from
+# the Qwen2 trunk that we project through a custom Linear(896, 3) head built
+# from the `score.weight` tensor in the checkpoint. See daemon/src/security.rs.
+candle-core = "0.10.2"
+candle-nn = "0.10.2"
+candle-transformers = "0.10.2"
+
+# HuggingFace tokenizers (Rust). Loads `tokenizer.json` directly — must match
+# the tokenizer used during training (Qwen2.5-Coder-0.5B base). The security
+# model's tokenizer files live in dist/lupus-security/ alongside the weights.
+#
+# default-features = false drops the `esaxx_fast` feature, which would
+# otherwise pull in `esaxx-rs` (a C++ suffix-array trainer for Unigram
+# tokenizers). On Windows MSVC, esaxx-rs hardcodes the static CRT (/MT)
+# while llama-cpp-sys-2 builds with the dynamic CRT (/MD), causing
+# LNK2038 RuntimeLibrary mismatches at link time. We don't TRAIN
+# tokenizers — we only LOAD a pre-trained Qwen2 BPE tokenizer.json and
+# encode strings — so esaxx is dead weight regardless. `onig` stays
+# enabled because the BPE pre-tokenizer regex relies on it.
+tokenizers = { version = "0.22", default-features = false, features = ["onig"] }
+
 # IPFS client via Iroh (pure Rust, lightweight)
 # Uncomment when ready to integrate IPFS:
 # iroh = "0.28"

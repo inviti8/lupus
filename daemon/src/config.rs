@@ -68,7 +68,11 @@ impl Default for ModelsConfig {
             search_base: base.join("lupus-search-base.gguf"),
             search_adapter: base.join("lupus-search-adapter.gguf"),
             content_adapter: base.join("lupus-content-adapter.gguf"),
-            security: base.join("lupus-security.gguf"),
+            // The security model is `Qwen2ForSequenceClassification` loaded
+            // via candle-transformers (NOT llama-cpp-2), so this points at
+            // the safetensors directory containing config.json,
+            // model.safetensors, tokenizer.json — not a single .gguf file.
+            security: base.join("lupus-security"),
         }
     }
 }
