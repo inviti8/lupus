@@ -407,4 +407,145 @@ mod tests {
         assert!(!is_daemon_request_id(""));
         assert!(!is_daemon_request_id("daemonreq-1"));
     }
+
+    // -- fetch_page tool integration tests ----------------------------------
+    //
+    // These live alongside the host_rpc tests so they share TEST_MUTEX
+    // and the host_rpc global state. Each test installs its own
+    // MockHostPeer and routes a real `tools::fetch_page::execute` call
+    // through the round-trip.
+
+    #[tokio::test]
+    async fn fetch_page_tool_round_trip() {
+        let _guard = TEST_MUTEX.lock().await;
+        reset_for_test().await;
+
+        let peer = MockHostPeer::install().await;
+        peer.add_fixture(
+            "https://example.com/article",
+            HostFetchResult {
+                url: "https://example.com/article".into(),
+                final_url: "https://example.com/article?utm_source=hn".into(),
+                http_status: 200,
+                content_type: "text/html; charset=utf-8".into(),
+                body: "<!doctype html><title>Hi</title><p>body</p>".into(),
+                truncated: false,
+                fetched_at: 1_744_200_000,
+            },
+        );
+        let handle = peer.spawn();
+
+        let args = serde_json::json!({"url": "https://example.com/article"});
+        let result = crate::tools::fetch_page::execute(args)
+            .await
+            .expect("fetch_page should succeed");
+
+        // Verify the wire-shape the agent's executor will see in
+        // observation slots. final_url surfaces as `url` in the tool
+        // result so the joinner sees the post-redirect canonical.
+        assert_eq!(
+            result["url"],
+            serde_json::json!("https://example.com/article?utm_source=hn")
+        );
+        assert_eq!(result["http_status"], serde_json::json!(200));
+        assert_eq!(
+            result["content_type"],
+            serde_json::json!("text/html; charset=utf-8")
+        );
+        assert!(result["body"]
+            .as_str()
+            .unwrap()
+            .contains("<title>Hi</title>"));
+        assert_eq!(result["truncated"], serde_json::json!(false));
+
+        handle.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn fetch_page_tool_propagates_host_error() {
+        let _guard = TEST_MUTEX.lock().await;
+        reset_for_test().await;
+
+        let peer = MockHostPeer::install().await;
+        peer.add_error_fixture(
+            "https://broken.example.com",
+            ErrorPayload {
+                code: "fetch_failed".into(),
+                message: "DNS lookup failed".into(),
+            },
+        );
+        let handle = peer.spawn();
+
+        let args = serde_json::json!({"url": "https://broken.example.com"});
+        let err = crate::tools::fetch_page::execute(args).await.unwrap_err();
+
+        // Should come back as a ToolError carrying the host_fetch
+        // code+message in its message string.
+        assert_eq!(err.code(), crate::protocol_codes::ERR_TOOL);
+        let msg = format!("{}", err);
+        assert!(
+            msg.contains("fetch_failed") && msg.contains("DNS lookup failed"),
+            "expected host_fetch error to propagate, got: {msg}"
+        );
+
+        handle.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn fetch_page_tool_no_client_returns_tool_error() {
+        let _guard = TEST_MUTEX.lock().await;
+        reset_for_test().await;
+
+        // No mock installed — the host_rpc sink is None.
+        let args = serde_json::json!({"url": "https://example.com"});
+        let err = crate::tools::fetch_page::execute(args).await.unwrap_err();
+
+        // The disconnected error should surface as a ToolError so the
+        // joinner can route around it the same way it handles any
+        // other tool failure.
+        assert_eq!(err.code(), crate::protocol_codes::ERR_TOOL);
+        let msg = format!("{}", err);
+        assert!(
+            msg.contains("host disconnected") || msg.contains("no browser client"),
+            "expected disconnected reason in tool error, got: {msg}"
+        );
+    }
+
+    #[tokio::test]
+    async fn fetch_page_tool_handles_hvym_url() {
+        let _guard = TEST_MUTEX.lock().await;
+        reset_for_test().await;
+
+        let peer = MockHostPeer::install().await;
+        // The mock + host_rpc::fetch don't care about the scheme —
+        // they just pass the URL through to the (simulated) browser,
+        // which is what we want. The browser-side HvymProtocolHandler
+        // does the real routing.
+        peer.add_fixture(
+            "hvym://alice@gallery",
+            HostFetchResult {
+                url: "hvym://alice@gallery".into(),
+                final_url: "hvym://alice@gallery".into(),
+                http_status: 200,
+                content_type: "text/html".into(),
+                body: "<h1>Alice's Gallery</h1>".into(),
+                truncated: false,
+                fetched_at: 1_744_200_000,
+            },
+        );
+        let handle = peer.spawn();
+
+        let args = serde_json::json!({"url": "hvym://alice@gallery"});
+        let result = crate::tools::fetch_page::execute(args)
+            .await
+            .expect("fetch_page should succeed for hvym URLs");
+
+        assert_eq!(result["http_status"], serde_json::json!(200));
+        assert!(result["body"]
+            .as_str()
+            .unwrap()
+            .contains("Alice's Gallery"));
+
+        handle.shutdown().await;
+    }
 }
