@@ -677,6 +677,34 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn archive_page_pins_into_den() {
+        let _guard = TEST_MUTEX.lock().await;
+        reset_for_test().await;
+        let _client = install_full_environment("archive_pin").await;
+
+        // archive_page goes directly through Daemon::handle_archive_page,
+        // not through the host_rpc round-trip — but it still touches the
+        // global den + global blob store, so it shares TEST_MUTEX with the
+        // other host_rpc tests.
+
+        let html = "<!doctype html><title>Cooperative Bylaws</title><p>Pin me.</p>";
+        let entry = crate::den::DenEntry {
+            url: "hvym://heavymeta@bylaws".into(),
+            title: "Cooperative Bylaws".into(),
+            summary: "Pin me.".into(),
+            keywords: vec![],
+            content_type: "text/html; charset=utf-8".into(),
+            content_cid: ipfs_mod::add_blob(html.as_bytes()).await.unwrap(),
+            embedding: vec![],
+            fetched_at: 1_744_200_000,
+            pinned: false, // pin_page must force-set this to true
+        };
+        crate::den::pin_page(entry).await.expect("pin_page ok");
+
+        assert_eq!(den::entry_count().await, 1);
+    }
+
+    #[tokio::test]
     async fn crawl_index_handles_blob_store_unavailable() {
         let _guard = TEST_MUTEX.lock().await;
         reset_for_test().await;

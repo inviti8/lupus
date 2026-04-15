@@ -211,6 +211,32 @@ pub struct IndexPageParams {
     pub title: Option<String>,
 }
 
+// -- archive_page -----------------------------------------------------------
+//
+// User-intent path for pinning a page into the den ("this page is worth
+// keeping"). Distinct from `index_page`, which is the background/agent path.
+// Pinned entries are exempt from capacity-driven eviction in `Den::add`.
+// In Phase 5 (cooperative gossip) the `pinned` flag becomes a trust signal
+// that propagates under the page's canonical URL (for HVYM: the
+// `hvym://name@service` form, NOT the ephemeral tunnel URL — Lepus has
+// already normalized this by the time the request reaches us).
+
+#[derive(Debug, Deserialize)]
+pub struct ArchivePageParams {
+    pub url: String,
+    pub html: String,
+    #[serde(default)]
+    pub title: String,
+    #[serde(default)]
+    pub content_type: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ArchivePageResponse {
+    pub archived: bool,
+    pub content_cid: String,
+}
+
 // -- get_status -------------------------------------------------------------
 
 #[derive(Debug, Serialize)]

@@ -73,6 +73,7 @@ impl Crawler {
             content_cid,
             embedding: Vec::new(), // TODO: generate embedding via model
             fetched_at: now,
+            pinned: false, // background path — user-curated pins come via archive_page
         };
 
         den::add_page(entry).await?;

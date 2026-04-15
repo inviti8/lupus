@@ -11,11 +11,14 @@
 
 use tokio::sync::RwLock;
 
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use crate::agent::Agent;
 use crate::config::Config;
-use crate::crawler::Crawler;
-use crate::den;
+use crate::crawler::{self, Crawler};
+use crate::den::{self, DenEntry};
 use crate::error::LupusError;
+use crate::ipfs;
 use crate::ipfs::IpfsClient;
 use crate::protocol::*;
 use crate::security::SecurityScanner;
@@ -68,6 +71,7 @@ impl Daemon {
             "scan_page" => self.handle_scan(req).await,
             "summarize" => self.handle_summarize(req).await,
             "index_page" => self.handle_index_page(req).await,
+            "archive_page" => self.handle_archive_page(req).await,
             "get_status" => self.handle_status(req).await,
             "index_stats" => self.handle_index_stats(req).await,
             "swap_adapter" => self.handle_swap_adapter(req).await,
@@ -105,6 +109,72 @@ impl Daemon {
             .index_page(&params.url, &params.html, params.title.as_deref())
             .await?;
         Ok(Response::ok(req.id, serde_json::json!({"indexed": true})))
+    }
+
+    /// User-intent archive path — the pin icon in Lepus's URL bar.
+    /// Mirrors `handle_index_page`'s data flow (metadata extraction +
+    /// blob store + den) but routes through `den::pin_page` so the
+    /// resulting entry is marked `pinned: true` and becomes exempt
+    /// from capacity-driven eviction. See `docs/LUPUS_TOOLS.md` §4.6
+    /// and the Lepus-side plan at `lepus/docs/LUPUS_INTEGRATION.md` §11.
+    ///
+    /// The URL is stored verbatim — Lepus has already canonicalized
+    /// HVYM URLs to the `hvym://name@service` form so Phase 5 gossip
+    /// propagates the curation signal under subnet identity, not
+    /// under the ephemeral tunnel URL.
+    async fn handle_archive_page(&self, req: Request) -> Result<Response, LupusError> {
+        let params: ArchivePageParams = serde_json::from_value(req.params)?;
+
+        // Best-effort blob store: degrade to empty content_cid if the
+        // store isn't loaded (matches the v0.1 contract for the field
+        // and the behavior of index_page / crawl_index).
+        let content_cid = match ipfs::add_blob(params.html.as_bytes()).await {
+            Ok(cid) => cid,
+            Err(e) => {
+                tracing::warn!(
+                    "archive_page: blob store unavailable for {}, pinning without content_cid: {}",
+                    params.url, e
+                );
+                String::new()
+            }
+        };
+
+        let title = if params.title.is_empty() {
+            crawler::extract_title(&params.html)
+        } else {
+            params.title
+        };
+        let summary = crawler::extract_summary(&params.html);
+        let keywords = crawler::extract_keywords(&params.html);
+        let content_type = params
+            .content_type
+            .unwrap_or_else(|| "text/html".to_string());
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs();
+
+        let entry = DenEntry {
+            url: params.url.clone(),
+            title,
+            summary,
+            keywords,
+            content_type,
+            content_cid: content_cid.clone(),
+            embedding: Vec::new(),
+            fetched_at: now,
+            pinned: true,
+        };
+
+        den::pin_page(entry).await?;
+        tracing::info!("archive_page: pinned {}", params.url);
+
+        let result = ArchivePageResponse {
+            archived: true,
+            content_cid,
+        };
+        Ok(Response::ok(req.id, result))
     }
 
     async fn handle_status(&self, req: Request) -> Result<Response, LupusError> {

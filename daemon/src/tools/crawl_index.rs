@@ -120,6 +120,7 @@ pub async fn execute(args: serde_json::Value) -> std::result::Result<serde_json:
         content_cid: content_cid.clone(),
         embedding: Vec::new(),
         fetched_at: now,
+        pinned: false, // agent-driven path — user pins come via archive_page
     };
 
     den::add_page(entry)

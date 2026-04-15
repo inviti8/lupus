@@ -70,6 +70,16 @@ pub struct DenEntry {
     pub embedding: Vec<f32>,
     /// Unix timestamp (seconds) when the page was fetched.
     pub fetched_at: u64,
+    /// User-curation signal: `true` means the user explicitly archived
+    /// this page via the `archive_page` IPC method (the pin icon in
+    /// the URL bar), `false` means it was added by the background
+    /// `index_page` path or the agent's `crawl_index` tool. Pinned
+    /// entries are exempt from capacity-driven eviction in
+    /// [`Den::add`]. In Phase 5 this flag propagates under the page's
+    /// canonical URL as a trust signal over the cooperative gossip
+    /// layer. See `docs/LUPUS_TOOLS.md` §4.6.
+    #[serde(default)]
+    pub pinned: bool,
 }
 
 // ---------------------------------------------------------------------------
@@ -98,6 +108,19 @@ pub async fn install(den: Den) {
 
 /// Add an entry to the den. Returns an error if the den isn't loaded.
 pub async fn add_page(entry: DenEntry) -> Result<(), LupusError> {
+    let mut guard = slot().lock().await;
+    let den = guard
+        .as_mut()
+        .ok_or_else(|| LupusError::Den("den not loaded".into()))?;
+    den.add(entry)
+}
+
+/// Pin an entry to the den (user-curation path — the `archive_page`
+/// IPC method). Forces `pinned: true` regardless of what the caller
+/// passed, so a pinned entry can never be accidentally demoted by
+/// going through this path.
+pub async fn pin_page(mut entry: DenEntry) -> Result<(), LupusError> {
+    entry.pinned = true;
     let mut guard = slot().lock().await;
     let den = guard
         .as_mut()
@@ -198,15 +221,48 @@ impl Den {
     }
 
     /// Add a document to the den. Replaces any existing entry with the
-    /// same URL. Evicts the oldest entry when at capacity.
-    pub fn add(&mut self, entry: DenEntry) -> Result<(), LupusError> {
-        // Replace existing entry with same URL
+    /// same URL. Evicts the oldest entry when at capacity, preferring
+    /// unpinned entries — a pinned entry is only evicted if every
+    /// entry in the den is pinned.
+    ///
+    /// If the incoming entry has the same URL as an existing pinned
+    /// entry, the pin carries forward (we take the max of old.pinned
+    /// and new.pinned) so a background `index_page` pass doesn't
+    /// silently demote a user's curation signal.
+    pub fn add(&mut self, mut entry: DenEntry) -> Result<(), LupusError> {
+        // Preserve pinned state if an earlier copy was pinned.
+        if let Some(existing) = self.entries.iter().find(|e| e.url == entry.url) {
+            if existing.pinned {
+                entry.pinned = true;
+            }
+        }
         self.entries.retain(|e| e.url != entry.url);
 
-        // Evict oldest if at capacity
+        // Evict at capacity — prefer unpinned, oldest first.
         if self.entries.len() >= self.max_entries {
-            self.entries.sort_by_key(|e| e.fetched_at);
-            self.entries.remove(0);
+            // Find the oldest unpinned entry. If everything is pinned,
+            // fall back to the oldest overall (a user who pins more
+            // than max_entries still gets churn, but only within their
+            // own pinned set).
+            let oldest_unpinned_idx = self
+                .entries
+                .iter()
+                .enumerate()
+                .filter(|(_, e)| !e.pinned)
+                .min_by_key(|(_, e)| e.fetched_at)
+                .map(|(i, _)| i);
+
+            let evict_idx = match oldest_unpinned_idx {
+                Some(i) => i,
+                None => self
+                    .entries
+                    .iter()
+                    .enumerate()
+                    .min_by_key(|(_, e)| e.fetched_at)
+                    .map(|(i, _)| i)
+                    .unwrap_or(0),
+            };
+            self.entries.remove(evict_idx);
         }
 
         self.entries.push(entry);
@@ -270,6 +326,89 @@ impl Den {
             last_sync: self.last_sync.clone(),
             status: ComponentState::Ready,
         }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_entry(url: &str, fetched_at: u64, pinned: bool) -> DenEntry {
+        DenEntry {
+            url: url.into(),
+            title: String::new(),
+            summary: String::new(),
+            keywords: vec![],
+            content_type: String::new(),
+            content_cid: String::new(),
+            embedding: vec![],
+            fetched_at,
+            pinned,
+        }
+    }
+
+    fn small_den() -> Den {
+        Den {
+            den_path: PathBuf::from("/tmp/never-written"),
+            max_entries: 3,
+            contribution_mode: "off".into(),
+            entries: vec![],
+            last_sync: None,
+        }
+    }
+
+    #[test]
+    fn add_at_capacity_evicts_oldest_unpinned_first() {
+        let mut den = small_den();
+        // Capacity 3. Fill with two pinned + one unpinned, all distinct urls.
+        // The unpinned one should evict on the next add even though it's
+        // not the oldest.
+        den.add(make_entry("https://a", 100, true)).unwrap();
+        den.add(make_entry("https://b", 200, false)).unwrap();
+        den.add(make_entry("https://c", 300, true)).unwrap();
+        assert_eq!(den.entries.len(), 3);
+
+        // Adding a 4th should evict "https://b" (the only unpinned),
+        // even though "https://a" is older.
+        den.add(make_entry("https://d", 400, false)).unwrap();
+        assert_eq!(den.entries.len(), 3);
+        let urls: Vec<&str> = den.entries.iter().map(|e| e.url.as_str()).collect();
+        assert!(urls.contains(&"https://a"), "pinned oldest should survive");
+        assert!(urls.contains(&"https://c"), "pinned middle should survive");
+        assert!(urls.contains(&"https://d"), "new entry should be present");
+        assert!(!urls.contains(&"https://b"), "unpinned should be evicted");
+    }
+
+    #[test]
+    fn add_at_capacity_evicts_pinned_only_when_no_unpinned_remain() {
+        let mut den = small_den();
+        den.add(make_entry("https://a", 100, true)).unwrap();
+        den.add(make_entry("https://b", 200, true)).unwrap();
+        den.add(make_entry("https://c", 300, true)).unwrap();
+
+        // Everything is pinned. Adding a 4th must evict the oldest
+        // pinned entry — pin-only is the fallback bucket.
+        den.add(make_entry("https://d", 400, true)).unwrap();
+        let urls: Vec<&str> = den.entries.iter().map(|e| e.url.as_str()).collect();
+        assert!(!urls.contains(&"https://a"), "oldest pinned evicted");
+        assert!(urls.contains(&"https://d"));
+        assert_eq!(den.entries.len(), 3);
+    }
+
+    #[test]
+    fn re_adding_unpinned_url_preserves_existing_pin() {
+        let mut den = small_den();
+        den.add(make_entry("https://a", 100, true)).unwrap();
+        // A background re-index of the same URL with pinned=false MUST
+        // NOT silently demote the user's curation signal.
+        den.add(make_entry("https://a", 200, false)).unwrap();
+        assert_eq!(den.entries.len(), 1);
+        assert!(den.entries[0].pinned, "pin should carry forward");
+        assert_eq!(den.entries[0].fetched_at, 200, "metadata refreshed");
     }
 }
 
