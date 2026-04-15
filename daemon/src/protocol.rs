@@ -237,6 +237,31 @@ pub struct ArchivePageResponse {
     pub content_cid: String,
 }
 
+// -- is_pinned --------------------------------------------------------------
+//
+// Pure read query: "is this URL in the den AND pinned?". Called by Lepus on
+// every tab switch / navigation to drive the URL-bar pin icon's filled vs.
+// outline state across browser restarts. Looks up the URL verbatim — the
+// browser canonicalizes (HVYM normalization etc.) before calling.
+//
+// Discriminates user-curation specifically: a URL added via the background
+// `index_page` path (with `pinned: false`) reports `pinned: false` here.
+
+#[derive(Debug, Deserialize)]
+pub struct IsPinnedParams {
+    pub url: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct IsPinnedResponse {
+    pub pinned: bool,
+    /// Unix seconds timestamp of when the entry was fetched. Present
+    /// only when `pinned: true` — omitted on the unpinned/unknown path
+    /// to keep the negative-case payload minimal.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fetched_at: Option<u64>,
+}
+
 // -- get_status -------------------------------------------------------------
 
 #[derive(Debug, Serialize)]

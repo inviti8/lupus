@@ -72,6 +72,7 @@ impl Daemon {
             "summarize" => self.handle_summarize(req).await,
             "index_page" => self.handle_index_page(req).await,
             "archive_page" => self.handle_archive_page(req).await,
+            "is_pinned" => self.handle_is_pinned(req).await,
             "get_status" => self.handle_status(req).await,
             "index_stats" => self.handle_index_stats(req).await,
             "swap_adapter" => self.handle_swap_adapter(req).await,
@@ -173,6 +174,26 @@ impl Daemon {
         let result = ArchivePageResponse {
             archived: true,
             content_cid,
+        };
+        Ok(Response::ok(req.id, result))
+    }
+
+    /// Pure read query — does the URL exist in the den AND is it pinned?
+    /// Called by the Lepus URL-bar pin icon on every tab switch /
+    /// navigation to render filled vs. outline state across browser
+    /// restarts. URL match is verbatim; the browser canonicalizes
+    /// before calling. No side effects.
+    async fn handle_is_pinned(&self, req: Request) -> Result<Response, LupusError> {
+        let params: IsPinnedParams = serde_json::from_value(req.params)?;
+        let result = match den::is_pinned(&params.url).await {
+            Some(fetched_at) => IsPinnedResponse {
+                pinned: true,
+                fetched_at: Some(fetched_at),
+            },
+            None => IsPinnedResponse {
+                pinned: false,
+                fetched_at: None,
+            },
         };
         Ok(Response::ok(req.id, result))
     }

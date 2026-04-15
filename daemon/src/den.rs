@@ -128,6 +128,21 @@ pub async fn pin_page(mut entry: DenEntry) -> Result<(), LupusError> {
     den.add(entry)
 }
 
+/// Look up whether a URL is currently pinned in the den. Returns
+/// `Some(fetched_at)` when an entry exists with `pinned: true`, and
+/// `None` otherwise (URL unknown to the den OR present but `pinned:
+/// false`). Pure read — no side effects, no access timestamps,
+/// no GC bookkeeping.
+///
+/// URL match is verbatim. The browser canonicalizes before calling.
+pub async fn is_pinned(url: &str) -> Option<u64> {
+    let guard = slot().lock().await;
+    guard
+        .as_ref()
+        .and_then(|den| den.lookup_pinned(url))
+        .map(|e| e.fetched_at)
+}
+
 /// Total entry count. Returns 0 if the den isn't loaded yet (caller
 /// shouldn't observe anything other than 0 in that state).
 pub async fn entry_count() -> usize {
@@ -316,6 +331,17 @@ impl Den {
         self.entries.len()
     }
 
+    /// Return the entry for `url` only when it exists AND is pinned.
+    /// Returns `None` for both "url unknown" and "url known but
+    /// `pinned: false`". Linear scan — fine for v0.1 since
+    /// `max_entries` is bounded (default 100k); revisit if profiling
+    /// shows tab-switch latency from is_pinned() becoming visible.
+    pub fn lookup_pinned(&self, url: &str) -> Option<&DenEntry> {
+        self.entries
+            .iter()
+            .find(|e| e.url == url && e.pinned)
+    }
+
     pub fn contribution_mode(&self) -> &str {
         &self.contribution_mode
     }
@@ -397,6 +423,37 @@ mod tests {
         assert!(!urls.contains(&"https://a"), "oldest pinned evicted");
         assert!(urls.contains(&"https://d"));
         assert_eq!(den.entries.len(), 3);
+    }
+
+    #[test]
+    fn lookup_pinned_returns_pinned_entries_only() {
+        let mut den = small_den();
+        den.add(make_entry("https://pinned", 100, true)).unwrap();
+        den.add(make_entry("https://background", 200, false)).unwrap();
+
+        // Pinned entry → Some
+        let hit = den.lookup_pinned("https://pinned").expect("should be pinned");
+        assert!(hit.pinned);
+        assert_eq!(hit.fetched_at, 100);
+
+        // Known but unpinned → None (we report user-curation, not membership)
+        assert!(den.lookup_pinned("https://background").is_none());
+
+        // Unknown URL → None
+        assert!(den.lookup_pinned("https://nope").is_none());
+    }
+
+    #[test]
+    fn lookup_pinned_uses_verbatim_url_match() {
+        let mut den = small_den();
+        den.add(make_entry("hvym://alice@gallery", 100, true)).unwrap();
+
+        // Exact match works
+        assert!(den.lookup_pinned("hvym://alice@gallery").is_some());
+
+        // No normalization on the daemon side — these are not the same URL
+        assert!(den.lookup_pinned("alice@gallery").is_none());
+        assert!(den.lookup_pinned("hvym://alice@gallery/").is_none());
     }
 
     #[test]

@@ -677,6 +677,59 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn is_pinned_distinguishes_pinned_from_indexed() {
+        let _guard = TEST_MUTEX.lock().await;
+        reset_for_test().await;
+        let _client = install_full_environment("is_pinned").await;
+
+        // Pinned via archive_page path
+        let pinned_entry = crate::den::DenEntry {
+            url: "https://heavymeta.art/".into(),
+            title: "Heavymeta".into(),
+            summary: String::new(),
+            keywords: vec![],
+            content_type: "text/html".into(),
+            content_cid: String::new(),
+            embedding: vec![],
+            fetched_at: 1_744_228_871,
+            pinned: false, // pin_page must override this
+        };
+        crate::den::pin_page(pinned_entry).await.unwrap();
+
+        // Background-indexed via add_page path (no pin)
+        let background_entry = crate::den::DenEntry {
+            url: "https://example.com/article".into(),
+            title: "Article".into(),
+            summary: String::new(),
+            keywords: vec![],
+            content_type: "text/html".into(),
+            content_cid: String::new(),
+            embedding: vec![],
+            fetched_at: 1_744_228_900,
+            pinned: false,
+        };
+        crate::den::add_page(background_entry).await.unwrap();
+
+        // Pinned URL → Some(timestamp)
+        assert_eq!(
+            crate::den::is_pinned("https://heavymeta.art/").await,
+            Some(1_744_228_871)
+        );
+
+        // Indexed but not pinned → None
+        assert_eq!(
+            crate::den::is_pinned("https://example.com/article").await,
+            None
+        );
+
+        // Unknown URL → None
+        assert_eq!(
+            crate::den::is_pinned("https://nowhere.invalid/").await,
+            None
+        );
+    }
+
+    #[tokio::test]
     async fn archive_page_pins_into_den() {
         let _guard = TEST_MUTEX.lock().await;
         reset_for_test().await;
