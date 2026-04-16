@@ -163,7 +163,13 @@ pub fn run_joinner(
     // prompt + user message are concatenated by the InferenceEngine's
     // manual chat template path. The Python upstream version also
     // builds this as a single prompt string before calling the LLM.
-    let user_message = format!("Question: {user_query}\n\n{scratchpad}\n");
+    // End the prompt with "Thought:" so the model knows to continue
+    // generating in the expected format. Without this continuation
+    // prompt, TinyAgent-1.1B emits EOS immediately after the scratchpad
+    // — it interprets the end-of-scratchpad as end-of-conversation.
+    // The Python reference produces the same effect via the chat
+    // template's assistant turn prefix.
+    let user_message = format!("Question: {user_query}\n\n{scratchpad}\nThought:");
 
     let raw = engine.infer_blocking(
         OUTPUT_PROMPT_FINAL,
