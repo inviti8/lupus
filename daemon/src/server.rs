@@ -105,7 +105,20 @@ async fn handle_inbound_loop(
 
         match msg {
             Message::Text(text) => {
-                dispatch_text(&daemon, &out_tx, text.as_str()).await;
+                // Critical: do NOT await browser→daemon request handlers
+                // inline. agent.hunt() can take 30-60s of CPU-bound
+                // inference. If we await here, the inbound loop blocks
+                // and can't read daemon→browser REPLIES that arrive
+                // during the hunt — causing host_fetch deadlocks where
+                // the browser's reply sits in the socket buffer while
+                // the daemon's 30s timeout fires.
+                //
+                // Instead: parse the message shape, spawn request
+                // handlers as separate tasks (they send their response
+                // via out_tx when done), and handle reply messages
+                // inline (they're fast — just a HashMap lookup +
+                // oneshot send to unblock the pending host_rpc::fetch).
+                dispatch_or_spawn(&daemon, &out_tx, text.to_string());
             }
             Message::Close(_) => {
                 tracing::debug!("Client {} sent Close", peer);
@@ -119,36 +132,53 @@ async fn handle_inbound_loop(
 }
 
 /// Disambiguate the incoming message by shape and route accordingly.
-/// Browser-initiated requests have `method`; replies to daemon-initiated
-/// requests have `status` and a `daemon-req-*` id. Anything else is
-/// logged and dropped — we don't error out on a single bad message.
-async fn dispatch_text(daemon: &Arc<Daemon>, out_tx: &mpsc::UnboundedSender<String>, text: &str) {
-    // Cheap shape check first. We could parse strictly into an enum
-    // with serde untagged, but parsing to Value lets us log a useful
-    // error for genuinely malformed input.
-    let value: serde_json::Value = match serde_json::from_str(text) {
+///
+/// - **Browser→daemon requests** (have `method`): spawned as independent
+///   tokio tasks so the inbound loop keeps reading. This is the critical
+///   fix for the host_fetch deadlock: `agent.hunt()` can take 30-60s of
+///   CPU-bound inference, and if we awaited it inline the loop couldn't
+///   read the daemon→browser replies that arrive during the hunt.
+///
+/// - **Daemon→browser replies** (have `status` + `daemon-req-*` id):
+///   handled inline because they're fast (HashMap lookup + oneshot send)
+///   and MUST be processed ASAP to unblock the pending `host_rpc::fetch`.
+///
+/// - **Anything else**: logged and dropped.
+fn dispatch_or_spawn(
+    daemon: &Arc<Daemon>,
+    out_tx: &mpsc::UnboundedSender<String>,
+    text: String,
+) {
+    // Cheap shape check: parse to Value so we can inspect fields
+    // without committing to a typed deserialization yet.
+    let value: serde_json::Value = match serde_json::from_str(&text) {
         Ok(v) => v,
         Err(e) => {
-            tracing::warn!("dropping malformed inbound message: {} ({})", e, truncate(text, 80));
+            tracing::warn!("dropping malformed inbound message: {} ({})", e, truncate(&text, 80));
             return;
         }
     };
 
     if value.get("method").is_some() {
-        // Browser → daemon request. Hand off to Daemon::handle_message.
-        let response = daemon.handle_message(text).await;
-        let json = match serde_json::to_string(&response) {
-            Ok(j) => j,
-            Err(e) => {
-                tracing::error!("failed to serialize response: {}", e);
-                return;
+        // Browser → daemon request. SPAWN — do NOT await.
+        let daemon = Arc::clone(daemon);
+        let out_tx = out_tx.clone();
+        tokio::spawn(async move {
+            let response = daemon.handle_message(&text).await;
+            let json = match serde_json::to_string(&response) {
+                Ok(j) => j,
+                Err(e) => {
+                    tracing::error!("failed to serialize response: {}", e);
+                    return;
+                }
+            };
+            if out_tx.send(json).is_err() {
+                tracing::warn!("outbound channel closed before response could be sent");
             }
-        };
-        if out_tx.send(json).is_err() {
-            tracing::warn!("outbound channel closed before response could be sent");
-        }
+        });
     } else if value.get("status").is_some() {
-        // Reply — most likely to a daemon-originated request.
+        // Reply to a daemon-originated request. Handle INLINE — fast
+        // path that unblocks a pending host_rpc::fetch oneshot.
         let id = value.get("id").and_then(|v| v.as_str()).unwrap_or("");
         if !host_rpc::is_daemon_request_id(id) {
             tracing::warn!(
@@ -158,11 +188,17 @@ async fn dispatch_text(daemon: &Arc<Daemon>, out_tx: &mpsc::UnboundedSender<Stri
             return;
         }
         let reply = parse_reply(&value);
-        host_rpc::deliver_reply(id, reply).await;
+        let id_owned = id.to_string();
+        // deliver_reply is async (locks the pending map) but completes
+        // in microseconds — spawn a tiny task to keep dispatch_or_spawn
+        // synchronous so the inbound loop never blocks.
+        tokio::spawn(async move {
+            host_rpc::deliver_reply(&id_owned, reply).await;
+        });
     } else {
         tracing::warn!(
             "dropping inbound message with neither method nor status: {}",
-            truncate(text, 80)
+            truncate(&text, 80)
         );
     }
 }
