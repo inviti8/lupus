@@ -32,11 +32,21 @@ use llama_cpp_2::sampling::LlamaSampler;
 
 use crate::error::LupusError;
 
-/// Stop strings that terminate planner generation. Mirrors
+/// Stop strings for the **planner** pass (with LoRA). Mirrors
 /// `stop=[END_OF_PLAN, "<|eot_id|>", "</s>", "###"]` in
 /// `tools/eval_tinyagent.py` and `tools/tinyagent_prompt_probe.py`.
 /// All entries are pure ASCII so byte-level matching is safe.
-pub const STOP_STRINGS: &[&str] = &["<END_OF_PLAN>", "<|eot_id|>", "</s>", "###"];
+pub const PLANNER_STOP_STRINGS: &[&str] = &["<END_OF_PLAN>", "<|eot_id|>", "</s>", "###"];
+
+/// Stop strings for the **joinner** pass (without LoRA). Does NOT
+/// include `"###"` because `OUTPUT_PROMPT_FINAL` uses `"###\n"` as a
+/// separator between in-context examples. If the model emits `"###"`
+/// as its first generated tokens (which it naturally does after
+/// seeing the `"###\n"` pattern at the end of each example), the
+/// planner stop set would truncate the output to empty — producing
+/// the `joinner_raw=""` symptom. The joinner only needs EOG / EOS /
+/// EOT markers.
+pub const JOINNER_STOP_STRINGS: &[&str] = &["<|eot_id|>", "</s>"];
 
 /// LoRA scale matching the eval default. `llama-cpp-python` passes 1.0
 /// implicitly when no `lora_scale` is given to `Llama(...)`.
@@ -171,6 +181,7 @@ impl InferenceEngine {
         user_query: &str,
         max_tokens: usize,
         use_lora: bool,
+        stop_strings: &[&str],
     ) -> Result<String, LupusError> {
         // Fresh context for this call. Cheap relative to inference itself.
         let ctx_params = LlamaContextParams::default()
@@ -269,7 +280,7 @@ impl InferenceEngine {
 
             // Stop string check. Our stop strings are all ASCII so byte-
             // level search is exact and we can truncate cleanly.
-            if let Some(stop_at) = stop_string_index(&output_bytes, STOP_STRINGS) {
+            if let Some(stop_at) = stop_string_index(&output_bytes, stop_strings) {
                 output_bytes.truncate(stop_at);
                 break;
             }

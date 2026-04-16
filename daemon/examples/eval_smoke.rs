@@ -323,7 +323,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let user_prompt = format!("Question: {}", case.query);
         let t0 = Instant::now();
         let raw =
-            engine.infer_blocking(system_prompt, &user_prompt, MAX_PLANNER_TOKENS, true)?;
+            engine.infer_blocking(system_prompt, &user_prompt, MAX_PLANNER_TOKENS, true, lupus::agent::inference::PLANNER_STOP_STRINGS)?;
         let elapsed = t0.elapsed().as_secs_f64();
         cumulative += elapsed;
 

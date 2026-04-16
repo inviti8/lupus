@@ -76,7 +76,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     print!("Running planner inference... ");
     let infer_start = Instant::now();
     let raw_output =
-        engine.infer_blocking(system_prompt, &user_prompt, MAX_PLANNER_TOKENS, /* use_lora */ true)?;
+        engine.infer_blocking(system_prompt, &user_prompt, MAX_PLANNER_TOKENS, /* use_lora */ true, lupus::agent::inference::PLANNER_STOP_STRINGS)?;
     let infer_elapsed = infer_start.elapsed();
     println!("done in {:.2}s", infer_elapsed.as_secs_f64());
     println!();

@@ -170,6 +170,7 @@ pub fn run_joinner(
         &user_message,
         MAX_JOINNER_TOKENS,
         /* use_lora */ false,
+        crate::agent::inference::JOINNER_STOP_STRINGS,
     )?;
 
     let mut parsed = parse_joinner_output(&raw);

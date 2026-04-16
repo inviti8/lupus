@@ -177,6 +177,7 @@ impl Agent {
                 &planner_user,
                 MAX_PLANNER_TOKENS,
                 /* use_lora */ true,
+                inference::PLANNER_STOP_STRINGS,
             )
         })
         .await
