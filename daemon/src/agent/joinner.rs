@@ -163,13 +163,14 @@ pub fn run_joinner(
     // prompt + user message are concatenated by the InferenceEngine's
     // manual chat template path. The Python upstream version also
     // builds this as a single prompt string before calling the LLM.
-    // End the prompt with "Thought:" so the model knows to continue
-    // generating in the expected format. Without this continuation
-    // prompt, TinyAgent-1.1B emits EOS immediately after the scratchpad
-    // — it interprets the end-of-scratchpad as end-of-conversation.
-    // The Python reference produces the same effect via the chat
-    // template's assistant turn prefix.
-    let user_message = format!("Question: {user_query}\n\n{scratchpad}\nThought:");
+    // Keep the prompt format clean — don't pre-pend "Thought:" because
+    // it breaks the `Action: Finish(Summary)` abstention pattern shown
+    // in the last example of OUTPUT_PROMPT_FINAL (where no Thought line
+    // precedes the Action). Forcing "Thought:" makes the model produce
+    // a thought and then stall. The base model handles both
+    // thought+action and action-only patterns naturally when given the
+    // scratchpad without a prefix.
+    let user_message = format!("Question: {user_query}\n\n{scratchpad}\n");
 
     let raw = engine.infer_blocking(
         OUTPUT_PROMPT_FINAL,
@@ -280,12 +281,22 @@ pub fn build_scratchpad(records: &[ExecutionRecord]) -> String {
 ///   between `(` and the LAST `)`, and detect Replan via substring match
 /// - Lines starting with `Thought:` or ` Thought:` capture the thought
 ///
-/// If no action line is found, returns an empty answer (the caller can
-/// detect this as a malformed joinner response and surface an error).
+/// ## Lenient fallback
+///
+/// If the model produced non-empty output but no `Action: Finish(...)`
+/// line, we use the trimmed raw output (or the thought, if present) as
+/// the answer. This handles the common case where TinyAgent-1.1B's
+/// base model (no LoRA) produces a coherent abstention-style thought
+/// but forgets to wrap it in the expected `Action:` format. Without
+/// this fallback, the user sees `text_answer: null` even when the
+/// model said something meaningful. The planner LoRA is strict about
+/// format; the base model is not, and the joinner runs WITHOUT the
+/// LoRA by design (see module docs).
 pub fn parse_joinner_output(raw: &str) -> JoinnerOutput {
     let mut thought = String::new();
     let mut answer = String::new();
     let mut is_replan = false;
+    let mut found_action = false;
 
     for raw_line in raw.split('\n') {
         // Find "Action:" anywhere in the line; if present, work from
@@ -297,6 +308,7 @@ pub fn parse_joinner_output(raw: &str) -> JoinnerOutput {
         };
 
         if line.starts_with("Action:") || line.starts_with(" Answer:") {
+            found_action = true;
             // Extract the substring between the first `(` and the LAST `)`.
             // This matches Python's `ans[ans.find("(") + 1 : ans.rfind(")")]`.
             if let (Some(open), Some(close)) = (line.find('('), line.rfind(')')) {
@@ -312,6 +324,19 @@ pub fn parse_joinner_output(raw: &str) -> JoinnerOutput {
             if let Some(idx) = line.find("Thought:") {
                 thought = line[idx + "Thought:".len()..].trim().to_string();
             }
+        }
+    }
+
+    // Lenient fallback — if the model produced meaningful output but no
+    // Action line, surface what it said rather than returning null.
+    if !found_action {
+        let trimmed = raw.trim();
+        if !trimmed.is_empty() {
+            answer = if !thought.is_empty() {
+                thought.clone()
+            } else {
+                trimmed.to_string()
+            };
         }
     }
 
