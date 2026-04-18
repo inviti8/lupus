@@ -1,12 +1,12 @@
 # Joinner golden eval — review
 
-**Pass:** 0/8   **Mean latency:** 10678 ms   **Scope:** URL-bar search path (fetch_page → extract_content → joinner)
+**Pass:** 8/8   **Mean latency:** 15534 ms   **Scope:** URL-bar search path (fetch_page → extract_content → joinner)
 
 _Assertions catch gross regressions. Read the `Answer` blocks below to grade quality. The `expected_class` tag describes what the case is testing for — match it against the model's posture._
 
 ---
 
-## ❌ FAIL  `rich_summary_wikipedia`  (12231 ms)  — expected `informative`
+## ✅ PASS  `rich_summary_wikipedia`  (19529 ms)  — expected `informative`
 
 **Query:** `summarize https://en.wikipedia.org/wiki/Wolf`
 
@@ -20,21 +20,17 @@ Observation: {"title":"Wolf - Wikipedia","summary":"The wolf (Canis lupus) is a 
 
 **Raw joinner output:**
 ```
- The summary content is correct.
-Action: Finish(Summary)
+ The extract_content observation contains a summarized version of the wolf's information from the Wikipedia page.
+Action: Finish(The wolf (Canis lupus) is a large canine native to Eurasia and North America, with more than thirty subspecies. The wolf is the largest extant member of the family Canidae and is distinguished from other species by its larger size and less pointed features. The summary is provided in the content_type field.)
 ```
 
-**Parsed answer (7 chars):**
+**Parsed answer (308 chars):**
 
-> Summary
-
-**Failures:**
-- answer too short: 7 chars (min 40)
-- must_contain_any: none of ["canis lupus", "wolf", "canine", "eurasia", "canidae"] found in answer
+> The wolf (Canis lupus) is a large canine native to Eurasia and North America, with more than thirty subspecies. The wolf is the largest extant member of the family Canidae and is distinguished from other species by its larger size and less pointed features. The summary is provided in the content_type field.
 
 ---
 
-## ❌ FAIL  `empty_extraction_abstention`  (10522 ms)  — expected `abstention`
+## ✅ PASS  `empty_extraction_abstention`  (13647 ms)  — expected `abstention`
 
 **Query:** `summarize https://example.com/unknown`
 
@@ -48,21 +44,17 @@ Observation: {"title":"","summary":"","keywords":[],"content_type":"page"}
 
 **Raw joinner output:**
 ```
- I don't need to answer a question.
-Action: Finish(Summary)
+ The content from the tool is not usable content, and the body is empty.
+Action: Finish(I cannot summarize this content.)
 ```
 
-**Parsed answer (7 chars):**
+**Parsed answer (32 chars):**
 
-> Summary
-
-**Failures:**
-- answer too short: 7 chars (min 10)
-- must_contain_any: none of ["couldn't", "unable", "no content", "empty", "nothing", "no information", "no summary", "not", "could not"] found in answer
+> I cannot summarize this content.
 
 ---
 
-## ❌ FAIL  `fetch_error_cascade`  (10753 ms)  — expected `error_report`
+## ✅ PASS  `fetch_error_cascade`  (13735 ms)  — expected `error_report`
 
 **Query:** `summarize https://down.example.com`
 
@@ -76,21 +68,17 @@ Observation: Error: arg coercion: inference error: extract_content.html: $1 refe
 
 **Raw joinner output:**
 ```
- The summary content is incorrect as it contains the content from the last tool call.
-Action: Finish(Summary)
+ The content was not summarized because the tool was not able to retrieve the content.
+Action: Finish(I could not summarize the content from the tool.)
 ```
 
-**Parsed answer (7 chars):**
+**Parsed answer (48 chars):**
 
-> Summary
-
-**Failures:**
-- answer too short: 7 chars (min 10)
-- must_contain_any: none of ["couldn't", "unable", "error", "failed", "not reach", "could not", "not available", "unreachable"] found in answer
+> I could not summarize the content from the tool.
 
 ---
 
-## ❌ FAIL  `short_real_content`  (11108 ms)  — expected `informative`
+## ✅ PASS  `short_real_content`  (16444 ms)  — expected `informative`
 
 **Query:** `summarize https://example.com/article`
 
@@ -104,21 +92,17 @@ Observation: {"title":"Announcing Rust 1.80","summary":"Rust 1.80 adds native su
 
 **Raw joinner output:**
 ```
- I don't need to answer a question.
-Action: Finish(Summary)
+ The extract_content observation contains a usable summary.
+Action: Finish(Rust 1.80 adds native support for LazyCell and LazyLock, stabilizes Box<[T]> iteration, and improves diagnostics for async code paths.)
 ```
 
-**Parsed answer (7 chars):**
+**Parsed answer (134 chars):**
 
-> Summary
-
-**Failures:**
-- answer too short: 7 chars (min 30)
-- must_contain_any: none of ["rust", "1.80", "lazycell", "lazylock", "async"] found in answer
+> Rust 1.80 adds native support for LazyCell and LazyLock, stabilizes Box<[T]> iteration, and improves diagnostics for async code paths.
 
 ---
 
-## ❌ FAIL  `truncated_mid_sentence`  (11219 ms)  — expected `informative`
+## ✅ PASS  `truncated_mid_sentence`  (18509 ms)  — expected `informative`
 
 **Query:** `summarize https://en.wikipedia.org/wiki/Photosynthesis`
 
@@ -132,21 +116,17 @@ Observation: {"title":"Photosynthesis - Wikipedia","summary":"Photosynthesis is 
 
 **Raw joinner output:**
 ```
- The summary content is correct.
-Action: Finish(Summary)
+ The extract_content observation contains a usable summary.
+Action: Finish(Photosynthesis is a biological process that converts light energy, usually from the Sun, into chemical energy stored in glucose and other organic compounds. It takes place in plants, algae, and some bacteria, and is the subject of the [content_type].)
 ```
 
-**Parsed answer (7 chars):**
+**Parsed answer (250 chars):**
 
-> Summary
-
-**Failures:**
-- answer too short: 7 chars (min 30)
-- must_contain_any: none of ["photosynthesis", "light", "energy", "plants", "chemical"] found in answer
+> Photosynthesis is a biological process that converts light energy, usually from the Sun, into chemical energy stored in glucose and other organic compounds. It takes place in plants, algae, and some bacteria, and is the subject of the [content_type].
 
 ---
 
-## ❌ FAIL  `html_noise_in_summary`  (10795 ms)  — expected `informative`
+## ✅ PASS  `html_noise_in_summary`  (15777 ms)  — expected `informative`
 
 **Query:** `summarize https://example.com/noisy`
 
@@ -160,21 +140,17 @@ Observation: {"title":"Example Domain","summary":"Example Domain This domain is 
 
 **Raw joinner output:**
 ```
- I don't need to answer a question.
-Action: Finish(Summary)
+ The extract_content observation contains a usable summary.
+Action: Finish(The summary of the document is "Example Domain This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.")
 ```
 
-**Parsed answer (7 chars):**
+**Parsed answer (200 chars):**
 
-> Summary
-
-**Failures:**
-- answer too short: 7 chars (min 20)
-- must_contain_any: none of ["example", "illustrative", "domain", "documents", "literature"] found in answer
+> The summary of the document is "Example Domain This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission."
 
 ---
 
-## ❌ FAIL  `factoid_from_model_knowledge`  (9319 ms)  — expected `factoid`
+## ✅ PASS  `factoid_from_model_knowledge`  (11672 ms)  — expected `factoid`
 
 **Query:** `what is the capital of france`
 
@@ -185,20 +161,17 @@ Action: Finish(Summary)
 
 **Raw joinner output:**
 ```
- I don't need to answer a question.
-Action: Finish(Task completed!)
+ I can answer this from my own knowledge without using tools.
+Action: Finish(The capital of France is Paris.)
 ```
 
-**Parsed answer (15 chars):**
+**Parsed answer (31 chars):**
 
-> Task completed!
-
-**Failures:**
-- must_contain_any: none of ["paris"] found in answer
+> The capital of France is Paris.
 
 ---
 
-## ❌ FAIL  `abstention_no_scratchpad_hard_query`  (9480 ms)  — expected `abstention`
+## ✅ PASS  `abstention_no_scratchpad_hard_query`  (14965 ms)  — expected `abstention`
 
 **Query:** `predict tomorrow's weather in Tokyo`
 
@@ -209,16 +182,13 @@ Action: Finish(Task completed!)
 
 **Raw joinner output:**
 ```
- I don't need to answer a question.
-Action: Finish(Task completed!)
+ I cannot predict the weather in Tokyo tomorrow.
+Action: Finish(I cannot predict the weather in Tokyo tomorrow.)
 ```
 
-**Parsed answer (15 chars):**
+**Parsed answer (47 chars):**
 
-> Task completed!
-
-**Failures:**
-- must_contain_any: none of ["cannot", "can't", "unable", "don't have", "no access", "real-time", "current", "unknown", "not", "don't"] found in answer
+> I cannot predict the weather in Tokyo tomorrow.
 
 ---
 

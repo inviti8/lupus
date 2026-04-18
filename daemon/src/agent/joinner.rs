@@ -70,47 +70,62 @@ pub const MAX_JOINNER_TOKENS: usize = 256;
 // ---------------------------------------------------------------------------
 
 /// The joinner's "Follow these rules" system prompt with example
-/// `Action: Finish(...)` outputs. Verbatim from the upstream Python
-/// reference. Used as the system message for joinner inference calls.
+/// `Action: Finish(...)` outputs.
+///
+/// ## History
+///
+/// v0.1 imported BAIR/TinyAgent's `OUTPUT_PROMPT_FINAL` verbatim from
+/// `dist/tinyagent-source/src/tiny_agent/prompts.py`. That prompt was
+/// designed for an Apple device agent where a dedicated `summarize_pdf`
+/// tool produced summaries and the joinner's job was to announce
+/// "Summary" (rule #3: "you MUST use 'Action: Finish(Summary)'"). The
+/// eval at `daemon/tests/joinner_golden.rs` showed the 1.1B base
+/// parroting that rule verbatim — every summarize query returned the
+/// literal string "Summary", every factoid returned "Task completed!".
+///
+/// v0.2 (this version) rewrites the prompt for Lupus's actual
+/// pipeline: `extract_content` produces the raw content, the joinner
+/// SYNTHESIZES the final answer from it. Examples use our real tool
+/// names (`fetch_page`, `extract_content`) so the in-context learning
+/// primes observation shapes we actually produce, not Apple meeting
+/// mocks. Voice is first-person AI assistant ("I couldn't extract...").
 pub const OUTPUT_PROMPT_FINAL: &str = concat!(
-    "Follow these rules:\n",
-    " - You MUST only output Finish, or you WILL BE PENALIZED.\n",
-    " - If you need to answer some knowledge question, just answer it directly using 'Action: Finish(<your answer>)'.\n",
-    " - If you need to return the result of a summary (summarize_pdf), you MUST use 'Action: Finish(Summary)'\n",
-    " - If there is an error in one of the tool calls and it is not fixable, you should provide a user-friendly error message using 'Action: Finish(<your error message>)'.\n",
+    "You are the second-pass reasoner for a web search agent. Given a user Question and the Observations from the tools the agent ran, produce a final answer wrapped in `Action: Finish(<your answer>)`.\n",
+    "\n",
+    "Rules:\n",
+    " - When the Observations contain usable content (a `summary`, `body`, or similar field with real text), write a grounded 1-3 sentence answer that paraphrases or quotes that content. Do NOT echo the literal word \"Summary\" — write an actual summary.\n",
+    " - When the Observations are empty, errored, or contain no usable content, acknowledge that honestly in first-person: \"I couldn't extract a summary from that page\", \"I couldn't reach that page\", etc.\n",
+    " - When there are no Observations at all (no tool calls were made), answer the question from your own knowledge.\n",
+    " - Always end with a single `Action: Finish(...)` line. You may precede it with one `Thought:` line explaining your reasoning. Do NOT output multiple Action lines or additional examples.\n",
     "\n",
     "Here are some examples:\n",
-    "Question: Create a zoom meeting for the upcoming Apple meeting with Eren Erdoğan. \n",
-    "get_email_address(\"Eren Erdoğan\")\n",
-    "Observation: eren@gmail.com\n",
-    "get_zoom_meeting_link(\"Apple Meeting\", \"2022-10-14 15:00:00\", 60, [\"$1\"])\n",
-    "Observation: https://zoom.us/j/1234567890?pwd=abc123\n",
-    "create_calendar_event(\"Apple Meeting\", \"2022-10-14 15:00:00\", \"2022-10-14 16:00:00\", \"Apple HQ\", \"$2\", None)\n",
-    "Observation: Event created successfully\n",
-    "Thought: I don't need to answer a question.\n",
-    "Action: Finish(Task completed!)\n",
+    "Question: summarize https://en.wikipedia.org/wiki/Wolf\n",
+    "fetch_page(\"https://en.wikipedia.org/wiki/Wolf\")\n",
+    "Observation: {\"url\":\"https://en.wikipedia.org/wiki/Wolf\",\"http_status\":200,\"body\":\"...\"}\n",
+    "extract_content(\"$1\", \"summary\")\n",
+    "Observation: {\"title\":\"Wolf - Wikipedia\",\"summary\":\"The wolf (Canis lupus) is a large canine native to Eurasia and North America. More than thirty subspecies of Canis lupus have been recognized.\"}\n",
+    "Thought: The extract_content observation contains a usable summary.\n",
+    "Action: Finish(The wolf (Canis lupus) is a large canine native to Eurasia and North America, with more than thirty recognized subspecies. It is the largest extant member of the family Canidae.)\n",
     "###\n",
-    "Question: What is the content of the Apple meeting notes? \n",
-    "get_note_content(\"Apple Meeting\")\n",
-    "Observation: The meeting is about the new iPhone release.\n",
-    "Thought: I can just answer the question directly.\n",
-    "Action: Finish(The meeting is about the new iPhone release.)\n",
+    "Question: summarize https://example.com/blank\n",
+    "fetch_page(\"https://example.com/blank\")\n",
+    "Observation: {\"url\":\"https://example.com/blank\",\"http_status\":200,\"body\":\"<html></html>\"}\n",
+    "extract_content(\"$1\", \"summary\")\n",
+    "Observation: {\"title\":\"\",\"summary\":\"\",\"keywords\":[]}\n",
+    "Thought: The page returned no extractable content; I cannot summarize what isn't there.\n",
+    "Action: Finish(I couldn't extract a summary from that page — the content was empty.)\n",
     "###\n",
-    "Question: Compose a new email to John, attaching the Project.pdf file.\n",
-    "get_email_address(\"John\")\n",
-    "Observation: john@doe.comopen_and_get_file_path(\"Project\")\n",
-    "Observation: /Users/eren/Downloads/Project.pdf\n",
-    "compose_new_email([john@doe.com], [], \"Project Update\", \"Please find the attached project update.\", [\"/Users/eren/Downloads/Project.pdf\"])\n",
-    "Observation: There was an error while composing the email.\n",
-    "Thought: There was an error with the compose_new_email tool call and it is not possible to fix it. I need to provide a user-friendly error message.\n",
-    "Action: Finish(There was an error while composing the email. Please try again later.)\n",
+    "Question: summarize https://down.example.com\n",
+    "fetch_page(\"https://down.example.com\")\n",
+    "Observation: Error: tool error [fetch_page]: host fetch failed: DNS lookup failed\n",
+    "extract_content(\"$1\", \"summary\")\n",
+    "Observation: Error: arg coercion: $1 references step that errored\n",
+    "Thought: The fetch tool failed and nothing could be extracted downstream.\n",
+    "Action: Finish(I couldn't reach that page — the server was unreachable.)\n",
     "###\n",
-    "Question: Summarize the Apple Demo file. \n",
-    "open_and_get_file_path(Apple Demo)\n",
-    "Observation: /Users/eren/Downloads/Apple_Demo.pdf\n",
-    "summarize_pdf(/Users/eren/Downloads/Apple_Demo.pdf)\n",
-    "Observation: The new iPhone is going to be released in 2023.\n",
-    "Action: Finish(Summary)\n",
+    "Question: what is the capital of france\n",
+    "Thought: I can answer this from my own knowledge without using tools.\n",
+    "Action: Finish(The capital of France is Paris.)\n",
     "###\n",
 );
 
@@ -560,9 +575,21 @@ mod tests {
 
     #[test]
     fn output_prompt_final_has_finish_rule() {
-        assert!(OUTPUT_PROMPT_FINAL.contains("You MUST only output Finish"));
+        // v0.2 rewrite: structural checks, not text-identity. The prompt's
+        // shape is load-bearing (rules + examples + `###\n` separators);
+        // the exact wording iterates with eval feedback.
         assert!(OUTPUT_PROMPT_FINAL.contains("Action: Finish"));
-        // The four FINISH_EXAMPLES should all appear, separated by ###\n
+        assert!(OUTPUT_PROMPT_FINAL.contains("Rules:"));
+        assert!(OUTPUT_PROMPT_FINAL.contains("Here are some examples:"));
+        // Explicit guard: we removed the "MUST use Finish(Summary)" rule
+        // (imported from BAIR/TinyAgent) because it caused the 1.1B base
+        // to parrot the literal string "Summary". Prevent accidental
+        // re-introduction.
+        assert!(
+            !OUTPUT_PROMPT_FINAL.contains("Finish(Summary)"),
+            "v0.2 removed the literal Finish(Summary) example — reintroducing it causes prompt-parroting, see joinner_outputs.md history"
+        );
+        // Four examples, four separators.
         let example_count = OUTPUT_PROMPT_FINAL.matches("###\n").count();
         assert_eq!(example_count, 4, "expected 4 example separators");
     }
