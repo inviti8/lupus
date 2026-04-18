@@ -158,6 +158,18 @@ pub fn run_joinner(
     records: &[ExecutionRecord],
 ) -> Result<JoinnerOutput, LupusError> {
     let scratchpad = build_scratchpad(records);
+    run_joinner_with_scratchpad(engine, user_query, &scratchpad)
+}
+
+/// Call the joinner with a pre-rendered scratchpad string. Bypasses
+/// `build_scratchpad` so integration tests can feed synthetic scratchpads
+/// and isolate joinner quality from tool-execution quirks. Used by
+/// `daemon/tests/joinner_golden.rs`.
+pub fn run_joinner_with_scratchpad(
+    engine: &mut InferenceEngine,
+    user_query: &str,
+    scratchpad: &str,
+) -> Result<JoinnerOutput, LupusError> {
     // The joinner sees a single combined "user" message because TinyAgent's
     // GGUF chat template is flat-concat (no role markers). The system
     // prompt + user message are concatenated by the InferenceEngine's

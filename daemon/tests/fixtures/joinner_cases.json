@@ -1,0 +1,94 @@
+{
+  "_meta": {
+    "scope": "Search tool path only (fetch_page → extract_content → joinner). Add cases for other tools as their paths come into eval scope.",
+    "format_notes": [
+      "Each case is run via run_joinner_with_scratchpad(), which bypasses build_scratchpad so we test the joinner LLM behavior independent of scratchpad rendering.",
+      "`scratchpad` is the verbatim string the joinner's user_message will contain between the Question line and the trailing `\\nThought:` cue.",
+      "`must_contain_any` passes if at least one substring appears in the answer (case-insensitive).",
+      "`must_not_contain` fails if any substring appears in the answer (case-insensitive).",
+      "`expected_class` is advisory only — it goes into the review markdown so you can eyeball whether the model's posture matched intent."
+    ]
+  },
+  "cases": [
+    {
+      "id": "rich_summary_wikipedia",
+      "query": "summarize https://en.wikipedia.org/wiki/Wolf",
+      "scratchpad": "fetch_page(\"https://en.wikipedia.org/wiki/Wolf\")\nObservation: {\"url\":\"https://en.wikipedia.org/wiki/Wolf\",\"http_status\":200,\"content_type\":\"text/html\",\"body\":\"<html><title>Wolf - Wikipedia</title>...\",\"truncated\":false}\nextract_content(\"$1\", \"summary\")\nObservation: {\"title\":\"Wolf - Wikipedia\",\"summary\":\"The wolf (Canis lupus) is a large canine native to Eurasia and North America. More than thirty subspecies of Canis lupus have been recognized. The wolf is the largest extant member of the family Canidae and is distinguished from other species by its larger size and less pointed features.\",\"keywords\":[\"wolf\",\"canis lupus\",\"canidae\"],\"content_type\":\"article\"}\n",
+      "expected_class": "informative",
+      "must_contain_any": ["canis lupus", "wolf", "canine", "eurasia", "canidae"],
+      "must_not_contain": ["not used correctly", "cannot", "error", "tool is not"],
+      "min_chars": 40,
+      "max_chars": 800
+    },
+    {
+      "id": "empty_extraction_abstention",
+      "query": "summarize https://example.com/unknown",
+      "scratchpad": "fetch_page(\"https://example.com/unknown\")\nObservation: {\"url\":\"https://example.com/unknown\",\"http_status\":200,\"content_type\":\"text/html\",\"body\":\"<html></html>\",\"truncated\":false}\nextract_content(\"$1\", \"summary\")\nObservation: {\"title\":\"\",\"summary\":\"\",\"keywords\":[],\"content_type\":\"page\"}\n",
+      "expected_class": "abstention",
+      "must_contain_any": ["couldn't", "unable", "no content", "empty", "nothing", "no information", "no summary", "not", "could not"],
+      "must_not_contain": ["canis lupus", "canine", "wolf"],
+      "min_chars": 10,
+      "max_chars": 500
+    },
+    {
+      "id": "fetch_error_cascade",
+      "query": "summarize https://down.example.com",
+      "scratchpad": "fetch_page(\"https://down.example.com\")\nObservation: Error: tool error [fetch_page]: host fetch failed: fetch_failed: DNS lookup failed\nextract_content(\"$1\", \"summary\")\nObservation: Error: arg coercion: inference error: extract_content.html: $1 references step that errored or was a join terminator\n",
+      "expected_class": "error_report",
+      "must_contain_any": ["couldn't", "unable", "error", "failed", "not reach", "could not", "not available", "unreachable"],
+      "must_not_contain": ["canis lupus", "successfully"],
+      "min_chars": 10,
+      "max_chars": 500
+    },
+    {
+      "id": "short_real_content",
+      "query": "summarize https://example.com/article",
+      "scratchpad": "fetch_page(\"https://example.com/article\")\nObservation: {\"url\":\"https://example.com/article\",\"http_status\":200,\"body\":\"...\"}\nextract_content(\"$1\", \"summary\")\nObservation: {\"title\":\"Announcing Rust 1.80\",\"summary\":\"Rust 1.80 adds native support for LazyCell and LazyLock, stabilizes Box<[T]> iteration, and improves diagnostics for async code paths.\",\"keywords\":[\"rust\",\"programming\",\"release\"],\"content_type\":\"article\"}\n",
+      "expected_class": "informative",
+      "must_contain_any": ["rust", "1.80", "lazycell", "lazylock", "async"],
+      "must_not_contain": ["not used correctly", "cannot", "failed"],
+      "min_chars": 30,
+      "max_chars": 600
+    },
+    {
+      "id": "truncated_mid_sentence",
+      "query": "summarize https://en.wikipedia.org/wiki/Photosynthesis",
+      "scratchpad": "fetch_page(\"https://en.wikipedia.org/wiki/Photosynthesis\")\nObservation: {\"url\":\"https://en.wikipedia.org/wiki/Photosynthesis\",\"http_status\":200,\"body\":\"...\"}\nextract_content(\"$1\", \"summary\")\nObservation: {\"title\":\"Photosynthesis - Wikipedia\",\"summary\":\"Photosynthesis is a biological process that converts light energy, usually from the Sun, into chemical energy stored in glucose and other organic compounds. It takes place in plants, algae, and some bacteria, and is th ... [truncated]\",\"content_type\":\"article\"}\n",
+      "expected_class": "informative",
+      "must_contain_any": ["photosynthesis", "light", "energy", "plants", "chemical"],
+      "must_not_contain": ["not used correctly", "error", "failed"],
+      "min_chars": 30,
+      "max_chars": 700
+    },
+    {
+      "id": "html_noise_in_summary",
+      "query": "summarize https://example.com/noisy",
+      "scratchpad": "fetch_page(\"https://example.com/noisy\")\nObservation: {\"url\":\"https://example.com/noisy\",\"http_status\":200}\nextract_content(\"$1\", \"summary\")\nObservation: {\"title\":\"Example Domain\",\"summary\":\"Example Domain This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.\",\"keywords\":[],\"content_type\":\"page\"}\n",
+      "expected_class": "informative",
+      "must_contain_any": ["example", "illustrative", "domain", "documents", "literature"],
+      "must_not_contain": ["not used correctly", "canis lupus"],
+      "min_chars": 20,
+      "max_chars": 400
+    },
+    {
+      "id": "factoid_from_model_knowledge",
+      "query": "what is the capital of france",
+      "scratchpad": "",
+      "expected_class": "factoid",
+      "must_contain_any": ["paris"],
+      "must_not_contain": ["not used correctly", "error", "cannot"],
+      "min_chars": 4,
+      "max_chars": 300
+    },
+    {
+      "id": "abstention_no_scratchpad_hard_query",
+      "query": "predict tomorrow's weather in Tokyo",
+      "scratchpad": "",
+      "expected_class": "abstention",
+      "must_contain_any": ["cannot", "can't", "unable", "don't have", "no access", "real-time", "current", "unknown", "not", "don't"],
+      "must_not_contain": [],
+      "min_chars": 10,
+      "max_chars": 500
+    }
+  ]
+}
