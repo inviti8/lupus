@@ -163,14 +163,23 @@ pub fn run_joinner(
     // prompt + user message are concatenated by the InferenceEngine's
     // manual chat template path. The Python upstream version also
     // builds this as a single prompt string before calling the LLM.
-    // Keep the prompt format clean — don't pre-pend "Thought:" because
-    // it breaks the `Action: Finish(Summary)` abstention pattern shown
-    // in the last example of OUTPUT_PROMPT_FINAL (where no Thought line
-    // precedes the Action). Forcing "Thought:" makes the model produce
-    // a thought and then stall. The base model handles both
-    // thought+action and action-only patterns naturally when given the
-    // scratchpad without a prefix.
-    let user_message = format!("Question: {user_query}\n\n{scratchpad}\n");
+    // End the prompt with "Thought:" so the model knows to start
+    // generating. Without this continuation cue, TinyAgent-1.1B emits
+    // EOS as its very first token — it interprets the
+    // end-of-scratchpad as end-of-conversation and terminates
+    // immediately, producing empty joinner_raw.
+    //
+    // With "Thought:" the model generates a thought sentence but
+    // often stops without emitting the strict "Action: Finish(...)"
+    // wrapper that example 4 of OUTPUT_PROMPT_FINAL shows. That's
+    // handled by the lenient fallback in [`parse_joinner_output`] —
+    // if no Action line is found but the raw output is non-empty,
+    // the trimmed output (or the thought) is used as the answer.
+    //
+    // This is the minimum hack that makes both halves work:
+    //   - model emits text (Thought: cue prevents instant EOS)
+    //   - parser surfaces that text (fallback handles missing Action)
+    let user_message = format!("Question: {user_query}\n\n{scratchpad}\nThought:");
 
     let raw = engine.infer_blocking(
         OUTPUT_PROMPT_FINAL,
@@ -329,14 +338,18 @@ pub fn parse_joinner_output(raw: &str) -> JoinnerOutput {
 
     // Lenient fallback — if the model produced meaningful output but no
     // Action line, surface what it said rather than returning null.
+    // Since the prompt ends with "Thought:" (see `run_joinner`), the
+    // model's raw output IS the content of the thought even when no
+    // explicit "Thought:" line is present in the output. Populate both
+    // thought and answer from it so the browser's plan view shows the
+    // reasoning AND the user gets a visible text_answer.
     if !found_action {
         let trimmed = raw.trim();
         if !trimmed.is_empty() {
-            answer = if !thought.is_empty() {
-                thought.clone()
-            } else {
-                trimmed.to_string()
-            };
+            if thought.is_empty() {
+                thought = trimmed.to_string();
+            }
+            answer = thought.clone();
         }
     }
 
